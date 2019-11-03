@@ -1,6 +1,6 @@
 TEMPLATE = app
 
-TARGET = mediawriter
+TARGET = $$MEDIAWRITER_NAME
 
 QT += qml quick widgets network
 

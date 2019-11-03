@@ -1,12 +1,15 @@
 # this file is shared for all targets
 # and it is actually located in the root folder of the project
+isEmpty(MEDIAWRITER_NAME) {
+    MEDIAWRITER_NAME = mediawriter
+}
 isEmpty(PREFIX) {
     PREFIX = /usr/local
 }
 BINDIR = $$PREFIX/bin
 DATADIR = $$PREFIX/share
 isEmpty(LIBEXECDIR) {
-    LIBEXECDIR = $$PREFIX/libexec/mediawriter
+    LIBEXECDIR = $$PREFIX/libexec/$$MEDIAWRITER_NAME
 }
 linux {
     DEFINES += BINDIR=\\\"$$BINDIR\\\"
