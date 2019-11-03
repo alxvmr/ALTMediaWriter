@@ -1,0 +1,3 @@
+[remote "upstream"]
+        fetch = +refs/heads/*:refs/remotes/upstream/*
+        url = git://github.com/FedoraQt/MediaWriter
