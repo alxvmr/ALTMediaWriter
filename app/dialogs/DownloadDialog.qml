@@ -399,10 +399,6 @@ Dialog {
                                     if (drives.selected)
                                         drives.selected.setImage(releases.variant)
                                 }
-                                else {
-                                    if (drives.selected)
-                                        drives.selected.setImage(false)
-                                }
                             }
                         }
                     }
