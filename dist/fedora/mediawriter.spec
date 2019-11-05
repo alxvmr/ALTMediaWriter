@@ -1,7 +1,7 @@
 Name:           mediawriter
 Version:        4.0
 Release:        1%{?dist}
-Summary:        Fedora Media Writer
+Summary:        ALT Media Writer
 
 License:        GPLv2+
 URL:            https://github.com/MartinBriza/MediaWriter
@@ -23,7 +23,7 @@ Requires: storaged%{?_isa}
 %endif
 
 %description
-A tool to write images of Fedora media to portable drives
+A tool to write images of ALT media to portable drives
 like flash drives or memory cards.
 
 %prep

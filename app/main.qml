@@ -34,7 +34,7 @@ ApplicationWindow {
     visible: true
     minimumWidth: $(800)
     minimumHeight: $(480)
-    title: "Fedora Media Writer"
+    title: "ALT Media Writer"
 
     SystemPalette {
         id: palette
@@ -151,7 +151,7 @@ ApplicationWindow {
         id: newVersionPopup
         enabled: open
         open: versionChecker.newerVersion
-        title: qsTr("Fedora Media Writer %1 Released").arg(versionChecker.newerVersion)
+        title: qsTr("ALT Media Writer %1 Released").arg(versionChecker.newerVersion)
         text: qsTr("Update for great new features and bugfixes!")
         buttonText: qsTr("Open Browser")
         onAccepted: Qt.openUrlExternally(versionChecker.url)
@@ -197,7 +197,7 @@ ApplicationWindow {
             Text {
                 horizontalAlignment: Text.AlignHCenter
                 color: "white"
-                text: qsTr("%1<br>Writing images will not be possible.<br>You can still view Fedora flavors and download images to your hard drive.").arg(drives.errorString)
+                text: qsTr("%1<br>Writing images will not be possible.<br>You can still view ALT flavors and download images to your hard drive.").arg(drives.errorString)
             }
             AdwaitaButton {
                 Layout.alignment: Qt.AlignCenter

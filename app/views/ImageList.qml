@@ -289,7 +289,7 @@ FocusScope {
                         height: $(64)
 
                         Text {
-                            text: qsTr("About Fedora Media Writer")
+                            text: qsTr("About ALT Media Writer")
                             font.pointSize: $$(9)
                             color: palette.windowText
                             anchors {
@@ -330,7 +330,7 @@ FocusScope {
                                 width: parent.width
                                 wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                                 visible: releases.beingUpdated
-                                text: qsTr("Fedora Media Writer is now checking for new releases")
+                                text: qsTr("ALT Media Writer is now checking for new releases")
                                 font.pointSize: $$(9)
                                 BusyIndicator {
                                     anchors.right: parent.left
@@ -344,7 +344,7 @@ FocusScope {
                             Text {
                                 width: parent.width
                                 wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                text: qsTr("Please report bugs or your suggestions on %1").arg("<a href=\"https://github.com/FedoraQt/MediaWriter/issues\">https://github.com/FedoraQt/MediaWriter/</a>")
+                                text: qsTr("Please report bugs or your suggestions on %1").arg("<a href=\"https://github.com/altlinux/MediaWriter/issues\">https://github.com/altlinux/MediaWriter/</a>")
                                 textFormat: Text.RichText
                                 font.pointSize: $$(9)
                                 onLinkActivated: Qt.openUrlExternally(link)
@@ -405,7 +405,7 @@ FocusScope {
                     anchors.horizontalCenter: threeDotDots.horizontalCenter
                     Behavior on y { NumberAnimation { duration: 60 } }
                     clip: true
-                    text: qsTr("Display additional Fedora flavors")
+                    text: qsTr("Display additional ALT flavors")
                     color: "gray"
                 }
 

@@ -1,10 +1,10 @@
-# Fedora Media Writer on Windows
+# ALT Media Writer on Windows
 
-![Fedora Media Writer on macOS](/dist/screenshots/win_main.png)
+![ALT Media Writer on macOS](/dist/screenshots/win_main.png)
 
 ## Running
 
-Fedora Media Writer is a regular Windows application, you don't need any special tools or libraries to be able to run it on your computer.
+ALT Media Writer is a regular Windows application, you don't need any special tools or libraries to be able to run it on your computer.
 
 ### System configuration
 
@@ -14,9 +14,9 @@ You need to have about 200MB of free memory (RAM) available. It will take about 
 
 ### Usage
 
-Download the .exe installer from the [Releases](../../releases) section of this page or [getfedora.org](https://getfedora.org), then open it.
+Download the .exe installer from the [Releases](../../releases) section of this page or [getalt.org](https://getalt.org), then open it.
 
-The application download from both mentioned sources should be signed, either by Martin Bříza or Dennis Gilmore. It should also not triggered any system warning screens.
+The application download from both mentioned sources should be signed, either by Evgeny Sinelnikov or ALT Linux Team. It should also not triggered any system warning screens.
 
 ### Known issues 
 
@@ -26,7 +26,7 @@ There are several issues or things that are known to need to be improved in the 
 
 ## Building
 
-You can build Fedora Media Writer yourself. It has just a few dependencies and building it is a matter of just running two commands.
+You can build ALT Media Writer yourself. It has just a few dependencies and building it is a matter of just running two commands.
 
 ### Dependencies
 
@@ -34,7 +34,7 @@ You can build Fedora Media Writer yourself. It has just a few dependencies and b
 
 ### Steps
 
-You can use Qt Creator to build and work with the application. If not using that, the process is basically just these two commands you need to run inside the Fedora Media Writer source code directory:
+You can use Qt Creator to build and work with the application. If not using that, the process is basically just these two commands you need to run inside the ALT Media Writer source code directory:
 
 ```
 qmake
@@ -43,7 +43,7 @@ make
 
 ### Crosscompilation
 
-There is also the [build.sh](/dist/win/build.sh) script included that I use for building a the installer for distribution on this site. It should do everything automatically if you're in Fedora. There are instructions on how to use it inside at the top of the file
+There is also the [build.sh](/dist/win/build.sh) script included that I use for building a the installer for distribution on this site. It should do everything automatically if you're in ALT. There are instructions on how to use it inside at the top of the file
 
 
 

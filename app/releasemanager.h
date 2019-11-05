@@ -210,8 +210,7 @@ public:
     enum Source {
         PRODUCT,
         LOCAL,
-        SPINS,
-        LABS,
+        STARTERKITS,
         OTHER
     };
     Q_ENUMS(Source)

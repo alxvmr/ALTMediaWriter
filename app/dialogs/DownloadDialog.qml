@@ -313,7 +313,7 @@ Dialog {
                             id: messageRestore
                             visible: false
                             width: infoColumn.width
-                            text: qsTr("Your drive will be resized to a smaller capacity. You may resize it back to normal by using Fedora Media Writer; this will remove installation media from your drive.")
+                            text: qsTr("Your drive will be resized to a smaller capacity. You may resize it back to normal by using ALT Media Writer; this will remove installation media from your drive.")
                         }
 
                         InfoMessage {
@@ -327,7 +327,7 @@ Dialog {
                             id: messageArmBoard
                             width: infoColumn.width
                             visible: boardCombo.otherSelected
-                            text: qsTr("Your board or device is not supported by Fedora Media Writer yet. Please check <a href=%1>this page</a> for more information about its compatibility with Fedora and how to create bootable media for it.").arg("https://fedoraproject.org/wiki/Architectures/ARM")
+                            text: qsTr("Your board or device is not supported by ALT Media Writer yet. Please check <a href=%1>this page</a> for more information about its compatibility with ALT and how to create bootable media for it.").arg("https://www.altlinux.org/Ports/arm")
                         }
 
                         InfoMessage {

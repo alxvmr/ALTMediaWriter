@@ -307,10 +307,9 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
         QJsonObject obj = i.toObject();
         QString subvariant = obj["subvariant"].toString();
         QString sourceString = obj["category"].toString();
-        Release::Source source = sourceString == "product" ? Release::PRODUCT :
-                                 sourceString == "spins"   ? Release::SPINS :
-                                 sourceString == "labs"    ? Release::LABS :
-                                                             Release::OTHER;
+        Release::Source source = sourceString == "product"     ? Release::PRODUCT :
+                                 sourceString == "starterkits" ? Release::STARTERKITS :
+                                                                 Release::OTHER;
         QString name = obj["name"].toString();
         QString summary = obj["summary"].toString();
         QStringList description;
@@ -358,10 +357,8 @@ QString Release::sourceString() {
     case LOCAL:
     case PRODUCT:
         return QString();
-    case SPINS:
-        return tr("Fedora Spins");
-    case LABS:
-        return tr("Fedora Labs");
+    case STARTERKITS:
+        return tr("ALT Starter kits");
     default:
         return tr("Other");
     }

@@ -105,7 +105,7 @@ Dialog {
                     Text {
                         Layout.alignment: Qt.AlignHCenter
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                        text: qsTr("<p align=\"justify\">Please wait while Fedora Media Writer restores your portable drive.</p>")
+                        text: qsTr("<p align=\"justify\">Please wait while ALT Media Writer restores your portable drive.</p>")
                         font.pointSize: $$(9)
                         color: palette.windowText
                     }

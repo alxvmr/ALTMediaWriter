@@ -77,7 +77,7 @@ linux {
     INSTALLS += icon desktopfile appdatafile
 }
 macx {
-    TARGET = "Fedora Media Writer"
+    TARGET = "ALT Media Writer"
     HEADERS += macdrivemanager.h \
                 macdrivearbiter.h
     SOURCES += macdrivemanager.cpp

@@ -113,7 +113,7 @@ void Options::parse(QStringList argv) {
     }
 
     if (options.logging) {
-        QString debugFileName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/FedoraMediaWriter.log";
+        QString debugFileName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/" ORIGIN_MEDIAWRITER_NAME ".log";
         debugFile = fopen(debugFileName.toStdString().c_str(), "w");
         if (!debugFile) {
             debugFile = stderr;
@@ -123,7 +123,7 @@ void Options::parse(QStringList argv) {
 
 void Options::printHelp() {
     QTextStream out(stdout);
-    out << "mediawriter [--testing] [--no-user-agent] [--releasesUrl <url>]\n";
+    out << MEDIAWRITER_NAME " [--testing] [--no-user-agent] [--releasesUrl <url>]\n";
 }
 
 

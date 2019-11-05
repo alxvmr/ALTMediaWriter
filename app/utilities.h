@@ -81,8 +81,8 @@ public:
 #else
     bool logging { true };
 #endif
-    QString releasesUrl { "https://getfedora.org/releases.json" };
-    bool noUserAgent { false }; // disables sending the custom Fedora Media Writer user agent header
+    QString releasesUrl { "https://getalt.org/releases.json" };
+    bool noUserAgent { false }; // disables sending the custom ALT Media Writer user agent header
 };
 
 class MessageHandler {

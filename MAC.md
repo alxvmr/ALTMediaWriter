@@ -1,10 +1,10 @@
-# Fedora Media Writer on macOS
+# ALT Media Writer on macOS
 
-![Fedora Media Writer on macOS](/dist/screenshots/mac_main.png)
+![ALT Media Writer on macOS](/dist/screenshots/mac_main.png)
 
 ## Running
 
-The process of running Fedora Media Writer on a Mac computer is very similar to every other Mac application.
+The process of running ALT Media Writer on a Mac computer is very similar to every other Mac application.
 
 ### System configuration
 
@@ -12,13 +12,13 @@ The application has been developed and tested on macOS Sierra (version 10.12.1).
 
 Oldest supported release is OS X Mavericks (10.9).
 
-Resource-wise, every Intel-based Mac computer should be able to run Fedora Media Writer.
+Resource-wise, every Intel-based Mac computer should be able to run ALT Media Writer.
 
 ### Usage
 
-Download the .dmg file from the [Releases](../../releases) section of this page or [getfedora.org](https://getfedora.org), then open it. The files downloaded from this page are not signed, which means you can get a prompt saying you won't be able to open them.
+Download the .dmg file from the [Releases](../../releases) section of this page or [getALT.org](https://getalt.org), then open it. The files downloaded from this page are not signed, which means you can get a prompt saying you won't be able to open them.
 
-To avoid this problem, two-finger click the "Fedora Media Writer" application and use the "Open" option as seen on the picture below.
+To avoid this problem, two-finger click the "ALT Media Writer" application and use the "Open" option as seen on the picture below.
 
 ![File option menu used to open the unsigned application](/dist/screenshots/mac_open.png)
 
@@ -32,7 +32,7 @@ There are several issues or things that are known to need to be improved in the 
 
 ## Building
 
-You can build Fedora Media Writer yourself. It has just a few dependencies and building it is a matter of just running two commands.
+You can build ALT Media Writer yourself. It has just a few dependencies and building it is a matter of just running two commands.
 
 ### Dependencies
 
@@ -40,7 +40,7 @@ You can build Fedora Media Writer yourself. It has just a few dependencies and b
 
 ### Steps
 
-You can use Qt Creator to build and work with the application. If not using that, the process is basically just these two commands you need to run inside the Fedora Media Writer source code directory:
+You can use Qt Creator to build and work with the application. If not using that, the process is basically just these two commands you need to run inside the ALT Media Writer source code directory:
 
 ```
 qmake
