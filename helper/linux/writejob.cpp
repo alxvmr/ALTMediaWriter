@@ -30,6 +30,7 @@
 #include <QDBusUnixFileDescriptor>
 
 #include <unistd.h>
+#include <errno.h>
 
 #include <tuple>
 #include <utility>
@@ -223,8 +224,18 @@ bool WriteJob::writePlain(int fd) {
             qApp->exit(3);
             return false;
         }
+try_again:
         qint64 written = ::write(fd, buffer, len);
         if (written != len) {
+            if (written < 0) {
+                if(errno == EIO) {
+                    static int skip_once = 0;
+                    if (!skip_once) {
+                        skip_once = 1;
+                        goto try_again;
+                    }
+                }
+            }
             err << tr("Destination drive is not writable");
             err.flush();
             qApp->exit(3);
