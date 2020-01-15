@@ -1,6 +1,6 @@
 # ALT Media Writer on Windows
 
-![ALT Media Writer on macOS](/dist/screenshots/win_main.png)
+![ALT Media Writer on Windows](/dist/screenshots/win_main.png)
 
 ## Running
 
