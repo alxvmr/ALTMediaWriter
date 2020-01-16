@@ -34,6 +34,8 @@ class Release;
 class ReleaseVersion;
 class ReleaseVariant;
 class ReleaseArchitecture;
+class ReleaseImageType;
+class ReleaseBoard;
 
 /*
  * Architecture - singleton (x86, x86_64, etc)
@@ -103,7 +105,7 @@ public:
 
     Q_INVOKABLE void setLocalFile(const QString &path);
 
-    bool updateUrl(const QString &release, int version, const QString &status, const QString &type, const QDateTime &releaseDate, const QString &architecture, const QString &url, const QString &sha256, int64_t size);
+    bool updateUrl(const QString &release, const QString &version, const QString &status, const QString &type, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, int64_t size);
 
     QStringList architectures() const;
     int filterArchitecture() const;
@@ -211,6 +213,7 @@ public:
         PRODUCT,
         LOCAL,
         STARTERKITS,
+        REGULARS,
         OTHER
     };
     Q_ENUMS(Source)
@@ -218,7 +221,7 @@ public:
 
     Release(ReleaseManager *parent, int index, const QString &name, const QString &summary, const QStringList &description, Release::Source source, const QString &icon, const QStringList &screenshots);
     void setLocalFile(const QString &path);
-    bool updateUrl(int version, const QString &status, const QString &type, const QDateTime &releaseDate, const QString &architecture, const QString &url, const QString &sha256, int64_t size);
+    bool updateUrl(const QString &version, const QString &status, const QString &type, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, int64_t size);
     ReleaseManager *manager();
 
     int index() const;
@@ -262,7 +265,7 @@ private:
  *
  * Represents the version of the release. It can have multiple variants (like a different architecture or netinst/live)
  *
- * @property number the version number (probably should change to string)
+ * @property number the version number (as string)
  * @property name the name of the release (version + alpha/beta/etc)
  * @property status the release status of the version (alpha - beta - release candidate - final)
  * @property releaseDate the release date
@@ -272,7 +275,7 @@ private:
  */
 class ReleaseVersion : public QObject {
     Q_OBJECT
-    Q_PROPERTY(int number READ number CONSTANT)
+    Q_PROPERTY(QString number READ number CONSTANT)
     Q_PROPERTY(QString name READ name CONSTANT)
 
     Q_PROPERTY(ReleaseVersion::Status status READ status NOTIFY statusChanged)
@@ -292,14 +295,14 @@ public:
 
     Q_ENUMS(Status)
 
-    ReleaseVersion(Release *parent, int number, ReleaseVersion::Status status = FINAL, QDateTime releaseDate = QDateTime());
+    ReleaseVersion(Release *parent, const QString &number, ReleaseVersion::Status status = FINAL, QDateTime releaseDate = QDateTime());
     ReleaseVersion(Release *parent, const QString &file, int64_t size);
     Release *release();
     const Release *release() const;
 
-    bool updateUrl(const QString &status, const QString &type, const QDateTime &releaseDate, const QString &architecture, const QString &url, const QString &sha256, int64_t size);
+    bool updateUrl(const QString &status, const QString &type, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, int64_t size);
 
-    int number() const;
+    QString number() const;
     QString name() const;
     ReleaseVersion::Status status() const;
     QDateTime releaseDate() const;
@@ -318,7 +321,7 @@ signals:
     void releaseDateChanged();
 
 private:
-    int m_number { 0 };
+    QString m_number { "0" };
     ReleaseVersion::Status m_status { FINAL };
     QDateTime m_releaseDate {};
     QList<ReleaseVariant*> m_variants {};
@@ -334,9 +337,11 @@ private:
  * @property arch architecture of the variant
  * @property type the type of the variant, like live or netinst
  * @property name the name of the release, generated from @ref arch and @ref type
+ * @property board the name of supported hardware of the image
  * @property url the URL pointing to the image
  * @property shaHash SHA256 hash of the image
- * @property iso the path to the image on the drive
+ * @property image the path to the image on the drive
+ * @property imageType the tye of the image on the drive
  * @property size the size of the image in bytes
  * @property progress the progress object of the image - reports the progress of download
  * @property status status of the variant - if it's downloading, being written, etc.
@@ -348,10 +353,12 @@ class ReleaseVariant : public QObject, public DownloadReceiver {
     Q_PROPERTY(ReleaseArchitecture* arch READ arch CONSTANT)
     Q_PROPERTY(ReleaseVariant::Type type READ type CONSTANT)
     Q_PROPERTY(QString name READ name CONSTANT)
+    Q_PROPERTY(ReleaseBoard* board READ board CONSTANT)
 
     Q_PROPERTY(QString url READ url NOTIFY urlChanged)
     Q_PROPERTY(QString shaHash READ shaHash NOTIFY shaHashChanged)
-    Q_PROPERTY(QString iso READ iso NOTIFY isoChanged)
+    Q_PROPERTY(QString image READ image NOTIFY isoChanged)
+    Q_PROPERTY(ReleaseImageType* imageType READ imageType CONSTANT)
     Q_PROPERTY(qreal size READ size NOTIFY sizeChanged) // stored as a 64b int, UI doesn't need the precision and QML doesn't support long ints
     Q_PROPERTY(qreal realSize READ realSize NOTIFY realSizeChanged) // size after decompression
     Q_PROPERTY(Progress* progress READ progress CONSTANT)
@@ -363,8 +370,8 @@ public:
     enum Type {
         LIVE = 0,
         NETINSTALL,
-        FULL,
-        ATOMIC
+        INSTALL,
+        RESCUE
     };
     Q_ENUMS(Type)
     enum Status {
@@ -395,7 +402,7 @@ public:
         tr("Error")
     };
 
-    ReleaseVariant(ReleaseVersion *parent, QString url,  QString shaHash, int64_t size, ReleaseArchitecture *arch, Type type = LIVE);
+    ReleaseVariant(ReleaseVersion *parent, QString url,  QString shaHash, int64_t size, ReleaseArchitecture *arch, ReleaseImageType *imageType, ReleaseBoard *board, Type type = LIVE);
     ReleaseVariant(ReleaseVersion *parent, const QString &file, int64_t size);
 
     bool updateUrl(const QString &url, const QString &sha256, int64_t size);
@@ -409,10 +416,13 @@ public:
     ReleaseVariant::Type type() const;
     QString name() const;
     QString fullName();
+    ReleaseBoard *board() const;
 
     QString url() const;
     QString shaHash() const;
+    QString image() const;
     QString iso() const;
+    ReleaseImageType *imageType() const;
     QString temporaryPath() const;
     qreal size() const;
     qreal realSize() const;
@@ -449,9 +459,11 @@ public slots:
     void resetStatus();
 
 private:
-    QString m_temporaryIso {};
-    QString m_iso {};
+    QString m_temporaryImage {};
+    QString m_image {};
     ReleaseArchitecture *m_arch { nullptr };
+    ReleaseImageType *m_image_type { nullptr };
+    ReleaseBoard *m_board { nullptr };
     ReleaseVariant::Type m_type { LIVE };
     QString m_url {};
     QString m_shaHash {};
@@ -463,7 +475,6 @@ private:
     Progress *m_progress { nullptr };
 };
 
-
 /**
  * @brief The ReleaseArchitecture class
  *
@@ -471,20 +482,22 @@ private:
  *
  * @property abbreviation short names for the architecture, like x86_64
  * @property description a better description what the short stands for, like Intel 64bit
- * @property details an even longer description of the architecture
  */
 class ReleaseArchitecture : public QObject {
     Q_OBJECT
     Q_PROPERTY(QStringList abbreviation READ abbreviation CONSTANT)
     Q_PROPERTY(QString description READ description CONSTANT)
-    Q_PROPERTY(QString details READ details CONSTANT)
     Q_PROPERTY(Id id READ id CONSTANT)
 public:
     enum Id {
-        X86_64 = 0,
+        UNKNOWN = 0,
+        X86_64,
         X86,
         ARM,
         AARCH64,
+        MIPSEL,
+        RISCV,
+        E2K,
         _ARCHCOUNT,
     };
     Q_ENUMS(Id);
@@ -496,18 +509,115 @@ public:
 
     QStringList abbreviation() const;
     QString description() const;
-    QString details() const;
     int index() const;
     Id id() const;
 
 private:
-    ReleaseArchitecture(const QStringList &abbreviation, const char *description, const char *details);
+    ReleaseArchitecture(const QStringList &abbreviation, const char *description);
 
     static ReleaseArchitecture m_all[];
 
     const QStringList m_abbreviation {};
     const char *m_description {};
     const char *m_details {};
+};
+
+
+/**
+ * @brief The ReleaseBoard class
+ *
+ * Class representing the possible boards of the releases
+ *
+ * @property abbreviation short names for the boards, like pc or rpi4
+ * @property description a better description what the short stands for, like Intel, AMD and other compatible PCs
+ */
+class ReleaseBoard : public QObject {
+    Q_OBJECT
+    Q_PROPERTY(QStringList abbreviation READ abbreviation CONSTANT)
+    Q_PROPERTY(QString description READ description CONSTANT)
+    Q_PROPERTY(Id id READ id CONSTANT)
+public:
+    enum Id {
+        UNKNOWN = 0,
+        PC,
+        PC32,
+        TAVOLGA,
+        RPI3,
+        RPI4,
+        JETSON_NANO,
+        _BOARDCOUNT,
+    };
+    Q_ENUMS(Id);
+    static ReleaseBoard *fromId(Id id);
+    static ReleaseBoard *fromAbbreviation(const QString &abbr);
+    static bool isKnown(const QString &abbr);
+    static QList<ReleaseBoard *> listAll();
+    static QStringList listAllDescriptions();
+
+    QStringList abbreviation() const;
+    QString description() const;
+    int index() const;
+    Id id() const;
+
+private:
+    ReleaseBoard(const QStringList &abbreviation, const char *description);
+
+    static ReleaseBoard m_all[];
+
+    const QStringList m_abbreviation {};
+    const char *m_description {};
+    const char *m_details {};
+};
+
+
+/**
+ * @brief The ReleaseImageType class
+ *
+ * Class representing the possible image types of the releases
+ *
+ * @property abbreviation short names for the type, like iso
+ * @property name a common name what the short stands for, like "ISO DVD"
+ * @property description a better description what the short stands for, like "ISO format image"
+ */
+class ReleaseImageType : public QObject {
+    Q_OBJECT
+    Q_PROPERTY(QStringList abbreviation READ abbreviation CONSTANT)
+    Q_PROPERTY(QString name READ name CONSTANT)
+    Q_PROPERTY(QString description READ description CONSTANT)
+    Q_PROPERTY(Id id READ id CONSTANT)
+public:
+    enum Id {
+        ISO = 0,
+        TAR,
+        TAR_GZ,
+        TAR_XZ,
+        IMG,
+        IMG_GZ,
+        IMG_XZ,
+        RECOVERY_TAR,
+        _IMAGETYPECOUNT,
+    };
+    Q_ENUMS(Id);
+    static ReleaseImageType *fromId(Id id);
+    static ReleaseImageType *fromAbbreviation(const QString &abbr);
+    static bool isKnown(const QString &abbr);
+    static QList<ReleaseImageType *> listAll();
+    static QStringList listAllNames();
+
+    QStringList abbreviation() const;
+    QString name() const;
+    QString description() const;
+    int index() const;
+    Id id() const;
+
+private:
+    ReleaseImageType(const QStringList &abbreviation, const char *name, const char *description);
+
+    static ReleaseImageType m_all[];
+
+    const QStringList m_abbreviation {};
+    const char *m_name {};
+    const char *m_description {};
 };
 
 #endif // RELEASEMANAGER_H
