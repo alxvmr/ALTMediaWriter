@@ -1,5 +1,7 @@
 TEMPLATE = app
 
+include($$top_srcdir/deployment.pri)
+
 TARGET = $$MEDIAWRITER_NAME
 
 QT += qml quick widgets network
@@ -47,8 +49,6 @@ lupdate_only {
         macdrivemanager.h \
         windrivemanager.h
 }
-
-include($$top_srcdir/deployment.pri)
 
 target.path = $$BINDIR
 INSTALLS += target
