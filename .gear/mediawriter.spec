@@ -1,10 +1,10 @@
 %define sname mediawriter
 %define oname MediaWriter
 
-Name:           fedoramediawriter
-Version:        4.1.4
+Name:           altmediawriter
+Version:        0.1.0
 Release:        alt1
-Summary:        Fedora Media Writer
+Summary:        ALT Media Writer
 Group:          System/Configuration/Other
 
 License:        GPLv2+
@@ -25,7 +25,7 @@ Requires:       polkit
 Requires: udisks2
 
 %description
-A tool to write images of Fedora media to portable drives
+A tool to write images of ALT media to portable drives
 like flash drives or memory cards.
 
 %prep
@@ -60,5 +60,5 @@ appstream-util validate-relax --nonet %buildroot/%_datadir/appdata/%name.appdata
 
 
 %changelog
-* Mon Nov 04 2019 Evgeny Sinelnikov <sin@altlinux.org> 4.1.4-alt1
+* Tue Nov 05 2019 Evgeny Sinelnikov <sin@altlinux.org> 0.1.0-alt1
 - Initial build for Sisyphus
