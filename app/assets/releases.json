@@ -4,42 +4,42 @@
 		"subvariant":"Server",
 		"version":"9.0",
 		"arch":"x86_64",
-		"variant":"Server",
+		"variant":"Server"
 	},
 	{
 		"link":"https://mirror.yandex.ru/altlinux/p9/images/server/aarch64/alt-server-9.0-aarch64.iso",
 		"subvariant":"Server",
 		"version":"9.0",
 		"arch":"aarch64",
-		"variant":"Server",
+		"variant":"Server"
 	},
 	{
 		"link":"https://mirror.yandex.ru/altlinux/p9/images/server/ppc64le/alt-server-9.0-ppc64le.iso",
 		"subvariant":"Server",
 		"version":"p9",
 		"arch":"ppc64le",
-		"variant":"Server",
+		"variant":"Server"
 	},
 	{
 		"link":"https://mirror.yandex.ru/altlinux/p9/images/workstation/x86_64/alt-workstation-9.0-x86_64.iso",
 		"subvariant":"Workstation",
 		"version":"9.0",
 		"arch":"x86_64",
-		"variant":"Workstation",
+		"variant":"Workstation"
 	},
 	{
 		"link":"https://mirror.yandex.ru/altlinux/p9/images/workstation/i586/alt-workstation-9.0-i586.iso",
 		"subvariant":"Workstation",
 		"version":"9.0",
 		"arch":"i586",
-		"variant":"Workstation",
+		"variant":"Workstation"
 	},
 	{
 		"link":"https://mirror.yandex.ru/altlinux/p9/images/workstation/aarch64/alt-workstation-9.0-aarch64.iso",
 		"subvariant":"Workstation",
 		"version":"9.0",
 		"arch":"aarch64",
-		"variant":"Workstation",
+		"variant":"Workstation"
 	},
 	{
 		"link":"https://mirror.yandex.ru/altlinux/p9/images/workstation/aarch64/alt-workstation-9.0-aarch64.tar.xz",
@@ -70,21 +70,21 @@
 		"subvariant":"Education",
 		"version":"9.0",
 		"arch":"x86_64",
-		"variant":"Education",
+		"variant":"Education"
 	},
 	{
 		"link":"https://mirror.yandex.ru/altlinux/p9/images/education/i586/alt-education-9.0-i586.iso",
 		"subvariant":"Education",
 		"version":"9.0",
 		"arch":"i586",
-		"variant":"Workstation",
+		"variant":"Workstation"
 	},
 	{
 		"link":"https://mirror.yandex.ru/altlinux/p9/images/education/aarch64/alt-education-9.0-aarch64.iso",
 		"subvariant":"Education",
 		"version":"9.0",
 		"arch":"aarch64",
-		"variant":"Education",
+		"variant":"Education"
 	},
 	{
 		"link":"https://mirror.yandex.ru/altlinux/p9/images/education/aarch64/alt-education-9.0-aarch64.tar.xz",
@@ -108,12 +108,12 @@
 		"link":"http://nightly.altlinux.org/sisyphus/tested/regular-rescue-latest-x86_64.iso",
 		"subvariant":"Rescue",
 		"arch":"x86_64",
-		"variant":"Regulars",
+		"variant":"Regulars"
 	},
 	{
 		"link":"http://nightly.altlinux.org/sisyphus/tested/regular-rescue-latest-i586.iso",
 		"subvariant":"Rescue",
 		"arch":"x86_64",
-		"variant":"Regulars",
+		"variant":"Regulars"
 	}
 ]
