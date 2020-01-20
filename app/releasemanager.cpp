@@ -945,6 +945,7 @@ ReleaseArchitecture ReleaseArchitecture::m_all[] = {
     {{"mipsel"}, QT_TR_NOOP("MIPS")},
     {{"riscv"}, QT_TR_NOOP("RiscV")},
     {{"e2k"}, QT_TR_NOOP("Elbrus")},
+    {{"ppc64le"}, QT_TR_NOOP("PowerPC")},
 };
 
 ReleaseArchitecture::ReleaseArchitecture(const QStringList &abbreviation, const char *description)
