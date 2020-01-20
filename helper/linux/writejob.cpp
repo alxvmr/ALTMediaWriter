@@ -31,6 +31,7 @@
 
 #include <unistd.h>
 #include <errno.h>
+#include <sys/fcntl.h>
 
 #include <tuple>
 #include <utility>
@@ -96,7 +97,7 @@ QDBusUnixFileDescriptor WriteJob::getDescriptor() {
         return QDBusUnixFileDescriptor(-1);
     }
 
-    QDBusReply<QDBusUnixFileDescriptor> reply = device.callWithArgumentList(QDBus::Block, "OpenForBenchmark", {Properties{{"writable", true}}} );
+    QDBusReply<QDBusUnixFileDescriptor> reply = device.callWithArgumentList(QDBus::Block, "OpenDevice", {"rw", Properties{{"flags", O_DIRECT | O_SYNC | O_CLOEXEC}, {"writable", true}}} );
     QDBusUnixFileDescriptor fd = reply.value();
 
     if (!fd.isValid()) {
