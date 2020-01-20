@@ -52,40 +52,40 @@ size_t getpagesize () {
 #define MAX(x, y)  ((x > y) ? x : y)
 #define MIN(x, y)  ((x < y) ? x : y)
 
-static int checkmd5sum(int isofd, checkCallback cb, void *cbdata, long long isosize) {
+static int checkmd5sum(int fd, checkCallback cb, void *cbdata, long long size) {
     unsigned char md5[MD5_DIGEST_LENGTH];
     int pagesize = getpagesize();
     unsigned char *buf_unaligned = (unsigned char *) malloc((BUFSIZE + pagesize) * sizeof(unsigned char));
     unsigned char *buf = (buf_unaligned + (pagesize - ((uintptr_t) buf_unaligned % pagesize)));
 
     // Rewind
-    long long offset = lseek64(isofd, 0LL, SEEK_SET);
+    long long offset = lseek64(fd, 0LL, SEEK_SET);
 
     // Compute md5
     MD5_CTX md5ctx;
     MD5_Init(&md5ctx);
 
     if (cb) {
-        cb(cbdata, 0, isosize);
+        cb(cbdata, 0, size);
     }
 
-    while (offset < isosize) {
-        ssize_t nattempt = MIN(isosize - offset, BUFSIZE);
+    while (offset < size) {
+        ssize_t nattempt = MIN(size - offset, BUFSIZE);
 
-        ssize_t nread = read(isofd, buf, nattempt);
+        ssize_t nread = read(fd, buf, nattempt);
         if (nread <= 0)
             break;
 
         if (nread > nattempt) {
             nread = nattempt;
-            lseek64(isofd, offset + nread, SEEK_SET);
+            lseek64(fd, offset + nread, SEEK_SET);
         }
 
         MD5_Update(&md5ctx, buf, nread);
 
         offset = offset + nread;
         if (cb && offset / nread % 256 == 0) {
-            if (cb(cbdata, offset, isosize)) {
+            if (cb(cbdata, offset, size)) {
                 free(buf_unaligned);
                 return ISOMD5SUM_CHECK_ABORTED;
             }
@@ -93,7 +93,7 @@ static int checkmd5sum(int isofd, checkCallback cb, void *cbdata, long long isos
     }
 
     if (cb) {
-        cb(cbdata, isosize, isosize);
+        cb(cbdata, size, size);
     }
 
     free(buf_unaligned);
@@ -121,25 +121,25 @@ static int checkmd5sum(int isofd, checkCallback cb, void *cbdata, long long isos
 }
 
 int mediaCheckFile(const char *file, checkCallback cb, void *cbdata) {
-    int isofd;
+    int fd;
 
 #ifdef _WIN32
-    isofd = open(file, O_RDONLY | O_BINARY);
+    fd = open(file, O_RDONLY | O_BINARY);
 #else
-    isofd = open(file, O_RDONLY);
+    fd = open(file, O_RDONLY);
 #endif
 
-    if (isofd < 0) {
+    if (fd < 0) {
         return ISOMD5SUM_FILE_NOT_FOUND;
     }
 
     // Calculate file size
-    off_t size = lseek(isofd, 0L, SEEK_END);
-    lseek(isofd, 0L, SEEK_SET);
+    off_t size = lseek(fd, 0L, SEEK_END);
+    lseek(fd, 0L, SEEK_SET);
 
-    int rc = checkmd5sum(isofd, cb, cbdata, size);
+    int rc = checkmd5sum(fd, cb, cbdata, size);
 
-    close(isofd);
+    close(fd);
 
     return rc;
 }
@@ -174,12 +174,12 @@ int mediaCheckFD(int fd, checkCallback cb, void *cbdata) {
         offset += 2048LL;
     }
 
-    // Get isosize from pvd
-    long long isosize = (buf[SIZE_OFFSET] * 0x1000000 + buf[SIZE_OFFSET + 1] * 0x10000 + buf[SIZE_OFFSET + 2] * 0x100 + buf[SIZE_OFFSET + 3]) * 2048LL;
+    // Get size from pvd
+    long long size = (buf[SIZE_OFFSET] * 0x1000000 + buf[SIZE_OFFSET + 1] * 0x10000 + buf[SIZE_OFFSET + 2] * 0x100 + buf[SIZE_OFFSET + 3]) * 2048LL;
 
     free(buf_unaligned);
 
-    int rc = checkmd5sum(fd, cb, cbdata, isosize);
+    int rc = checkmd5sum(fd, cb, cbdata, size);
 
     return rc;
 
