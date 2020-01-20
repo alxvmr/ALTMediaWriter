@@ -105,7 +105,7 @@ public:
 
     Q_INVOKABLE void setLocalFile(const QString &path);
 
-    bool updateUrl(const QString &release, const QString &version, const QString &status, const QString &type, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, int64_t size);
+    bool updateUrl(const QString &release, const QString &version, const QString &status, const QString &type, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size);
 
     QStringList architectures() const;
     int filterArchitecture() const;
@@ -221,7 +221,7 @@ public:
 
     Release(ReleaseManager *parent, int index, const QString &name, const QString &summary, const QStringList &description, Release::Source source, const QString &icon, const QStringList &screenshots);
     void setLocalFile(const QString &path);
-    bool updateUrl(const QString &version, const QString &status, const QString &type, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, int64_t size);
+    bool updateUrl(const QString &version, const QString &status, const QString &type, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size);
     ReleaseManager *manager();
 
     int index() const;
@@ -300,7 +300,7 @@ public:
     Release *release();
     const Release *release() const;
 
-    bool updateUrl(const QString &status, const QString &type, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, int64_t size);
+    bool updateUrl(const QString &status, const QString &type, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size);
 
     QString number() const;
     QString name() const;
@@ -340,6 +340,7 @@ private:
  * @property board the name of supported hardware of the image
  * @property url the URL pointing to the image
  * @property shaHash SHA256 hash of the image
+ * @property md5 MD5 of the image
  * @property image the path to the image on the drive
  * @property imageType the tye of the image on the drive
  * @property size the size of the image in bytes
@@ -402,7 +403,7 @@ public:
         tr("Error")
     };
 
-    ReleaseVariant(ReleaseVersion *parent, QString url,  QString shaHash, int64_t size, ReleaseArchitecture *arch, ReleaseImageType *imageType, ReleaseBoard *board, Type type = LIVE);
+    ReleaseVariant(ReleaseVersion *parent, QString url,  QString shaHash, QString md5, int64_t size, ReleaseArchitecture *arch, ReleaseImageType *imageType, ReleaseBoard *board, Type type = LIVE);
     ReleaseVariant(ReleaseVersion *parent, const QString &file, int64_t size);
 
     bool updateUrl(const QString &url, const QString &sha256, int64_t size);
@@ -422,6 +423,7 @@ public:
     QString shaHash() const;
     QString image() const;
     QString iso() const;
+    QString md5() const;
     ReleaseImageType *imageType() const;
     QString temporaryPath() const;
     qreal size() const;
@@ -467,6 +469,7 @@ private:
     ReleaseVariant::Type m_type { LIVE };
     QString m_url {};
     QString m_shaHash {};
+    QString m_md5 {};
     int64_t m_size { 0 };
     int64_t m_realSize { 0 };
     Status m_status { PREPARING };
