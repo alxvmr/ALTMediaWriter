@@ -292,7 +292,10 @@ void WriteJob::work() {
         if (!write(fd.fileDescriptor()))
             return;
 
-        check(fd.fileDescriptor());
+        // Only check iso's and img's
+        if (what.contains(".iso") || what.contains(".img")) {
+            check(fd.fileDescriptor());
+        }
     }
 }
 
