@@ -501,6 +501,7 @@ public:
         MIPSEL,
         RISCV,
         E2K,
+        PPC64LE,
         _ARCHCOUNT,
     };
     Q_ENUMS(Id);

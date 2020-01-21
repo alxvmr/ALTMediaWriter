@@ -90,7 +90,9 @@ QString DownloadManager::downloadFile(DownloadReceiver *receiver, const QUrl &ur
 
     m_current = new Download(this, receiver, bareFileName, progress);
     connect(m_current, &QObject::destroyed, [&](){ m_current = nullptr; });
-    fetchPageAsync(this, "https://mirrors.fedoraproject.org/mirrorlist?path=" + url.path());
+    // NOTE: don't use mirrors, download straight from the given url
+    // fetchPageAsync(this, "https://mirrors.fedoraproject.org/mirrorlist?path=" + url.path());
+    onStringDownloaded("");
 
     return bareFileName + ".part";
 }
@@ -130,7 +132,7 @@ QNetworkReply *DownloadManager::tryAnotherMirror() {
     if (!options.noUserAgent)
         request.setHeader(QNetworkRequest::UserAgentHeader, userAgent());
 
-    m_mirrorCache.removeFirst();
+    // m_mirrorCache.removeFirst();
     return m_manager.get(request);
 }
 
@@ -156,8 +158,8 @@ void DownloadManager::onStringDownloaded(const QString &text) {
                 break;
         }
     }
-    if (!mirrors.isEmpty())
-        m_mirrorCache = mirrors;
+    // if (!mirrors.isEmpty())
+    //     m_mirrorCache = mirrors;
 
     if (!m_current->hasCatchedUp())
         return;

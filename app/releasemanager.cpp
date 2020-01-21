@@ -48,7 +48,8 @@ ReleaseManager::ReleaseManager(QObject *parent)
     releases.close();
 
     connect(this, SIGNAL(selectedChanged()), this, SLOT(variantChangedFilter()));
-    QTimer::singleShot(0, this, SLOT(fetchReleases()));
+    // NOTE: don't fetch releases because getalt currently doesn't have them
+    // QTimer::singleShot(0, this, SLOT(fetchReleases()));
 }
 
 bool ReleaseManager::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const {

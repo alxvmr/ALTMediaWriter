@@ -114,8 +114,6 @@ Item {
 
                 RowLayout {
                     z: 1 // so the popover stays over the text below
-                    anchors.left: parent.left
-                    anchors.right: parent.right
                     spacing: $(24)
                     Item {
                         Layout.preferredWidth: $(64) + $(16)
@@ -135,7 +133,7 @@ Item {
                             Layout.fillWidth: true
                             Text {
                                 Layout.fillWidth: true
-                                anchors.left: parent.left
+                                Layout.alignment : Qt.AlignLeft
                                 font.pointSize: $$(14)
                                 text: releases.selected.name
                                 color: palette.windowText
@@ -179,7 +177,7 @@ Item {
                                 font.pointSize: $$(8)
                                 color: mixColors(palette.window, palette.windowText, 0.3)
                                 visible: releases.selected.version && releases.variant
-                                text: releases.variant.arch.details
+                                text: releases.variant.imageType.description
                             }
                             RowLayout {
                                 spacing: 0

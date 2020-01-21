@@ -404,7 +404,7 @@ Dialog {
                     }
 
                     RowLayout {
-                        anchors.horizontalCenter: parent.horizontalCenter
+                        Layout.alignment : Qt.AlignHCenter
                         spacing: $(32)
                         Image {
                             source: releases.selected.icon
@@ -416,7 +416,7 @@ Dialog {
                         }
                         Arrow {
                             id: writeArrow
-                            anchors.verticalCenter: parent.verticalCenter
+                            Layout.alignment : Qt.AlignVCenter
                             scale: $(1.4)
                             SequentialAnimation {
                                 running: releases.variant.status == Variant.WRITING
@@ -508,7 +508,7 @@ Dialog {
                                 Layout.fillHeight: true
                                 Layout.maximumWidth: parent.width - leftButton.width - rightButton.width - parent.spacing * 2
                                 state: "hidden"
-                                errorText: qsTr("It was not possible to delete<br>\"<a href=\"%1\">%2</a>\".").arg(releases.variant.iso.match(".*/")).arg(releases.variant.iso)
+                                errorText: qsTr("It was not possible to delete the file")
                                 onStarted: {
                                     if (releases.variant.erase())
                                         state = "success"
