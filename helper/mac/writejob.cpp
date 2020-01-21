@@ -31,8 +31,8 @@
 
 #include "isomd5/libcheckisomd5.h"
 
-WriteJob::WriteJob(const QString &what, const QString &where)
-    : QObject(nullptr), what(what), where(where)
+WriteJob::WriteJob(const QString &what, const QString &where, const QString &md5)
+    : QObject(nullptr), what(what), where(where), md5(md5)
 {
     connect(&watcher, &QFileSystemWatcher::fileChanged, this, &WriteJob::onFileChanged);
     if (what.endsWith(".part")) {
@@ -211,11 +211,21 @@ bool WriteJob::writeCompressed() {
 }
 
 void WriteJob::check() {
+    if (!what.contains(".iso") && !what.contains(".img")) {
+        out << "NOT CHECKING BECAUSE NOT ISO\n";
+        out << "DONE\n";
+        out.flush();
+        err << "OK\n";
+        err.flush();
+        qApp->exit();
+        return;
+    }
+
     QFile target("/dev/r"+where);
     target.open(QIODevice::ReadOnly);
     out << "CHECK\n";
     out.flush();
-    switch (mediaCheckFD(target.handle(), &WriteJob::staticOnMediaCheckAdvanced, this)) {
+    switch (mediaCheckFD(fd, md5.toLocal8Bit().data(), &WriteJob::staticOnMediaCheckAdvanced, this)) {
     case ISOMD5SUM_CHECK_NOT_FOUND:
     case ISOMD5SUM_CHECK_PASSED:
         out << "DONE\n";

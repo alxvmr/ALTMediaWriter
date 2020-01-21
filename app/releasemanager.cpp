@@ -813,7 +813,7 @@ void ReleaseVariant::onFileDownloaded(const QString &path, const QString &hash) 
 
     qApp->eventDispatcher()->processEvents(QEventLoop::AllEvents);
 
-    int checkResult = mediaCheckFile(QDir::toNativeSeparators(path).toLocal8Bit(), &ReleaseVariant::staticOnMediaCheckAdvanced, this);
+    int checkResult = mediaCheckFile(QDir::toNativeSeparators(path).toLocal8Bit(), md5().toLocal8Bit().data(), &ReleaseVariant::staticOnMediaCheckAdvanced, this);
     if (checkResult == ISOMD5SUM_CHECK_FAILED) {
         mWarning() << "Internal MD5 media check of" << path << "failed with status" << checkResult;
         QFile::remove(path);

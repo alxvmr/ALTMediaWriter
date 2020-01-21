@@ -36,8 +36,8 @@
 #include "isomd5/libcheckisomd5.h"
 
 
-WriteJob::WriteJob(const QString &what, const QString &where)
-    : QObject(nullptr), what(what)
+WriteJob::WriteJob(const QString &what, const QString &where, const QString &md5)
+    : QObject(nullptr), what(what), where(where), md5(md5)
 {
     bool ok = false;
     this->where = where.toInt(&ok);
@@ -388,6 +388,16 @@ bool WriteJob::writePlain(HANDLE drive) {
 }
 
 bool WriteJob::check() {
+    if (!what.contains(".iso") && !what.contains(".img")) {
+        out << "NOT CHECKING BECAUSE NOT ISO\n";
+        out << "DONE\n";
+        out.flush();
+        err << "OK\n";
+        err.flush();
+        qApp->exit(0);
+        return true;
+    }
+
     out << "CHECK\n";
     out.flush();
 

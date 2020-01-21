@@ -218,6 +218,7 @@ bool LinuxDrive::write(ReleaseVariant *data) {
     else
         args << data->temporaryPath();
     args << m_device;
+    args << data->md5();
     mDebug() << this->metaObject()->className() << "Helper command will be" << args;
     m_process->setArguments(args);
 

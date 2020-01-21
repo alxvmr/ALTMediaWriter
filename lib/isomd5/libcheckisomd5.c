@@ -52,8 +52,7 @@ size_t getpagesize () {
 #define MAX(x, y)  ((x > y) ? x : y)
 #define MIN(x, y)  ((x < y) ? x : y)
 
-static int checkmd5sum(int fd, checkCallback cb, void *cbdata, long long size) {
-    unsigned char md5[MD5_DIGEST_LENGTH];
+static int checkmd5sum(int fd, const char *mediasum, checkCallback cb, void *cbdata, long long size) {
     int pagesize = getpagesize();
     unsigned char *buf_unaligned = (unsigned char *) malloc((BUFSIZE + pagesize) * sizeof(unsigned char));
     unsigned char *buf = (buf_unaligned + (pagesize - ((uintptr_t) buf_unaligned % pagesize)));
@@ -98,29 +97,29 @@ static int checkmd5sum(int fd, checkCallback cb, void *cbdata, long long size) {
 
     free(buf_unaligned);
 
-    unsigned char computedsum[MD5_DIGEST_LENGTH];
-    MD5_Final(computedsum, &md5ctx);
+    unsigned char computedsum_raw[MD5_DIGEST_LENGTH];
+    MD5_Final(computedsum_raw, &md5ctx);
 
-    printf("computedsum=\n");
+    // Convert computedsum to ascii string (mediasum is in ascii)
+    char computedsum[MD5_DIGEST_LENGTH * 2 + 1];
+    *computedsum = '\0';
     for (int i = 0; i < MD5_DIGEST_LENGTH; i++) {
-        printf("%02x", computedsum[i]);
+        char tmpstr[4];
+        snprintf(tmpstr, 4, "%02x", computedsum_raw[i]);
+        strncat(computedsum, tmpstr, 2);
     }
-    printf("\n");
 
-    printf("md5=\n");
-    for (int i = 0; i < MD5_DIGEST_LENGTH; i++) {
-        printf("%02x", md5[i]);
-    }
-    printf("\n");
+    printf("computedsum=%s\n", computedsum);
+    printf("mediasum=%s\n", mediasum);
 
-    if (strncmp((char*)md5, (char*)computedsum, MD5_DIGEST_LENGTH) == 0) {
+    if (strcmp(mediasum, computedsum) == 0) {
         return ISOMD5SUM_CHECK_PASSED;
     } else {
         return ISOMD5SUM_CHECK_FAILED;
     }
 }
 
-int mediaCheckFile(const char *file, checkCallback cb, void *cbdata) {
+int mediaCheckFile(const char *file, const char *md5,checkCallback cb, void *cbdata) {
     int fd;
 
 #ifdef _WIN32
@@ -137,14 +136,14 @@ int mediaCheckFile(const char *file, checkCallback cb, void *cbdata) {
     off_t size = lseek(fd, 0L, SEEK_END);
     lseek(fd, 0L, SEEK_SET);
 
-    int rc = checkmd5sum(fd, cb, cbdata, size);
+    int rc = checkmd5sum(fd, md5, cb, cbdata, size);
 
     close(fd);
 
     return rc;
 }
 
-int mediaCheckFD(int fd, checkCallback cb, void *cbdata) {
+int mediaCheckFD(int fd, const char *md5, checkCallback cb, void *cbdata) {
     if (fd < 0) {
         return ISOMD5SUM_FILE_NOT_FOUND;
     }
@@ -179,7 +178,7 @@ int mediaCheckFD(int fd, checkCallback cb, void *cbdata) {
 
     free(buf_unaligned);
 
-    int rc = checkmd5sum(fd, cb, cbdata, size);
+    int rc = checkmd5sum(fd, md5, cb, cbdata, size);
 
     return rc;
 

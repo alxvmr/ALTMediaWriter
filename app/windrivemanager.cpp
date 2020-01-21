@@ -279,6 +279,7 @@ bool WinDrive::write(ReleaseVariant *data) {
     else
         args << data->temporaryPath();
     args << QString("%1").arg(m_device);
+    args << data->md5();
     m_child->setArguments(args);
 
     m_progress->setTo(data->size());
