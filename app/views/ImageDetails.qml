@@ -313,8 +313,8 @@ Item {
                                     font.pointSize: $$(8)
                                     color: mixColors(palette.window, palette.windowText, 0.3)
                                 }
-                                Item {
-                                    Layout.fillWidth: true
+                                Text {
+                                    text: "      "
                                 }
                                 Text {
                                     Layout.alignment: Qt.AlignRight

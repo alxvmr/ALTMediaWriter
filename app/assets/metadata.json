@@ -46,7 +46,7 @@
         "category": "product",
         "name": "ALT Education",
         "summary": "Operating system for all kinds of educational institutions from preschool to high school which provides integration of both students' and teacher's workplaces.",
-        "icon": "qrc:/logos/education",
+        "icon": "qrc:/logos/lxde",
         "screenshots": [],
         "description": [
             "<p>",
@@ -56,10 +56,10 @@
     },
     {
         "subvariant": "rescue",
-        "category": "starterkits",
+        "category": "product",
         "name": "ALT Rescue",
         "summary": "LiveCD distribution that is designed to help sysadmins fix and repair many kinds of problems with systems they are or feel responsible for.",
-        "icon": "qrc:/logos/rescue",
+        "icon": "qrc:/logos/kde",
         "screenshots": [],
         "description": [
             "<p>",

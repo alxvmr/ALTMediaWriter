@@ -493,8 +493,7 @@ class ReleaseArchitecture : public QObject {
     Q_PROPERTY(Id id READ id CONSTANT)
 public:
     enum Id {
-        UNKNOWN = 0,
-        X86_64,
+        X86_64 = 0,
         X86,
         ARM,
         AARCH64,
@@ -502,6 +501,7 @@ public:
         RISCV,
         E2K,
         PPC64LE,
+        UNKNOWN,
         _ARCHCOUNT,
     };
     Q_ENUMS(Id);
@@ -548,6 +548,8 @@ public:
         TAVOLGA,
         RPI3,
         RPI4,
+        POWERPC,
+        ARM64,
         JETSON_NANO,
         _BOARDCOUNT,
     };

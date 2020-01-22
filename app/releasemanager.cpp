@@ -55,7 +55,7 @@ ReleaseManager::ReleaseManager(QObject *parent)
 bool ReleaseManager::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const {
     Q_UNUSED(source_parent)
     if (m_frontPage)
-        if (source_row < 3)
+        if (source_row < 4)
             return true;
         else
             return false;
@@ -221,8 +221,8 @@ void ReleaseManager::onStringDownloaded(const QString &text) {
         QString md5 = obj["md5"].toString();
         QString sha256 = obj["sha256"].toString();
         QString type = "live";
-        QString image = "iso";
-        QString board = "pc";
+        QString image = obj["image"].toString();
+        QString board = obj["board"].toString();
         QDateTime releaseDate = QDateTime::fromString((obj["releaseDate"].toString()), "yyyy-MM-dd");
         int64_t size = obj["size"].toString().toLongLong();
         QString version;
@@ -322,13 +322,13 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
             icon = obj["icon"].toString();
 
         m_releases.append(new Release(manager(), m_releases.count(), name, summary, description, source, icon, screenshots));
-        if (m_releases.count() == 2) {
-            custom = new Release (manager(), 2, tr("Custom image"), QT_TRANSLATE_NOOP("Release", "Pick a file from your drive(s)"), { QT_TRANSLATE_NOOP("Release", "<p>Here you can choose a OS image from your hard drive to be written to your flash disk</p><p>Currently it is only supported to write raw disk images (.iso or .bin)</p>") }, Release::LOCAL, "qrc:/logos/folder", {});
+        if (m_releases.count() == 3) {
+            custom = new Release (manager(), 3, tr("Custom image"), QT_TRANSLATE_NOOP("Release", "Pick a file from your drive(s)"), { QT_TRANSLATE_NOOP("Release", "<p>Here you can choose a OS image from your hard drive to be written to your flash disk</p><p>Currently it is only supported to write raw disk images (.iso or .bin)</p>") }, Release::LOCAL, "qrc:/logos/folder", {});
             m_releases.append(custom);
         }
     }
 
-    if (m_releases.count() < 2) {
+    if (m_releases.count() < 3) {
         custom = new Release (manager(), m_releases.count(), tr("Custom image"), QT_TRANSLATE_NOOP("Release", "Pick a file from your drive(s)"), { QT_TRANSLATE_NOOP("Release", "<p>Here you can choose a OS image from your hard drive to be written to your flash disk</p><p>Currently it is only supported to write raw disk images (.iso or .bin)</p>") }, Release::LOCAL, "qrc:/logos/folder", {});
         m_releases.append(custom);
     }
@@ -578,7 +578,7 @@ bool ReleaseVersion::updateUrl(const QString &status, const QString &type, const
                                                   type == "rescue"     ? ReleaseVariant::RESCUE :
                                                                          ReleaseVariant::LIVE;
     for (auto i : m_variants) {
-        if (i->arch() == ReleaseArchitecture::fromAbbreviation(architecture) && i->type() == t)
+        if (i->arch() == ReleaseArchitecture::fromAbbreviation(architecture) && i->type() == t && i->board() == ReleaseBoard::fromAbbreviation(board))
             return i->updateUrl(url, sha256, size);
     }
     // preserve the order from the ReleaseArchitecture::Id enum (to not have ARM first, etc.)
@@ -726,7 +726,7 @@ QString ReleaseVariant::name() const {
     else if (type() == NETINSTALL)
         return m_arch->description() + " - Net Install";
     else
-        return m_arch->description();
+        return m_arch->description() + " | " + m_board->description();
 }
 
 QString ReleaseVariant::fullName() {
@@ -809,8 +809,6 @@ void ReleaseVariant::onFileDownloaded(const QString &path, const QString &hash) 
         return;
     }
     mDebug() << this->metaObject()->className() << "SHA256 check passed";
-
-    qInfo() << "md5=" << md5();
 
     qApp->eventDispatcher()->processEvents(QEventLoop::AllEvents);
 
@@ -945,7 +943,6 @@ void ReleaseVariant::setErrorString(const QString &o) {
 
 
 ReleaseArchitecture ReleaseArchitecture::m_all[] = {
-    {{"", "unknown"}, QT_TR_NOOP("Unknown architecture")},
     {{"x86_64"}, QT_TR_NOOP("AMD 64bit")},
     {{"x86", "i386", "i586", "i686"}, QT_TR_NOOP("Intel 32bit")},
     {{"armv7hl", "armhfp", "armh"}, QT_TR_NOOP("ARM v7")},
@@ -954,6 +951,7 @@ ReleaseArchitecture ReleaseArchitecture::m_all[] = {
     {{"riscv"}, QT_TR_NOOP("RiscV")},
     {{"e2k"}, QT_TR_NOOP("Elbrus")},
     {{"ppc64le"}, QT_TR_NOOP("PowerPC")},
+    {{"", "unknown"}, QT_TR_NOOP("Unknown architecture")},
 };
 
 ReleaseArchitecture::ReleaseArchitecture(const QStringList &abbreviation, const char *description)
@@ -1024,6 +1022,8 @@ ReleaseBoard ReleaseBoard::m_all[] = {
     {{"tavolga"}, QT_TR_NOOP("Tavolga Terminal (MIPSel)")},
     {{"rpi3"}, QT_TR_NOOP("RaspberryPi 3")},
     {{"rpi4"}, QT_TR_NOOP("RaspberryPi 4")},
+    {{"powerpc"}, QT_TR_NOOP("Power8/9")},
+    {{"arm64"}, QT_TR_NOOP("ARM64 UEFI")},
     {{"nano", "jetson_nano"}, QT_TR_NOOP("Jetson Nano")},
 };
 
