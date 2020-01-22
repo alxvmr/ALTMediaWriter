@@ -221,7 +221,7 @@ void ReleaseManager::onStringDownloaded(const QString &text) {
         QString md5 = obj["md5"].toString();
         QString sha256 = obj["sha256"].toString();
         QString type = "live";
-        QString image = obj["image"].toString();
+        QString imageType = obj["imageType"].toString();
         QString board = obj["board"].toString();
         QDateTime releaseDate = QDateTime::fromString((obj["releaseDate"].toString()), "yyyy-MM-dd");
         int64_t size = obj["size"].toString().toLongLong();
@@ -241,8 +241,8 @@ void ReleaseManager::onStringDownloaded(const QString &text) {
 
         mDebug() << this->metaObject()->className() << "Adding" << release << versionWithStatus << arch;
 
-        if (!release.isEmpty() && !url.isEmpty() && !arch.isEmpty() && !image.isEmpty() && !board.isEmpty())
-            updateUrl(release, version, status, type, releaseDate, arch, image, board, url, sha256, md5, size);
+        if (!release.isEmpty() && !url.isEmpty() && !arch.isEmpty() && !imageType.isEmpty() && !board.isEmpty())
+            updateUrl(release, version, status, type, releaseDate, arch, imageType, board, url, sha256, md5, size);
     }
 
     m_beingUpdated = false;

@@ -6,7 +6,7 @@
 		"arch":"x86_64",
         "board":"pc",
 		"variant":"Server",
-        "image":"iso",
+        "imageType":"iso",
         "md5":"3ff13f7ec2a9798b5e216d21e062633b"
 	},
 	{
@@ -16,7 +16,7 @@
 		"arch":"aarch64",
         "board":"pc",
 		"variant":"Server",
-        "image":"iso",
+        "imageType":"iso",
         "md5":"063824bcd61e89ad400fe86d6f7f3345"
 	},
 	{
@@ -26,7 +26,7 @@
 		"arch":"ppc64le",
         "board":"powerpc",
 		"variant":"Server",
-        "image":"iso",
+        "imageType":"iso",
         "md5":"b7dd403912eb5fa75e4a45f960533670"
 	},
 	{
@@ -36,7 +36,7 @@
 		"arch":"x86_64",
         "board":"pc",
 		"variant":"Workstation",
-        "image":"iso",
+        "imageType":"iso",
         "md5":"970155500035b2f8e43f6dd7d2c424fa"
 	},
 	{
@@ -46,7 +46,7 @@
 		"arch":"i586",
         "board":"ibmpc",
 		"variant":"Workstation",
-        "image":"iso",
+        "imageType":"iso",
         "md5":"e75b764b5294466bf5f4973e72262398"
 	},
 	{
@@ -56,7 +56,7 @@
 		"arch":"aarch64",
         "board":"arm64",
 		"variant":"Workstation",
-        "image":"iso",
+        "imageType":"iso",
         "md5":"64e46ffb99875b78da76c8e18ba784cf"
 	},
 	{
@@ -66,7 +66,7 @@
 		"arch":"aarch64",
         "board":"rpi3",
 		"variant":"Workstation",
-        "image":"txz",
+        "imageType":"txz",
         "md5":"64e46ffb99875b78da76c8e18ba784cf"
 	},
 	{
@@ -76,7 +76,7 @@
 		"arch":"aarch64",
         "board":"nano",
 		"variant":"Workstation",
-		"image":"txz",
+		"imageType":"txz",
         "md5":"313c81faf1a13226a56aa0f081c3318e"
 	},
 	{
@@ -86,7 +86,7 @@
 		"arch":"mipsel",
         "board":"tavolga",
 		"variant":"Workstation",
-        "image":"tar",
+        "imageType":"tar",
         "md5":"67a6f13cd8822b8062c4c2f54c46018c"
 	},
 	{
@@ -96,7 +96,7 @@
 		"arch":"x86_64",
         "board":"pc",
 		"variant":"Education",
-        "image":"iso",
+        "imageType":"iso",
         "md5":"619aee1f87668d392109472fa6aca5f0"
 	},
 	{
@@ -106,7 +106,7 @@
 		"arch":"i586",
         "board":"ibmpc",
 		"variant":"Workstation",
-        "image":"iso",
+        "imageType":"iso",
         "md5":"71c961e4b9be3b8e3af0f5b5d456955a"
 	},
 	{
@@ -116,7 +116,7 @@
 		"arch":"aarch64",
         "board":"pc",
 		"variant":"Education",
-        "image":"iso",
+        "imageType":"iso",
         "md5":"0308a882531820a0bc1c193a853a87be"
 	},
 	{
@@ -126,7 +126,7 @@
 		"arch":"aarch64",
 		"board":"rpi3",
 		"variant":"Education",
-		"image":"txz",
+		"imageType":"txz",
         "md5":"66177a0ba01efa5e5f99ccdee1e195d1"
 	},
 	{
@@ -136,7 +136,7 @@
 		"arch":"aarch64",
         "board":"nano",
 		"variant":"Education",
-		"image":"txz",
+		"imageType":"txz",
         "md5":"f6bf689d04f448fe38ed7bd35ff83c32"
 	},
 	{
@@ -146,7 +146,7 @@
 		"arch":"x86_64",
         "board":"pc",
 		"variant":"Regulars",
-        "image":"iso",
+        "imageType":"iso",
         "md5":"7baffacc1b9cf76f2cd82ea9ee059bc3"
 	},
 	{
@@ -156,7 +156,7 @@
 		"arch":"i586",
         "board":"ibmpc",
 		"variant":"Regulars",
-        "image":"iso",
+        "imageType":"iso",
         "md5":"b564c979cbce73d9b8d7fcbd6b87028e"
 	}
 ]
