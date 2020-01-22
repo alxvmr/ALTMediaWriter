@@ -1093,7 +1093,7 @@ ReleaseImageType ReleaseImageType::m_all[] = {
     {{"tar"}, QT_TR_NOOP("TAR Archive"), QT_TR_NOOP("tar archive of rootfs")},
     {{"tgz", "tar.gz"}, QT_TR_NOOP("GZip TAR Archive"), QT_TR_NOOP("GNU Zip compressed tar archive of rootfs")},
     {{"txz", "tar.xz"}, QT_TR_NOOP("LZMA TAR Archive"), QT_TR_NOOP("LZMA-compressed tar archive of rootfs")},
-    {{"img"}, QT_TR_NOOP("TAR Archive"), QT_TR_NOOP("raw image")},
+    {{"img"}, QT_TR_NOOP("Raw image"), QT_TR_NOOP("raw image")},
     {{"igz", "img.gz"}, QT_TR_NOOP("GZip TAR Archive"), QT_TR_NOOP("GNU Zip compressed raw image")},
     {{"ixz", "img.xz"}, QT_TR_NOOP("LZMA TAR Archive"), QT_TR_NOOP("LZMA-compressed raw image")},
     {{"trc", "recovery.tar"}, QT_TR_NOOP("Recovery TAR Archive"), QT_TR_NOOP("Special recovery archive for Tavolga Terminal")},

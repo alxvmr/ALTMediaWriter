@@ -108,7 +108,7 @@ Item {
                             dlDialog.visible = true
                             releases.variant.download()
                         }
-                        enabled: (!releases.selected.isLocal || releases.variant.iso) && (releases.variant.imageType.name === "ISO DVD")
+                        enabled: (!releases.selected.isLocal || releases.variant.iso) && (releases.variant.imageType.name === "ISO DVD" || releases.variant.imageType.name === "Raw image")
                     }
                 }
 
