@@ -206,7 +206,7 @@ ReleaseVariant *ReleaseManager::variant() {
 }
 
 void ReleaseManager::onStringDownloaded(const QString &text) {
-    mDebug() << this->metaObject()->className() << "Received a metadata json";
+    mDebug() << this->metaObject()->className() << "Received releases.json";
 
     QRegExp re("(\\d+)\\s?(\\S+)?");
     auto doc = QJsonDocument::fromJson(text.toUtf8());

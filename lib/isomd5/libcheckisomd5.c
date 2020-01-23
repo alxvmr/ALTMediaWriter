@@ -109,8 +109,8 @@ static int checkmd5sum(int fd, const char *mediasum, checkCallback cb, void *cbd
         strncat(computedsum, tmpstr, 2);
     }
 
-    printf("computedsum=%s\n", computedsum);
-    printf("mediasum=%s\n", mediasum);
+    // printf("computedsum=%s\n", computedsum);
+    // printf("mediasum=%s\n", mediasum);
 
     if (strcmp(mediasum, computedsum) == 0) {
         return ISOMD5SUM_CHECK_PASSED;

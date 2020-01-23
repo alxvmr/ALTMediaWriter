@@ -57,7 +57,7 @@
         "board":"arm64",
 		"variant":"Workstation",
         "imageType":"iso",
-        "md5":"64e46ffb99875b78da76c8e18ba784cf"
+        "md5":"32d4b1f2e56bb33bb38ed63a142397c4"
 	},
 	{
 		"link":"https://mirror.yandex.ru/altlinux/p9/images/workstation/aarch64/alt-workstation-9.0-aarch64.tar.xz",
