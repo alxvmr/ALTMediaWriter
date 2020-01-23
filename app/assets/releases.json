@@ -147,7 +147,7 @@
         "board":"pc",
 		"variant":"Regulars",
         "imageType":"iso",
-        "md5":"7baffacc1b9cf76f2cd82ea9ee059bc3"
+        "md5":"45dd0fee03af13c815d468d81d22b4c7"
 	},
 	{
 		"link":"http://nightly.altlinux.org/sisyphus/tested/regular-rescue-latest-i586.iso",
