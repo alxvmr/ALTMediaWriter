@@ -37,7 +37,7 @@
 
 
 WriteJob::WriteJob(const QString &what, const QString &where, const QString &md5)
-    : QObject(nullptr), what(what), where(where), md5(md5)
+    : QObject(nullptr), what(what), md5(md5)
 {
     bool ok = false;
     this->where = where.toInt(&ok);
@@ -403,7 +403,7 @@ bool WriteJob::check() {
 
     HANDLE drive = openDrive(where);
 
-    switch (mediaCheckFD(_open_osfhandle(reinterpret_cast<intptr_t>(drive), 0), &WriteJob::staticOnMediaCheckAdvanced, this)) {
+    switch (mediaCheckFD(_open_osfhandle(reinterpret_cast<intptr_t>(drive), 0), md5.toLocal8Bit().data(), &WriteJob::staticOnMediaCheckAdvanced, this)) {
     case ISOMD5SUM_CHECK_NOT_FOUND:
     case ISOMD5SUM_CHECK_PASSED:
         out << "DONE\n";
