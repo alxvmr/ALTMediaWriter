@@ -4,9 +4,9 @@ XPStyle on
 # If you change the names "app.exe", "logo.ico", or "license.rtf" you should do a search and replace - they
 # show up in a few places.
 # All the other settings can be tweaked by editing the !defines at the top of this script
-!define APPNAME "Fedora Media Writer"
-!define COMPANYNAME "Fedora Project"
-!define DESCRIPTION "Tool to write Fedora images to flash drives"
+!define APPNAME "Alt Media Writer"
+!define COMPANYNAME "Alt Project"
+!define DESCRIPTION "Tool to write Alt images to flash drives"
 # These three must be defined from command line
 #!define VERSIONMAJOR
 #!define VERSIONMINOR
@@ -14,16 +14,15 @@ XPStyle on
 # These will be displayed by the "Click here for support information" link in "Add/Remove Programs"
 # It is possible to use "mailto:" links in here to open the email client
 !define HELPURL "https://github.com/MartinBriza/MediaWriter" # "Support Information" link
-!define UPDATEURL "https://getfedora.org" # "Product Updates" link
-!define ABOUTURL "https://getfedora.org" # "Publisher" link
+!define UPDATEURL "https://getalt.org" # "Product Updates" link
+!define ABOUTURL "https://getalt.org" # "Publisher" link
 # This is the size (in kB) of all the files copied into "Program Files"
 #!define INSTALLSIZE
 
 
-
 !ifdef INNER
     !echo "Inner invocation"                  ; just to see what's going on
-    OutFile "../../build/tempinstaller.exe"       ; not really important where this is
+    OutFile "..\..\tempinstaller.exe"       ; not really important where this is
     SetCompress off                           ; for speed
 !else
     !echo "Outer invocation"
@@ -33,16 +32,11 @@ XPStyle on
 
     !makensis '-DINNER "${__FILE__}"' = 0
 
-    ; Run the temporary installer and then sign the unsigned binary that has been created
-    !system "chmod +x ../../build/tempinstaller.exe" = 0
-    !system "../../build/tempinstaller.exe" = 512
-    !if "${CERTPASS}" != ""
-        !system 'osslsigncode sign -pkcs12 "${CERTPATH}/authenticode.pfx" -readpass "${CERTPASS}" -h sha256 -n "Fedora Media Writer" -i https://getfedora.org -t http://timestamp.verisign.com/scripts/timstamp.dll -in "../../build/wineprefix/drive_c/uninstall.unsigned.exe" -out "../../build/wineprefix/drive_c/uninstall.exe" ' = 0
-    !else
-        !system 'mv "../../build/wineprefix/drive_c/uninstall.unsigned.exe" "../../build/wineprefix/drive_c/uninstall.exe"' = 0
-    !endif
+    !system '"../../tempinstaller.exe"'
 
-    outFile "FMW-setup.exe"
+    !system 'move "C:\users\dev\uninstall.exe" "../../app/release/uninstall.exe"' = 0
+   
+    outFile "AMW-setup.exe"
     SetCompressor /SOLID lzma
 !endif
 
@@ -52,16 +46,16 @@ RequestExecutionLevel admin ;Require admin rights on NT6+ (When UAC is turned on
 InstallDir "$PROGRAMFILES\${APPNAME}"
 
 # rtf or txt file - remember if it is txt, it must be in the DOS text format (\r\n)
-LicenseData "../../build/app/release/LICENSE.txt"
+LicenseData "..\..\app\release\LICENSE.txt"
 # This will be in the installer/uninstaller's title bar
 Name "${APPNAME}"
-Icon "../../app/assets/icon/mediawriter.ico"
+Icon "..\..\app\assets\icon\mediawriter.ico"
 
 !include LogicLib.nsh
 
-!define MUI_ICON ../../app/assets/icon/mediawriter.ico
+!define MUI_ICON ..\..\app\assets\icon\mediawriter.ico
 
-!insertmacro MUI_PAGE_LICENSE "../../build/app/release/LICENSE.txt"
+!insertmacro MUI_PAGE_LICENSE "..\..\app\release\LICENSE.txt"
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 !define MUI_FINISHPAGE_NOAUTOCLOSE
@@ -140,13 +134,12 @@ ${EndIf}
 
 function .onInit
     !ifdef INNER
+        ; If INNER is defined, then we aren't supposed to do anything except write out
+        ; the uninstaller.  This is better than processing a command line option as it means
+        ; this entire code path is not present in the final (real) installer.
 
-    ; If INNER is defined, then we aren't supposed to do anything except write out
-    ; the installer.  This is better than processing a command line option as it means
-    ; this entire code path is not present in the final (real) installer.
-
-    WriteUninstaller "C:\uninstall.unsigned.exe"
-    Quit  ; just bail out quickly when running the "inner" installer
+        WriteUninstaller "C:\users\dev\uninstall.exe"
+        Quit  ; just bail out quickly when running the "inner" installer
     !endif
 
     setShellVarContext all
@@ -162,11 +155,12 @@ section "install"
             SetOutPath $INSTDIR
 
             # Files added here should be removed by the uninstaller (see section "uninstall")
-            File /r "../../build/app/release/*"
-            File "../../app/assets/icon/mediawriter.ico"
+            # Files added here should be removed by the uninstaller (see section "uninstall")
+            File /r "..\..\app\release\*"
+            File "..\..\app\assets\icon\mediawriter.ico"
 
-            ; this packages the signed uninstaller
-            File ../../build/wineprefix/drive_c/uninstall.exe
+            ; this packages the uninstaller
+            File "..\..\app\release\uninstall.exe"
         !endif
 
         # Start Menu
