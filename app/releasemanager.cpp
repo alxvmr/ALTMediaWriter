@@ -42,14 +42,21 @@ ReleaseManager::ReleaseManager(QObject *parent)
     qmlRegisterUncreatableType<ReleaseImageType>("MediaWriter", 1, 0, "ImageType", "");
     qmlRegisterUncreatableType<Progress>("MediaWriter", 1, 0, "Progress", "");
 
-    QFile releases(":/releases.json");
-    releases.open(QIODevice::ReadOnly);
-    onStringDownloaded(releases.readAll());
-    releases.close();
+    // Try to load releases.json from cache
+    QFile cache(releasesCachePath());
+    if (cache.open(QIODevice::ReadOnly)) {
+        loadReleases(cache.readAll());
+        cache.close();
+    } else {
+        // Load built-in releases.json if failed to open cache file
+        QFile releases(":/releases.json");
+        releases.open(QIODevice::ReadOnly);
+        loadReleases(releases.readAll());
+        releases.close();
+    }
 
     connect(this, SIGNAL(selectedChanged()), this, SLOT(variantChangedFilter()));
-    // NOTE: don't fetch releases because getalt currently doesn't have them
-    // QTimer::singleShot(0, this, SLOT(fetchReleases()));
+    QTimer::singleShot(0, this, SLOT(fetchReleases()));
 }
 
 bool ReleaseManager::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const {
@@ -205,9 +212,7 @@ ReleaseVariant *ReleaseManager::variant() {
     return nullptr;
 }
 
-void ReleaseManager::onStringDownloaded(const QString &text) {
-    mDebug() << this->metaObject()->className() << "Received releases.json";
-
+void ReleaseManager::loadReleases(const QString &text) {
     QRegExp re("(\\d+)\\s?(\\S+)?");
     auto doc = QJsonDocument::fromJson(text.toUtf8());
 
@@ -247,6 +252,34 @@ void ReleaseManager::onStringDownloaded(const QString &text) {
 
     m_beingUpdated = false;
     emit beingUpdatedChanged();
+}
+
+QString ReleaseManager::releasesCachePath() {
+    QString appdataPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
+
+    QDir dir(appdataPath);
+    
+    // Make path if it doesn't exist
+    if (!dir.exists()) {
+        dir.mkpath(appdataPath);
+    }
+
+    return appdataPath + SLASH + "releases.json";
+}
+
+void ReleaseManager::onStringDownloaded(const QString &text) {
+    mDebug() << this->metaObject()->className() << "Downloaded releases.json";
+
+    // Save downloaded releases.json
+    QRegExp re("(\\d+)\\s?(\\S+)?");
+    auto doc = QJsonDocument::fromJson(text.toUtf8());
+    QFile cache(releasesCachePath());
+    if (cache.open(QFile::WriteOnly)) {
+        cache.write(doc.toJson());
+        cache.close();
+    }
+
+    loadReleases(text);
 }
 
 void ReleaseManager::onDownloadError(const QString &message) {
