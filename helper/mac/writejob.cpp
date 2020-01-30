@@ -225,7 +225,7 @@ void WriteJob::check() {
     target.open(QIODevice::ReadOnly);
     out << "CHECK\n";
     out.flush();
-    switch (mediaCheckFD(fd, md5.toLocal8Bit().data(), &WriteJob::staticOnMediaCheckAdvanced, this)) {
+    switch (mediaCheckFD(target.handle(), md5.toLocal8Bit().data(), &WriteJob::staticOnMediaCheckAdvanced, this)) {
     case ISOMD5SUM_CHECK_NOT_FOUND:
     case ISOMD5SUM_CHECK_PASSED:
         out << "DONE\n";
