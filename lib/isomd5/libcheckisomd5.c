@@ -53,6 +53,11 @@ size_t getpagesize () {
 #define MIN(x, y)  ((x < y) ? x : y)
 
 static int checkmd5sum(int fd, const char *mediasum, checkCallback cb, void *cbdata, long long size) {
+    // Md5 is empty, therefore md5 check not needed
+    if (mediasum[0] == '\0') {
+        return ISOMD5SUM_CHECK_PASSED;
+    }
+    
     int pagesize = getpagesize();
     unsigned char *buf_unaligned = (unsigned char *) malloc((BUFSIZE + pagesize) * sizeof(unsigned char));
     unsigned char *buf = (buf_unaligned + (pagesize - ((uintptr_t) buf_unaligned % pagesize)));
