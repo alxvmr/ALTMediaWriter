@@ -788,10 +788,6 @@ QString ReleaseVariant::image() const {
     return m_image;
 }
 
-QString ReleaseVariant::iso() const {
-    return image();
-}
-
 QString ReleaseVariant::temporaryPath() const {
     return m_temporaryImage;
 }
@@ -876,7 +872,7 @@ void ReleaseVariant::onFileDownloaded(const QString &path, const QString &hash) 
         }
 
         m_image = finalFilename;
-        emit isoChanged();
+        emit imageChanged();
 
         mDebug() << this->metaObject()->className() << "Image is ready";
         setStatus(READY);
@@ -917,7 +913,7 @@ void ReleaseVariant::download() {
         if (!ret.endsWith(".part")) {
             m_temporaryImage = QString();
             m_image = ret;
-            emit isoChanged();
+            emit imageChanged();
 
             mDebug() << this->metaObject()->className() << m_image << "is already downloaded";
             setStatus(READY);
@@ -950,7 +946,7 @@ bool ReleaseVariant::erase() {
     if (QFile(m_image).remove()) {
         mDebug() << this->metaObject()->className() << "Deleted" << m_image;
         m_image = QString();
-        emit isoChanged();
+        emit imageChanged();
         return true;
     }
     else {

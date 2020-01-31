@@ -184,7 +184,7 @@ LinuxDrive::~LinuxDrive() {
 }
 
 bool LinuxDrive::write(ReleaseVariant *data) {
-    mDebug() << this->metaObject()->className() << "Will now write" << data->iso() << "to" << this->m_device;
+    mDebug() << this->metaObject()->className() << "Will now write" << data->image() << "to" << this->m_device;
 
     if (!Drive::write(data))
         return false;
@@ -214,7 +214,7 @@ bool LinuxDrive::write(ReleaseVariant *data) {
     }
     args << "write";
     if (data->status() == ReleaseVariant::WRITING)
-        args << data->iso();
+        args << data->image();
     else
         args << data->temporaryPath();
     args << m_device;

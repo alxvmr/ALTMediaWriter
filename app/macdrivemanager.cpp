@@ -108,7 +108,7 @@ bool MacDrive::write(ReleaseVariant *data) {
     }
     command.append(" write ");
     if (data->status() == ReleaseVariant::WRITING) {
-        command.append(QString("'%1'").arg(data->iso()));
+        command.append(QString("'%1'").arg(data->image()));
     }
     else {
         command.append(QString("'%1'").arg(data->temporaryPath()));

@@ -361,7 +361,7 @@ class ReleaseVariant : public QObject, public DownloadReceiver {
 
     Q_PROPERTY(QString url READ url NOTIFY urlChanged)
     Q_PROPERTY(QString shaHash READ shaHash NOTIFY shaHashChanged)
-    Q_PROPERTY(QString image READ image NOTIFY isoChanged)
+    Q_PROPERTY(QString image READ image NOTIFY imageChanged)
     Q_PROPERTY(ReleaseImageType* imageType READ imageType CONSTANT)
     Q_PROPERTY(qreal size READ size NOTIFY sizeChanged) // stored as a 64b int, UI doesn't need the precision and QML doesn't support long ints
     Q_PROPERTY(qreal realSize READ realSize NOTIFY realSizeChanged) // size after decompression
@@ -425,7 +425,6 @@ public:
     QString url() const;
     QString shaHash() const;
     QString image() const;
-    QString iso() const;
     QString md5() const;
     ReleaseImageType *imageType() const;
     QString temporaryPath() const;
@@ -451,7 +450,7 @@ public:
     Q_INVOKABLE bool erase();
 
 signals:
-    void isoChanged();
+    void imageChanged();
     void statusChanged();
     void errorStringChanged();
     void urlChanged();
