@@ -320,7 +320,7 @@ Dialog {
                             id: messageSelectedImage
                             width: infoColumn.width
                             visible: releases.selected.isLocal
-                            text: "<font color=\"gray\">" + qsTr("Selected:") + "</font> " + (releases.variant.iso ? (((String)(releases.variant.iso)).split("/").slice(-1)[0]) : ("<font color=\"gray\">" + qsTr("None") + "</font>"))
+                            text: "<font color=\"gray\">" + qsTr("Selected:") + "</font> " + (releases.variant.image ? (((String)(releases.variant.image)).split("/").slice(-1)[0]) : ("<font color=\"gray\">" + qsTr("None") + "</font>"))
                         }
 
                         InfoMessage {

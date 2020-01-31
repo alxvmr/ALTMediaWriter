@@ -62,7 +62,7 @@ ReleaseManager::ReleaseManager(QObject *parent)
 bool ReleaseManager::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const {
     Q_UNUSED(source_parent)
     if (m_frontPage)
-        if (source_row < 4)
+        if (source_row < 3)
             return true;
         else
             return false;
@@ -355,15 +355,13 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
             icon = obj["icon"].toString();
 
         m_releases.append(new Release(manager(), m_releases.count(), name, summary, description, source, icon, screenshots));
-        if (m_releases.count() == 3) {
-            custom = new Release (manager(), 3, tr("Custom image"), QT_TRANSLATE_NOOP("Release", "Pick a file from your drive(s)"), { QT_TRANSLATE_NOOP("Release", "<p>Here you can choose a OS image from your hard drive to be written to your flash disk</p><p>Currently it is only supported to write raw disk images (.iso or .bin)</p>") }, Release::LOCAL, "qrc:/logos/folder", {});
+
+        // Append "Custom image" variant to 4th position of the front page
+        // TODO: tried to move this out of frontpage and this caused file not to load, getting stuck on "Preparing", likely caused by this position being hardcoded somewhere (probably in qml's), find where
+        if (m_releases.count() == 2) {
+            custom = new Release (manager(), m_releases.count(), tr("Custom image"), QT_TRANSLATE_NOOP("Release", "Pick a file from your drive(s)"), { QT_TRANSLATE_NOOP("Release", "<p>Here you can choose a OS image from your hard drive to be written to your flash disk</p><p>Currently it is only supported to write raw disk images (.iso or .bin)</p>") }, Release::LOCAL, "qrc:/logos/folder", {});
             m_releases.append(custom);
         }
-    }
-
-    if (m_releases.count() < 3) {
-        custom = new Release (manager(), m_releases.count(), tr("Custom image"), QT_TRANSLATE_NOOP("Release", "Pick a file from your drive(s)"), { QT_TRANSLATE_NOOP("Release", "<p>Here you can choose a OS image from your hard drive to be written to your flash disk</p><p>Currently it is only supported to write raw disk images (.iso or .bin)</p>") }, Release::LOCAL, "qrc:/logos/folder", {});
-        m_releases.append(custom);
     }
 
     ReleaseVersion *customVersion = new ReleaseVersion(custom, 0);
@@ -758,8 +756,13 @@ QString ReleaseVariant::name() const {
         return m_arch->description() + " - Rescue Image";
     else if (type() == NETINSTALL)
         return m_arch->description() + " - Net Install";
-    else
-        return m_arch->description() + " | " + m_board->description();
+    else {
+        if (m_board != NULL) {
+            return m_arch->description() + " | " + m_board->description();
+        } else {
+            return m_arch->description();
+        }
+    }
 }
 
 QString ReleaseVariant::fullName() {
