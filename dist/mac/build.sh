@@ -1,7 +1,7 @@
 #!/bin/bash
 
 DEVELOPER_ID="Mac Developer: Martin Briza (N952V7G2F5)"
-QT_ROOT="${HOME}/Qt/5.12.1/clang_64"
+QT_ROOT="${HOME}/Qt/5.14.1/clang_64"
 QMAKE="${QT_ROOT}/bin/qmake"
 MACDEPLOYQT="${QT_ROOT}/bin/macdeployqt"
 
