@@ -28,7 +28,7 @@ First run `qmake-qt5 mediawriter.pro`. Then run `make` from the root of the proj
 
 ### Windows
 
-First run `qmake mediawriter.pro`. Then run `make` from the root of the project. Note that the resulting release will miss many dll's and the app won't work completely. To get missing dll's run `windeployqt` and also copy contents of dist/win/dlls into app/releases folder.
+Open Qt-mingw cmd shortcut. First run `qmake mediawriter.pro`. Then run `mingw32-make` from the root of the project. Note that the resulting release will miss many dll's and the app won't work completely. To get missing dll's run `windeployqt` and also copy contents of dist/win/dlls into app/releases folder.
 
 #### Requirements
 
@@ -53,11 +53,11 @@ Run `gear-rpm -ba -v` from the root of the project.
 
 ### Windows
 
-You need msys to deploy on windows. Follow directions in dist/win/build.sh, then run build.sh
+You need msys to deploy on windows. Follow directions written inside `dist/win/build.sh`, then run `dist/win/build.sh` in msys.
 
 ### macOS
 
-Run dist/mac/build.sh.
+Run `dist/mac/build.sh`.
 
 ## Other information
 
