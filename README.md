@@ -6,7 +6,7 @@ It is able to automatically download the required image for them and write them 
 
 This overwrites the drive's partition layout though so it also provides a way to restore a single-partition layout with a FAT32 partition.
 
-![ALT Media Writer running, with expanded image list](/dist/screenshots/linux_main.png)
+![ALT Media Writer front page](/dist/screenshots/frontpage.png)
 
 ## Troubleshooting
 
@@ -16,48 +16,48 @@ Please don't forget to attach the ALTMediaWriter.log file that will appear in yo
 
 ## Building
 
-You can build FMW using the default Qt `qmake` build system.
+### ALT Linux
 
-### Linux
-
-You should specify the target directory using the `PREFIX` `qmake` variable. The default prefix path is `/usr/local`
-
-It can be done like this:
-
-`qmake PREFIX=/usr .`
-
-The main binary, `mediawriter`, will be written to `$PREFIX/bin` and the helper binary can be found on the path `$PREFIX/libexec/mediawriter/helper`.
+First run `qmake-qt5 mediawriter.pro`. Then run `make` from the root of the project.
 
 #### Requirements
 
+* `qt5`
 * `udisks2` or `storaged`
 * `liblzma`
 
 ### Windows
 
-Building FMW in Windows is just the matter of running `qmake` and `make`.
-
-To create a standalone package, use the `windeployqt` tool, included in your Qt installation. You will probably have to include a bunch of not included DLLs.
+First run `qmake mediawriter.pro`. Then run `make` from the root of the project. Note that the resulting release will miss many dll's and the app won't work completely. To get missing dll's run `windeployqt` and also copy contents of dist/win/dlls into app/releases folder.
 
 #### Requirements
 
-* `xz-libs`
+* `qt5`
+* `mingw`
+* `xz-libs` (compiled for mingw)
 
 ### macOS
 
-Again, you can just run `qmake` and `make`.
-
-To release a standalone package, use `macdeployqt`, supplied with your Qt installation.
+First run `qmake mediawriter.pro`. Then run `make` from the root of the project.
 
 #### Requirements
 
+* `qt5`
 * `xz-libs`
 
-## Translation
+## Deploying
 
-If you want to help with translating ALT Media Writer, please visit our [GetALT project page](https://getalt.org/development/writer).
+### ALT Linux
 
-Information about the individual ALT flavors is retrieved from the websites and translated as a separate project.
+Run `gear-rpm -ba -v` from the root of the project.
+
+### Windows
+
+You need msys to deploy on windows. Follow directions in dist/win/build.sh, then run build.sh
+
+### macOS
+
+Run dist/mac/build.sh.
 
 ## Other information
 
