@@ -16,7 +16,10 @@
 # mingw32-make
 # windeployqt --release app/release/mediawriter.exe
 # 
+# Copy all files inside dist/win/dlls into app/release
+# 
 # Run this script
+
 
 
 SCRIPTDIR=$(pwd -P)
