@@ -838,6 +838,21 @@ QString ReleaseVariant::statusString() const {
     return m_statusStrings[status()];
 }
 
+void ReleaseVariant::onStringDownloaded(const QString &text) {
+    mDebug() << this->metaObject()->className() << "Downloaded MD5SUM";
+
+    // MD5SUM is of the form "sum image \n sum image \n ..."
+    QStringList elements = text.split(QRegExp("\\s+"));
+    QString prev = "";
+    for (int i = 0; i < elements.size(); ++i) {
+        if (elements[i].size() > 0 && m_url.contains(elements[i]) && prev.size() > 0) {
+            m_md5 = prev;
+        }
+        prev = elements[i];
+    }
+
+}
+
 void ReleaseVariant::onFileDownloaded(const QString &path, const QString &hash) {
     m_temporaryImage = QString();
 
@@ -857,6 +872,7 @@ void ReleaseVariant::onFileDownloaded(const QString &path, const QString &hash) 
     qApp->eventDispatcher()->processEvents(QEventLoop::AllEvents);
 
     int checkResult = mediaCheckFile(QDir::toNativeSeparators(path).toLocal8Bit(), md5().toLocal8Bit().data(), &ReleaseVariant::staticOnMediaCheckAdvanced, this);
+
     if (checkResult == ISOMD5SUM_CHECK_FAILED) {
         mWarning() << "Internal MD5 media check of" << path << "failed with status" << checkResult;
         QFile::remove(path);
@@ -864,6 +880,7 @@ void ReleaseVariant::onFileDownloaded(const QString &path, const QString &hash) 
         setStatus(FAILED_DOWNLOAD);
         return;
     }
+
     else if (checkResult == ISOMD5SUM_FILE_NOT_FOUND) {
         setErrorString(tr("The downloaded file is not readable."));
         setStatus(FAILED_DOWNLOAD);
@@ -921,6 +938,14 @@ void ReleaseVariant::download() {
         setStatus(DOWNLOADING);
         if (m_size)
             m_progress->setTo(m_size);
+
+        // Download MD5SUM
+        qInfo() << m_image;
+        int cutoffIndex = m_url.lastIndexOf("/");
+        QString md5sumUrl = m_url.left(cutoffIndex) + "/MD5SUM";
+        qInfo() << md5sumUrl;
+        DownloadManager::instance()->fetchPageAsync(this, md5sumUrl);
+
         QString ret = DownloadManager::instance()->downloadFile(this, url(), DownloadManager::dir(), progress());
         if (!ret.endsWith(".part")) {
             m_temporaryImage = QString();

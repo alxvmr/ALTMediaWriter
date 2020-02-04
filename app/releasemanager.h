@@ -443,6 +443,7 @@ public:
     // DownloadReceiver interface
     void onFileDownloaded(const QString &path, const QString &shaHash) override;
     virtual void onDownloadError(const QString &message) override;
+    void onStringDownloaded(const QString &text) override;
 
     static int staticOnMediaCheckAdvanced(void *data, long long offset, long long total);
     int onMediaCheckAdvanced(long long offset, long long total);
