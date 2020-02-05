@@ -20,6 +20,8 @@ Please don't forget to attach the ALTMediaWriter.log file that will appear in yo
 
 First run `qmake-qt5 mediawriter.pro`. Then run `make` from the root of the project. The app will be in `app/release`.
 
+To deploy run `gear-rpm -ba -v` from the root of the project.
+
 #### Requirements
 
 * `qt5`
@@ -28,36 +30,24 @@ First run `qmake-qt5 mediawriter.pro`. Then run `make` from the root of the proj
 
 ### Windows
 
-Open Qt-mingw cmd shortcut. First run `qmake mediawriter.pro`. Then run `mingw32-make` from the root of the project. The app will be in `app/release`. Note that the resulting release will miss many dll's and the app won't work completely. To get missing dll's run `windeployqt` and also copy contents of dist/win/dlls into `app/release`.
+Follow instructions inside `build.sh`.
 
 #### Requirements
 
-* `qt5`
-* `mingw`
-* `xz-libs` (compiled for mingw)
+* `Qt`
+* `MSYS2`
+* `liblzma`
 
 ### macOS
 
 First run `qmake mediawriter.pro`. Then run `make` from the root of the project. The app will be in `app/release`.
 
+To deploy run `dist/mac/build.sh`.
+
 #### Requirements
 
 * `qt5`
 * `xz-libs`
-
-## Deploying
-
-### ALT Linux
-
-Run `gear-rpm -ba -v` from the root of the project. Rpms will be in your `RPMS` folder.
-
-### Windows
-
-You need msys to deploy on windows. Follow directions written inside `dist/win/build.sh`, then run `dist/win/build.sh` in msys. The installer will be in `dist/win` folder.
-
-### macOS
-
-Run `dist/mac/build.sh`. The packaged app will be in the root of the project.
 
 ## Other information
 

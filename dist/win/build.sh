@@ -2,11 +2,6 @@
 
 # Before running this script
 # 
-# Add the following lines to your msys etc/profile
-# export PATH=$PATH:"C:\Program Files\Git\bin"
-# export PATH=$PATH:"C:\Program Files\Git\usr\bin"
-# 
-# export PATH=$PATH:"C:\Program Files (x86)\NSIS\Bin"
 # Get liblzma(compiled for mingw)
 #   copy to Qt/(version)/(mingw+version) AND Qt/Tools/(mingw+version)
 # 
@@ -18,8 +13,10 @@
 # 
 # Copy all files inside dist/win/dlls into app/release
 # 
-# Run this script
-
+# Launch MSYS2's mingw64 shell
+# Install git, dos2unix and nsis with
+#     pacman -S git dos2unix mingw-w64-x86_64-nsis
+# Run build.sh from within it's folder
 
 
 SCRIPTDIR=$(pwd -P)
