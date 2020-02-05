@@ -28,6 +28,19 @@
 
 #include <QJsonDocument>
 
+QString releasesCachePath() {
+    QString appdataPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
+
+    QDir dir(appdataPath);
+    
+    // Make path if it doesn't exist
+    if (!dir.exists()) {
+        dir.mkpath(appdataPath);
+    }
+
+    return appdataPath + SLASH + "releases.json";
+}
+
 ReleaseManager::ReleaseManager(QObject *parent)
     : QSortFilterProxyModel(parent), m_sourceModel(new ReleaseListModel(this))
 {
@@ -266,24 +279,10 @@ void ReleaseManager::loadReleases(const QString &text) {
     emit beingUpdatedChanged();
 }
 
-QString ReleaseManager::releasesCachePath() {
-    QString appdataPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
-
-    QDir dir(appdataPath);
-    
-    // Make path if it doesn't exist
-    if (!dir.exists()) {
-        dir.mkpath(appdataPath);
-    }
-
-    return appdataPath + SLASH + "releases.json";
-}
-
 void ReleaseManager::onStringDownloaded(const QString &text) {
     mDebug() << this->metaObject()->className() << "Downloaded releases.json";
 
     // Save downloaded releases.json
-    QRegExp re("(\\d+)\\s?(\\S+)?");
     auto doc = QJsonDocument::fromJson(text.toUtf8());
     QFile cache(releasesCachePath());
     if (cache.open(QFile::WriteOnly)) {
@@ -842,11 +841,49 @@ void ReleaseVariant::onStringDownloaded(const QString &text) {
     mDebug() << this->metaObject()->className() << "Downloaded MD5SUM";
 
     // MD5SUM is of the form "sum image \n sum image \n ..."
+    // Search for the sum by finding image matching m_url
     QStringList elements = text.split(QRegExp("\\s+"));
     QString prev = "";
     for (int i = 0; i < elements.size(); ++i) {
         if (elements[i].size() > 0 && m_url.contains(elements[i]) && prev.size() > 0) {
+            // Update internal md5
             m_md5 = prev;
+
+            // Update md5 in cached json
+            QFile cache(releasesCachePath());
+            if (cache.open(QFile::ReadOnly)) {
+                auto jsonDoc = QJsonDocument::fromJson(cache.readAll());
+                cache.close();
+
+                auto jsonArray = jsonDoc.array();
+                QJsonObject obj;
+                bool found_variant = false;
+                int i = 0;
+
+                // Find this variant in json
+                for (auto e : jsonArray) {
+                    obj = e.toObject();
+                    if (obj["link"] == m_url) {
+                        found_variant = true;
+                        break;
+                    }
+                    i++;
+                }
+
+                if (found_variant) {
+                    // Replace this variant's md5sum
+                    obj["md5"] = m_md5;
+                    jsonArray.removeAt(i);
+                    jsonArray.insert(i, obj);
+
+                    jsonDoc.setArray(jsonArray);
+                }
+
+                if (cache.open(QFile::WriteOnly)) {
+                    cache.write(jsonDoc.toJson());
+                    cache.close();
+                }
+            }
         }
         prev = elements[i];
     }
@@ -940,10 +977,8 @@ void ReleaseVariant::download() {
             m_progress->setTo(m_size);
 
         // Download MD5SUM
-        qInfo() << m_image;
         int cutoffIndex = m_url.lastIndexOf("/");
         QString md5sumUrl = m_url.left(cutoffIndex) + "/MD5SUM";
-        qInfo() << md5sumUrl;
         DownloadManager::instance()->fetchPageAsync(this, md5sumUrl);
 
         QString ret = DownloadManager::instance()->downloadFile(this, url(), DownloadManager::dir(), progress());

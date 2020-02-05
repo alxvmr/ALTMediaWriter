@@ -142,7 +142,6 @@ private:
     bool m_beingUpdated { false };
 
     void loadReleases(const QString &text);
-    QString releasesCachePath();
 };
 
 
