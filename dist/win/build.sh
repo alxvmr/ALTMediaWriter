@@ -16,7 +16,9 @@
 # Launch MSYS2's mingw64 shell
 # Install git, dos2unix and nsis with
 #     pacman -S git dos2unix mingw-w64-x86_64-nsis
-# Run build.sh from within it's folder
+# Run build.sh
+
+if [ ! -f build.sh ]; then echo "Error: run build.sh from it's directory"; exit; fi
 
 
 SCRIPTDIR=$(pwd -P)
