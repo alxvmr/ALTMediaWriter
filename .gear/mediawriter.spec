@@ -1,5 +1,5 @@
 %define sname mediawriter
-%define oname MediaWriter
+%define oname ALTMediaWriter
 
 Name:           altmediawriter
 Version:        0.1.0
@@ -8,7 +8,7 @@ Summary:        ALT Media Writer
 Group:          System/Configuration/Other
 
 License:        GPLv2+
-URL:            https://github.com/FedoraQt/MediaWriter
+URL:            https://github.com/altlinux/ALTMediaWriter
 Source:         %oname-%version.tar
 Patch:          %oname-%version-alt.patch
 
