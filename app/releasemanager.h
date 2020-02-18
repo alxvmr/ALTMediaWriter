@@ -499,7 +499,8 @@ public:
         X86,
         ARM,
         AARCH64,
-        MIPSEL,
+        // NOTE: can't use just 'MIPSEL' because it's a predefined macro on mipsel
+        MIPSEL_arch,
         RISCV,
         E2K,
         PPC64LE,
