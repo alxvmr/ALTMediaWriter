@@ -1,0 +1,47 @@
+[
+  {
+    "subvariant": "workstation",
+    "category": "product",
+    "name": "ALT Workstation",
+    "summary": "Operating system and application suite designed for workplace at both office and home. ",
+    "icon": "qrc:/logos/workstation",
+    "screenshots": [],
+    "description": "ALT Workstation 9 installed on a laptop or desktop provides\na classic personal workplace allowing to&colon;\n\n<ul>\n<li>work with internet (web, email, instant messaging);</li>\n<li>edit texts, spreadsheets and presentations (office suite);</li>\n<li>listen to music and watch videos (multimedia);</li>\n<li>create and improve raster and vector images;</li>\n<li>perform mathematical computations;</li>\n<li>develop software</li>\n<li>...and much more!</li>\n</ul>\n\n\nThe downloaded version can be freely used by private persons;\nlegal entities can use it for testing but production use\nrequires acquiring licenses or signing a\n<a href=\"http://ftp.altlinux.org/pub/distributions/ALTLinux/p9/images/workstation/license.all.html\">license agreement</a>\nin written form.\n"
+  },
+  {
+    "subvariant": "server",
+    "category": "product",
+    "name": "ALT Server",
+    "summary": "Operating system and services to bring up and control enterprise IT infrastructure. ",
+    "icon": "qrc:/logos/server",
+    "screenshots": [],
+    "description": "ALT Server 9 provides reliable foundation for enterprise IT infrastructure,\nincluding&colon;\n\n<ul>\n<li>modern scalable high-performance databases;</li>\n<li>virtualization;</li>\n<li>infrastructure management tools;</li>\n<li>Active Directory and FreeIPA domain integration;</li>\n<li>extensive set of internet and intranet services.</li>\n</ul>\n\n\nThe downloaded version can be freely used by private persons;\nlegal entities can use it for testing but production use\nrequires acquiring licenses or signing a \n<a href=\"http://ftp.altlinux.org/pub/distributions/ALTLinux/p9/images/server/license.all.html\">license agreement</a>\nin written form.\n"
+  },
+  {
+    "subvariant": "education",
+    "category": "product",
+    "name": "ALT Education",
+    "summary": "Operating system for all kinds of educational institutions from preschool to high school which provides integration of both students' and teacher's workplaces. ",
+    "icon": "qrc:/logos/kde",
+    "screenshots": [],
+    "description": "ALT Education 9 is aimed to ease the modern effective learning\nprocess for educational institutions at any level, including\nschools, colleges and universities.\nThe distribution includes a wide range of desktop and server\napplications allowing to integrate students' and teacher's\nworkplaces providing rich functionality.\n\n<p>\n\nThe downloaded version can be freely used by private persons;\nlegal entities can use it for testing but production use\nrequires acquiring licenses or signing a\n<a href=\"http://ftp.altlinux.org/pub/distributions/ALTLinux/p9/images/education/license.all.html\">license agreement</a>\nin written form.\n"
+  },
+  {
+    "subvariant": "rescue",
+    "category": "product",
+    "name": "",
+    "summary": "",
+    "icon": "",
+    "screenshots": [],
+    "description": ""
+  },
+  {
+    "subvariant": "simply",
+    "category": "product",
+    "name": "",
+    "summary": "",
+    "icon": "",
+    "screenshots": [],
+    "description": ""
+  }
+]

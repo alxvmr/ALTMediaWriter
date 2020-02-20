@@ -337,6 +337,13 @@ QVariant ReleaseListModel::data(const QModelIndex &index, int role) const {
 
 ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
     : QAbstractListModel(parent) {
+    // Load metadata based on language
+    // Right now only en/ru are available
+    QString metadata_file = ":/metadata_en.json";
+    if (QLocale().language() == QLocale::Russian) {
+        metadata_file = ":/metadata_ru.json";
+    }
+
     QFile metadata(":/metadata.json");
     metadata.open(QIODevice::ReadOnly);
 
@@ -353,10 +360,7 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
                                                                  Release::OTHER;
         QString name = obj["name"].toString();
         QString summary = obj["summary"].toString();
-        QStringList description;
-        for (auto j : obj["description"].toArray()) {
-            description.append(j.toString());
-        }
+        QString description = obj["description"].toString();
         QStringList screenshots;
         for (auto j : obj["screenshots"].toArray()) {
             screenshots.append(j.toString());
@@ -409,7 +413,7 @@ int Release::index() const {
     return m_index;
 }
 
-Release::Release(ReleaseManager *parent, int index, const QString &name, const QString &summary, const QStringList &description, Release::Source source, const QString &icon, const QStringList &screenshots)
+Release::Release(ReleaseManager *parent, int index, const QString &name, const QString &summary, const QString &description, Release::Source source, const QString &icon, const QStringList &screenshots)
     : QObject(parent), m_index(index), m_name(name), m_summary(summary), m_description(description), m_source(source), m_icon(icon), m_screenshots(screenshots)
 {
     connect(this, SIGNAL(selectedVersionChanged()), parent, SLOT(variantChangedFilter()));
@@ -478,13 +482,7 @@ QString Release::summary() const {
 }
 
 QString Release::description() const {
-    QString result;
-    for (auto i : m_description) {
-        // there is a %(rel)s formatting string in the translation texts, get rid of that
-        // get rid of in-translation break tags too
-        result.append(tr(i.toUtf8()).replace("\%(rel)s ", "").replace("<br />", ""));
-    }
-    return result;
+    return m_description;
 }
 
 Release::Source Release::source() const {
