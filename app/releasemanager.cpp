@@ -1112,10 +1112,6 @@ int ReleaseArchitecture::index() const {
     return this - m_all;
 }
 
-ReleaseArchitecture::Id ReleaseArchitecture::id() const {
-    return (Id) index();
-}
-
 
 ReleaseBoard ReleaseBoard::m_all[] = {
     {{"", "unknown"}, QT_TR_NOOP("Unknown board")},
@@ -1183,10 +1179,6 @@ QString ReleaseBoard::description() const {
 
 int ReleaseBoard::index() const {
     return this - m_all;
-}
-
-ReleaseBoard::Id ReleaseBoard::id() const {
-    return (Id) index();
 }
 
 
@@ -1259,8 +1251,4 @@ QString ReleaseImageType::name() const {
 
 int ReleaseImageType::index() const {
     return this - m_all;
-}
-
-ReleaseImageType::Id ReleaseImageType::id() const {
-    return (Id) index();
 }

@@ -492,7 +492,6 @@ class ReleaseArchitecture : public QObject {
     Q_OBJECT
     Q_PROPERTY(QStringList abbreviation READ abbreviation CONSTANT)
     Q_PROPERTY(QString description READ description CONSTANT)
-    Q_PROPERTY(Id id READ id CONSTANT)
 public:
     enum Id {
         X86_64 = 0,
@@ -517,7 +516,6 @@ public:
     QStringList abbreviation() const;
     QString description() const;
     int index() const;
-    Id id() const;
 
 private:
     ReleaseArchitecture(const QStringList &abbreviation, const char *description);
@@ -542,7 +540,6 @@ class ReleaseBoard : public QObject {
     Q_OBJECT
     Q_PROPERTY(QStringList abbreviation READ abbreviation CONSTANT)
     Q_PROPERTY(QString description READ description CONSTANT)
-    Q_PROPERTY(Id id READ id CONSTANT)
 public:
     enum Id {
         UNKNOWN = 0,
@@ -566,7 +563,6 @@ public:
     QStringList abbreviation() const;
     QString description() const;
     int index() const;
-    Id id() const;
 
 private:
     ReleaseBoard(const QStringList &abbreviation, const char *description);
@@ -593,7 +589,6 @@ class ReleaseImageType : public QObject {
     Q_PROPERTY(QStringList abbreviation READ abbreviation CONSTANT)
     Q_PROPERTY(QString name READ name CONSTANT)
     Q_PROPERTY(QString description READ description CONSTANT)
-    Q_PROPERTY(Id id READ id CONSTANT)
 public:
     enum Id {
         ISO = 0,
@@ -617,7 +612,6 @@ public:
     QString name() const;
     QString description() const;
     int index() const;
-    Id id() const;
 
 private:
     ReleaseImageType(const QStringList &abbreviation, const char *name, const char *description);
