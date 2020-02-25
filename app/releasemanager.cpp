@@ -344,7 +344,7 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
         metadata_file = ":/metadata_ru.json";
     }
 
-    QFile metadata(":/metadata.json");
+    QFile metadata(metadata_file);
     metadata.open(QIODevice::ReadOnly);
 
     Release *custom = nullptr;
