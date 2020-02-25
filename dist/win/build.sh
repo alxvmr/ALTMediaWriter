@@ -20,6 +20,11 @@
 
 if [ ! -f build.sh ]; then echo "Error: run build.sh from it's directory"; exit; fi
 
+BUILD_64BIT=false
+NSIS="C:/Program Files (x86)/NSIS/makensis.exe"
+if [ "$BUILD_64BIT" = true ]; then
+    NSIS="makensis"
+fi
 
 SCRIPTDIR=$(pwd -P)
 ROOTPATH=$(realpath "$SCRIPTDIR/../../")
@@ -63,7 +68,7 @@ sed -i "s/#!define VERSIONBUILD/!define VERSIONBUILD ${VERSION_BUILD}/" "$SCRIPT
 sed -i "s/#!define INSTALLSIZE/!define INSTALLSIZE ${INSTALLED_SIZE}/" "$SCRIPTDIR/mediawriter.tmp.nsi"
 
 # Run .nsi script
-makensis "$SCRIPTDIR/mediawriter.tmp.nsi" >/dev/null
+"$NSIS" "$SCRIPTDIR/mediawriter.tmp.nsi" >/dev/null
 rm "$SCRIPTDIR/mediawriter.tmp.nsi"
 
 echo "=== Composing installer complete"
