@@ -324,13 +324,6 @@ Dialog {
                         }
 
                         InfoMessage {
-                            id: messageArmBoard
-                            width: infoColumn.width
-                            visible: boardCombo.otherSelected
-                            text: qsTr("Your board or device is not supported by ALT Media Writer yet. Please check <a href=%1>this page</a> for more information about its compatibility with ALT and how to create bootable media for it.").arg("https://www.altlinux.org/Ports/arm")
-                        }
-
-                        InfoMessage {
                             id: messageDriveSize
                             width: infoColumn.width
                             enabled: true
@@ -447,39 +440,22 @@ Dialog {
                                 }
                             }
                         }
-                        Column {
-                            spacing: $(6)
-                            Layout.preferredWidth: driveCombo.implicitWidth * 2.5
-                            AdwaitaComboBox {
-                                z: pressed ? 1 : 0
-                                id: driveCombo
-                                width: driveCombo.implicitWidth * 2.5
-                                model: drives
-                                textRole: "display"
-                                Binding on currentIndex {
-                                    when: drives
-                                    value: drives.selectedIndex
-                                }
-                                Binding {
-                                    target: drives
-                                    property: "selectedIndex"
-                                    value: driveCombo.currentIndex
-                                }
-                                onActivated: {
-                                    if ([Variant.FINISHED, Variant.FAILED, Variant.FAILED_VERIFICATION].indexOf(releases.variant.status) >= 0)
-                                        releases.variant.resetStatus()
-                                }
-                                placeholderText: qsTr("There are no portable drives connected")
+                        AdwaitaComboBox {
+                            id: driveCombo
+                            Layout.preferredWidth: implicitWidth * 2.5
+                            z: pressed ? 1 : 0
+                            model: drives
+                            textRole: "display"
+                            Binding {
+                                target: drives
+                                property: "selectedIndex"
+                                value: driveCombo.currentIndex
                             }
-                            AdwaitaComboBox {
-                                id: boardCombo
-                                z: pressed ? 1 : 0
-                                enabled: visible
-                                visible: releases.selected.version.variant.arch.id == Architecture.ARM || (releases.selected.isLocal && releases.variant.image.indexOf(".iso", releases.variant.image.length - ".iso".length) === -1)
-                                width: driveCombo.implicitWidth * 2.5
-                                property bool otherSelected: currentIndex === (count - 1)
-                                model: ["Raspberry Pi 2 Model B", "Raspberry Pi 3 Model B", qsTr("Other")]
+                            onActivated: {
+                                if ([Variant.FINISHED, Variant.FAILED, Variant.FAILED_VERIFICATION].indexOf(releases.variant.status) >= 0)
+                                    releases.variant.resetStatus()
                             }
+                            placeholderText: qsTr("There are no portable drives connected")
                         }
                     }
 
