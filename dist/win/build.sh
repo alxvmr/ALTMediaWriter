@@ -18,11 +18,16 @@
 #     pacman -S git dos2unix mingw-w64-x86_64-nsis
 # Run build.sh
 
-if [ ! -f build.sh ]; then echo "Error: run build.sh from it's directory"; exit; fi
+if [ ! -f build.sh ]
+then
+	echo "Error: run build.sh from it's directory"
+	exit 1
+fi
 
 BUILD_64BIT=false
 NSIS="C:/Program Files (x86)/NSIS/makensis.exe"
-if [ "$BUILD_64BIT" = true ]; then
+if [ $BUILD_64BIT = true ]
+then
     NSIS="makensis"
 fi
 
@@ -32,43 +37,44 @@ BUILDPATH="$ROOTPATH/app/release"
 MEDIAWRITER="$ROOTPATH/app/release/mediawriter.exe"
 HELPER="$ROOTPATH/app/helper.exe"
 
-if [ ! -f "$MEDIAWRITER" ] || [ ! -f "$HELPER" ]; then
+if [ ! -f "$MEDIAWRITER" ] || [ ! -f "$HELPER" ]
+then
     echo "$MEDIAWRITER or $HELPER doesn't exist."
     exit 1
 fi
 
-cd $BUILDPATH
+cd "$BUILDPATH"
 
-echo "=== Removing object and MOC files"
+echo "Removing object and MOC files"
 rm -f *.cpp
 rm -f *.o
 rm -f *.h
 
-echo "=== Copying helper"
+echo "Copying helper"
 cp "$HELPER" .
 
-echo "=== Copying License"
+echo "Copying License"
 unix2dos < "$ROOTPATH/LICENSE" > "$BUILDPATH/LICENSE.txt"
 
-echo "=== Composing installer"
+echo "Composing installer"
 
 # Get versions with git
 VERSION_FULL=$(git describe --tags)
-VERSION_STRIPPED=$(sed "s/-.*//" <<< "${VERSION_FULL}")
-VERSION_MAJOR=$(cut -d. -f1 <<< "${VERSION_STRIPPED}")
-VERSION_MINOR=$(cut -d. -f2 <<< "${VERSION_STRIPPED}")
-VERSION_BUILD=$(cut -d. -f3 <<< "${VERSION_STRIPPED}")
+VERSION_STRIPPED=$(sed "s/-.*//" <<< "$VERSION_FULL")
+VERSION_MAJOR=$(cut -d. -f1 <<< "$VERSION_STRIPPED")
+VERSION_MINOR=$(cut -d. -f2 <<< "$VERSION_STRIPPED")
+VERSION_BUILD=$(cut -d. -f3 <<< "$VERSION_STRIPPED")
 INSTALLED_SIZE=$(du -k -d0 "$BUILDPATH" | cut -f1)
 
 # Bake versions into tmp .nsi script
 cp "$SCRIPTDIR/mediawriter.nsi" "$SCRIPTDIR/mediawriter.tmp.nsi"
-sed -i "s/#!define VERSIONMAJOR/!define VERSIONMAJOR ${VERSION_MAJOR}/" "$SCRIPTDIR/mediawriter.tmp.nsi"
-sed -i "s/#!define VERSIONMINOR/!define VERSIONMINOR ${VERSION_MINOR}/" "$SCRIPTDIR/mediawriter.tmp.nsi"
-sed -i "s/#!define VERSIONBUILD/!define VERSIONBUILD ${VERSION_BUILD}/" "$SCRIPTDIR/mediawriter.tmp.nsi"
-sed -i "s/#!define INSTALLSIZE/!define INSTALLSIZE ${INSTALLED_SIZE}/" "$SCRIPTDIR/mediawriter.tmp.nsi"
+sed -i "s/#!define VERSIONMAJOR/!define VERSIONMAJOR $VERSION_MAJOR/" "$SCRIPTDIR/mediawriter.tmp.nsi"
+sed -i "s/#!define VERSIONMINOR/!define VERSIONMINOR $VERSION_MINOR/" "$SCRIPTDIR/mediawriter.tmp.nsi"
+sed -i "s/#!define VERSIONBUILD/!define VERSIONBUILD $VERSION_BUILD/" "$SCRIPTDIR/mediawriter.tmp.nsi"
+sed -i "s/#!define INSTALLSIZE/!define INSTALLSIZE $INSTALLED_SIZE/" "$SCRIPTDIR/mediawriter.tmp.nsi"
 
 # Run .nsi script
 "$NSIS" "$SCRIPTDIR/mediawriter.tmp.nsi" >/dev/null
 rm "$SCRIPTDIR/mediawriter.tmp.nsi"
 
-echo "=== Composing installer complete"
+echo "Composing installer complete"

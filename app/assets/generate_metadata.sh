@@ -2,15 +2,16 @@
 
 # TODO: where is rescue and simply data on getalt?
 
-getalt_dir="TEMP-getalt"
+TEMP_GETALT_DIR="TEMP-getalt"
 
 echo "Downloading getalt.org sources"
-git clone http://git.altlinux.org/people/sin/private/getalt.git $getalt_dir
+git clone http://git.altlinux.org/people/sin/private/getalt.git $TEMP_GETALT_DIR
 
 echo "Generating metadata"
 
 # Generate empty json's for writing
-for lang in "en" "ru"; do
+for lang in "en" "ru"
+do
     jq -n '[ { "subvariant": "workstation", "category": "product", "name": "", "summary": "", "icon": "qrc:/logos/workstation", "screenshots": [], "description": "" }, { "subvariant": "server", "category": "product", "name": "", "summary": "", "icon": "qrc:/logos/server", "screenshots": [], "description": "" }, { "subvariant": "education", "category": "product", "name": "", "summary": "", "icon": "qrc:/logos/kde", "screenshots": [], "description": "" }, { "subvariant": "rescue", "category": "product", "name": "", "summary": "", "icon": "", "screenshots": [], "description": "" }, { "subvariant": "simply", "category": "product", "name": "", "summary": "", "icon": "", "screenshots": [], "description": "" } ]' > metadata_$lang.json
 done
 
@@ -19,7 +20,8 @@ function extract_all_members {
     local yml_index=$2
     local json_index=$3
 
-    for lang in "en" "ru"; do
+    for lang in "en" "ru"
+    do
         function extract_member {
             # Extract member named yml_name in yml_file at yml_index
             # into a member named json_name into metadata_$lang.json
@@ -48,10 +50,10 @@ function extract_all_members {
 }
 
 # workstation
-extract_all_members "$getalt_dir/_data/sections/1-basic.yml" 0 0
+extract_all_members "$TEMP_GETALT_DIR/_data/sections/1-basic.yml" 0 0
 # server
-extract_all_members "$getalt_dir/_data/sections/1-basic.yml" 1 1
+extract_all_members "$TEMP_GETALT_DIR/_data/sections/1-basic.yml" 1 1
 # education
-extract_all_members "$getalt_dir/_data/sections/2-additional.yml" 0 2
+extract_all_members "$TEMP_GETALT_DIR/_data/sections/2-additional.yml" 0 2
 
-rm -rf $getalt_dir
+rm -rf $TEMP_GETALT_DIR
