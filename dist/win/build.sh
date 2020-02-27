@@ -39,7 +39,7 @@ fi
 # 
 if [ $opt_install = true ]
 then
-	PACKAGES="base-devel git dos2unix mingw-w64-i686-toolchain mingw-w64-i686-xz mingw-w64-i686-qt5 mingw-w64-i686-nsis"
+	PACKAGES="base-devel mingw-w64-i686-toolchain mingw-w64-i686-qt5 mingw-w64-i686-xz  mingw-w64-i686-nsis mingw-w64-i686-mesa git dos2unix"
 
 	pacman -S --needed --noconfirm $PACKAGES
 fi
@@ -47,9 +47,7 @@ fi
 # Setup paths
 SCRIPTDIR=$(pwd -P)
 ROOTPATH=$(realpath "$SCRIPTDIR/../../")
-BUILDPATH="$ROOTPATH/app/release"
-MEDIAWRITER="$ROOTPATH/app/release/mediawriter.exe"
-HELPER="$ROOTPATH/app/helper.exe"
+BUILDPATH="$ROOTPATH/build"
 
 # 
 # Build
@@ -57,62 +55,77 @@ HELPER="$ROOTPATH/app/helper.exe"
 
 if [ $opt_build = true ]
 then
+	echo "Building"
+
 	cd "$ROOTPATH"
-	qmake -r "CONFIG+=release" mediawriter.pro
+	qmake
 	mingw32-make
-	windeployqt app/release/mediawriter.exe
-	cp dist/win/dlls/* app/release/
+
+	# Clear previous build results
+	if [ -d $BUILDPATH ]
+	then
+		rm -r $BUILDPATH
+	fi
+
+	mkdir $BUILDPATH
+
+	echo "Copying executables to build folder"
+	cp $ROOTPATH/app/mediawriter.exe $BUILDPATH 
+	cp $ROOTPATH/app/helper.exe $BUILDPATH 
+	
+	echo "Copying DLL's to build folder"
+
+	windeployqt --compiler-runtime --qmldir app "$BUILDPATH/mediawriter.exe"
+	
+	DLLS="libbz2-1 libdouble-conversion libfreetype-6 libglib-2.0-0 libgraphite2 libharfbuzz-0 libiconv-2 libicudt65 libicuin65 libicuio65 libicutest65 libicutu65 libicuuc65 libpcre-1 libpcre2-16-0 libpcre16-0 libpng16-16 libzstd zlib1 libintl-8 opengl32"
+
+	for dll in $DLLS
+	do
+		dll_file="/mingw32/bin/${dll}.dll"
+		if [ ! -f $dll_file ]
+		then
+			echo "Error: couldn't find $dll_file, ensure you have all installed required packages"
+			exit 1
+		fi
+
+		cp $dll_file $BUILDPATH
+	done
 fi
 
 # 
 # Deploy
 # 
 
-# Exit if not deploying
-if [ $opt_deploy = false ]
+if [ $opt_deploy = true ]
 then
-	exit
+	echo "Copying build results to deploy folder"
+
+	echo "Copying License"
+	unix2dos < "$ROOTPATH/LICENSE" > "$BUILDPATH/LICENSE.txt"
+
+	echo "Composing installer"
+
+	# Get versions with git
+	VERSION_FULL=$(git describe --tags)
+	VERSION_STRIPPED=$(sed "s/-.*//" <<< "$VERSION_FULL")
+	VERSION_MAJOR=$(cut -d. -f1 <<< "$VERSION_STRIPPED")
+	VERSION_MINOR=$(cut -d. -f2 <<< "$VERSION_STRIPPED")
+	VERSION_BUILD=$(cut -d. -f3 <<< "$VERSION_STRIPPED")
+	INSTALLED_SIZE=$(du -k -d0 "$BUILDPATH" | cut -f1)
+
+	# Bake versions into tmp .nsi script
+	cp "$SCRIPTDIR/mediawriter.nsi" "$SCRIPTDIR/mediawriter.tmp.nsi"
+	sed -i "s/#!define VERSIONMAJOR/!define VERSIONMAJOR $VERSION_MAJOR/" "$SCRIPTDIR/mediawriter.tmp.nsi"
+	sed -i "s/#!define VERSIONMINOR/!define VERSIONMINOR $VERSION_MINOR/" "$SCRIPTDIR/mediawriter.tmp.nsi"
+	sed -i "s/#!define VERSIONBUILD/!define VERSIONBUILD $VERSION_BUILD/" "$SCRIPTDIR/mediawriter.tmp.nsi"
+	sed -i "s/#!define INSTALLSIZE/!define INSTALLSIZE $INSTALLED_SIZE/" "$SCRIPTDIR/mediawriter.tmp.nsi"
+
+	# Run .nsi script
+	makensis "$SCRIPTDIR/mediawriter.tmp.nsi" >/dev/null
+
+	# Clean up
+	rm "$SCRIPTDIR/mediawriter.tmp.nsi"
+	rm "$ROOTPATH/tempinstaller.exe"
+
+	echo "Composing installer complete"
 fi
-
-# Check that executables were built
-if [ ! -f "$MEDIAWRITER" ] || [ ! -f "$HELPER" ]
-then
-    echo "$MEDIAWRITER or $HELPER doesn't exist."
-    exit 1
-fi
-
-cd "$BUILDPATH"
-
-echo "Removing object and MOC files"
-rm -f *.cpp
-rm -f *.o
-rm -f *.h
-
-echo "Copying helper"
-cp "$HELPER" .
-
-echo "Copying License"
-unix2dos < "$ROOTPATH/LICENSE" > "$BUILDPATH/LICENSE.txt"
-
-echo "Composing installer"
-
-# Get versions with git
-VERSION_FULL=$(git describe --tags)
-VERSION_STRIPPED=$(sed "s/-.*//" <<< "$VERSION_FULL")
-VERSION_MAJOR=$(cut -d. -f1 <<< "$VERSION_STRIPPED")
-VERSION_MINOR=$(cut -d. -f2 <<< "$VERSION_STRIPPED")
-VERSION_BUILD=$(cut -d. -f3 <<< "$VERSION_STRIPPED")
-INSTALLED_SIZE=$(du -k -d0 "$BUILDPATH" | cut -f1)
-
-# Bake versions into tmp .nsi script
-cp "$SCRIPTDIR/mediawriter.nsi" "$SCRIPTDIR/mediawriter.tmp.nsi"
-sed -i "s/#!define VERSIONMAJOR/!define VERSIONMAJOR $VERSION_MAJOR/" "$SCRIPTDIR/mediawriter.tmp.nsi"
-sed -i "s/#!define VERSIONMINOR/!define VERSIONMINOR $VERSION_MINOR/" "$SCRIPTDIR/mediawriter.tmp.nsi"
-sed -i "s/#!define VERSIONBUILD/!define VERSIONBUILD $VERSION_BUILD/" "$SCRIPTDIR/mediawriter.tmp.nsi"
-sed -i "s/#!define INSTALLSIZE/!define INSTALLSIZE $INSTALLED_SIZE/" "$SCRIPTDIR/mediawriter.tmp.nsi"
-
-# Run .nsi script
-makensis "$SCRIPTDIR/mediawriter.tmp.nsi" >/dev/null
-rm "$SCRIPTDIR/mediawriter.tmp.nsi"
-
-echo "Composing installer complete"

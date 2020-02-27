@@ -34,7 +34,7 @@ XPStyle on
 
     !system '"../../tempinstaller.exe"'
 
-    !system 'move "C:\users\dev\uninstall.exe" "../../app/release/uninstall.exe"' = 0
+    !system 'move "C:uninstall.exe" "../../build/uninstall.exe"' = 0
    
     outFile "AMW-setup.exe"
     SetCompressor /SOLID lzma
@@ -46,7 +46,7 @@ RequestExecutionLevel admin ;Require admin rights on NT6+ (When UAC is turned on
 InstallDir "$PROGRAMFILES\${APPNAME}"
 
 # rtf or txt file - remember if it is txt, it must be in the DOS text format (\r\n)
-LicenseData "..\..\app\release\LICENSE.txt"
+LicenseData "..\..\build\LICENSE.txt"
 # This will be in the installer/uninstaller's title bar
 Name "${APPNAME}"
 Icon "..\..\app\assets\icon\mediawriter.ico"
@@ -55,7 +55,7 @@ Icon "..\..\app\assets\icon\mediawriter.ico"
 
 !define MUI_ICON ..\..\app\assets\icon\mediawriter.ico
 
-!insertmacro MUI_PAGE_LICENSE "..\..\app\release\LICENSE.txt"
+!insertmacro MUI_PAGE_LICENSE "..\..\build\LICENSE.txt"
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 !define MUI_FINISHPAGE_NOAUTOCLOSE
@@ -138,7 +138,7 @@ function .onInit
         ; the uninstaller.  This is better than processing a command line option as it means
         ; this entire code path is not present in the final (real) installer.
 
-        WriteUninstaller "C:\users\dev\uninstall.exe"
+        WriteUninstaller "C:uninstall.exe"
         Quit  ; just bail out quickly when running the "inner" installer
     !endif
 
@@ -156,11 +156,11 @@ section "install"
 
             # Files added here should be removed by the uninstaller (see section "uninstall")
             # Files added here should be removed by the uninstaller (see section "uninstall")
-            File /r "..\..\app\release\*"
+            File /r "..\..\build\*"
             File "..\..\app\assets\icon\mediawriter.ico"
 
             ; this packages the uninstaller
-            File "..\..\app\release\uninstall.exe"
+            File "..\..\build\uninstall.exe"
         !endif
 
         # Start Menu
