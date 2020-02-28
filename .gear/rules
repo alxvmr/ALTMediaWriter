@@ -1,3 +1,2 @@
-tar: v@version@:. name=ALTMediaWriter-@version@
-diff: v@version@:. . name=ALTMediaWriter-@version@-alt.patch
+tar: . name=ALTMediaWriter-@version@
 spec: .gear/mediawriter.spec
