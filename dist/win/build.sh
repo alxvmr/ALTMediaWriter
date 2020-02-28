@@ -98,8 +98,6 @@ fi
 
 if [ $opt_deploy = true ]
 then
-	echo "Copying build results to deploy folder"
-
 	echo "Copying License"
 	unix2dos < "$ROOTPATH/LICENSE" > "$BUILDPATH/LICENSE.txt"
 
