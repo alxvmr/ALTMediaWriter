@@ -34,6 +34,11 @@ function extract_all_members {
             # Read member from yml file
             member=$(yq .members[$yml_index].$yml_name $yml_file)
 
+            # Remove "&nbsp;" from member
+            member=${member//&nbsp;/}
+            # Replace "&colon;" in member with ":"
+            member=$(echo "$member" | sed -e 's/&colon;/:/g')
+
             # For summaries, replace newlines with spaces
             if [ $json_name == "summary" ]; then
                 member=$(echo "$member" | sed -e 's/\\n/ /g')
