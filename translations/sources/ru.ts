@@ -147,6 +147,10 @@
         <source>Other variants...</source>
         <translation>Другие варианты...</translation>
     </message>
+    <message>
+        <source>The image type of this release (%1) is currently not supported.</source>
+        <translation>Тип этого образа (%1) пока не поддерживается.</translation>
+    </message>
 </context>
 <context>
     <name>ImageList</name>
