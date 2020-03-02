@@ -30,7 +30,7 @@ To deploy run `gear-rpm -ba -v` from the root of the project.
 
 ### Windows
 
-Install MSYS2 and run `dist/win/build.sh` to install dependencies, build and deploy.
+Install MSYS2 and follow setup instructions on the website. Run `dist/win/build.sh` to install dependencies, build and deploy.
 
 #### Requirements
 
