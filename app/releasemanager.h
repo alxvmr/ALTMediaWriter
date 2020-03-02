@@ -589,6 +589,7 @@ class ReleaseImageType : public QObject {
     Q_PROPERTY(QStringList abbreviation READ abbreviation CONSTANT)
     Q_PROPERTY(QString name READ name CONSTANT)
     Q_PROPERTY(QString description READ description CONSTANT)
+    Q_PROPERTY(bool supported READ supported CONSTANT)
 public:
     enum Id {
         ISO = 0,
@@ -611,6 +612,7 @@ public:
     QStringList abbreviation() const;
     QString name() const;
     QString description() const;
+    bool supported() const;
     int index() const;
 
 private:

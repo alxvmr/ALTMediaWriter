@@ -1252,3 +1252,19 @@ QString ReleaseImageType::name() const {
 int ReleaseImageType::index() const {
     return this - m_all;
 }
+
+bool ReleaseImageType::supported() const {
+    ReleaseImageType::Id index = (ReleaseImageType::Id)this->index();
+    switch (index) {
+        case ISO: return true; 
+        case TAR: return false;
+        case TAR_GZ: return false;
+        case TAR_XZ: return false;
+        case IMG: return true;
+        case IMG_GZ: return true;
+        case IMG_XZ: return true;
+        case RECOVERY_TAR: return false;
+        case _IMAGETYPECOUNT: return false;
+    }
+    return false;
+}

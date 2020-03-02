@@ -108,7 +108,7 @@ Item {
                             dlDialog.visible = true
                             releases.variant.download()
                         }
-                        enabled: (!releases.selected.isLocal || releases.variant.image) && (releases.variant.imageType.name === "ISO DVD" || releases.variant.imageType.name === "Raw image")
+                        enabled: (!releases.selected.isLocal || releases.variant.image) && releases.variant.imageType.supported
                     }
                 }
 
@@ -400,6 +400,12 @@ Item {
                             }
                         }
                     }
+                }
+                Text {
+                    font.pointSize: $$(10)
+                    visible: releases.selected.version && releases.variant && !releases.variant.imageType.supported
+                    text: qsTr("The image type of this release (%1) is currently not supported.").arg(releases.variant.imageType.abbreviation[0])
+                    color: "red"
                 }
                 Text {
                     Layout.fillWidth: true
