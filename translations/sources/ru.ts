@@ -73,10 +73,6 @@
         <translation>Нет</translation>
     </message>
     <message>
-        <source>Your board or device is not supported by ALT Media Writer yet. Please check &lt;a href=%1&gt;this page&lt;/a&gt; for more information about its compatibility with ALT and how to create bootable media for it.</source>
-        <translation type="vanished">ALT Media Writer пока не поддерживает вашу плату или устройство. Проверьте &lt;a href=%1&gt;эту страницу&lt;/a&gt; для получения дополнительной информации об их совместимости с ALT и о том, как создать для них загрузочный носитель.</translation>
-    </message>
-    <message>
         <source>The selected drive&apos;s size is %1. It&apos;s possible you have selected an external drive by accident!</source>
         <translation>Размер у выбранного устройства %1. Возможно, вы случайно выбрали внешний диск!</translation>
     </message>
@@ -103,10 +99,6 @@
     <message>
         <source>There are no portable drives connected</source>
         <translation>Нет подключенных переносных накопителей</translation>
-    </message>
-    <message>
-        <source>Other</source>
-        <translation type="vanished">Другой</translation>
     </message>
     <message>
         <source>It was not possible to delete the file</source>
