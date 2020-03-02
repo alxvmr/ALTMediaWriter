@@ -186,7 +186,7 @@ FocusScope {
                 onStopped: moveUp.enabled = false
             }
         }
-        height: releases.frontPage ? $(84) * 3 + $(36) : parent.height
+        height: releases.frontPage ? $(100) * 3 + $(36) : parent.height
         anchors {
             left: parent.left
             right: parent.right
@@ -371,7 +371,7 @@ FocusScope {
                 width: osListView.width - $(2)
                 height: $(32)
                 anchors.horizontalCenter: parent.horizontalCenter
-                y: $(84) * 3 + 1
+                y: $(100) * 3 + 1
                 z: -1
                 Rectangle {
                     anchors.fill: parent
