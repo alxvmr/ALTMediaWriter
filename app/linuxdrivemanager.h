@@ -58,6 +58,7 @@ private:
 
 class LinuxDrive : public Drive {
     Q_OBJECT
+    Q_PROPERTY(QString devicePath READ devicePath CONSTANT)
 public:
     LinuxDrive(LinuxDriveProvider *parent, QString device, QString name, uint64_t size, bool isoLayout);
     ~LinuxDrive();
@@ -65,6 +66,8 @@ public:
     Q_INVOKABLE virtual bool write(ReleaseVariant *data) override;
     Q_INVOKABLE virtual void cancel() override;
     Q_INVOKABLE virtual void restore() override;
+
+    QString devicePath() const;
 
 private slots:
     void onReadyRead();

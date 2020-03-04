@@ -387,3 +387,8 @@ void LinuxDrive::onErrorOccurred(QProcess::ProcessError e) {
     m_image->setStatus(ReleaseVariant::FAILED);
     m_image = nullptr;
 }
+
+QString LinuxDrive::devicePath() const {
+    QString deviceName = m_device.mid(m_device.lastIndexOf("/"));
+    return "/dev" + deviceName;
+}

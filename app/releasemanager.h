@@ -589,7 +589,8 @@ class ReleaseImageType : public QObject {
     Q_PROPERTY(QStringList abbreviation READ abbreviation CONSTANT)
     Q_PROPERTY(QString name READ name CONSTANT)
     Q_PROPERTY(QString description READ description CONSTANT)
-    Q_PROPERTY(bool supported READ supported CONSTANT)
+    Q_PROPERTY(bool supportedForWriting READ supportedForWriting CONSTANT)
+    Q_PROPERTY(bool canWriteWithRootfs READ canWriteWithRootfs CONSTANT)
 public:
     enum Id {
         ISO = 0,
@@ -612,7 +613,8 @@ public:
     QStringList abbreviation() const;
     QString name() const;
     QString description() const;
-    bool supported() const;
+    bool supportedForWriting() const;
+    bool canWriteWithRootfs() const;
     int index() const;
 
 private:

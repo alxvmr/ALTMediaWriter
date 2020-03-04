@@ -1122,7 +1122,7 @@ ReleaseBoard ReleaseBoard::m_all[] = {
     {{"rpi4"}, QT_TR_NOOP("RaspberryPi 4")},
     {{"powerpc"}, QT_TR_NOOP("Power8/9")},
     {{"arm64"}, QT_TR_NOOP("ARM64 UEFI")},
-    {{"nano", "jetson_nano"}, QT_TR_NOOP("Jetson Nano")},
+    {{"jetson-nano"}, QT_TR_NOOP("Jetson Nano")},
 };
 
 ReleaseBoard::ReleaseBoard(const QStringList &abbreviation, const char *description)
@@ -1253,7 +1253,7 @@ int ReleaseImageType::index() const {
     return this - m_all;
 }
 
-bool ReleaseImageType::supported() const {
+bool ReleaseImageType::supportedForWriting() const {
     ReleaseImageType::Id index = (ReleaseImageType::Id)this->index();
     switch (index) {
         case ISO: return true; 
@@ -1261,10 +1261,24 @@ bool ReleaseImageType::supported() const {
         case TAR_GZ: return false;
         case TAR_XZ: return false;
         case IMG: return true;
-        case IMG_GZ: return true;
+        case IMG_GZ: return false;
         case IMG_XZ: return true;
         case RECOVERY_TAR: return false;
         case _IMAGETYPECOUNT: return false;
     }
     return false;
+}
+
+bool ReleaseImageType::canWriteWithRootfs() const {
+    ReleaseImageType::Id index = (ReleaseImageType::Id)this->index();
+    
+#if defined(__APPLE__) || defined(_WIN32)
+    return false;
+#else
+    if (index == TAR_XZ) {
+        return true;
+    } else {
+        return false;
+    }
+#endif
 }

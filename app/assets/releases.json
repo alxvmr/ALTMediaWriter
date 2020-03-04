@@ -74,7 +74,7 @@
 		"subvariant":"Workstation",
 		"version":"9.0",
 		"arch":"aarch64",
-        "board":"nano",
+        "board":"jetson-nano",
 		"variant":"Workstation",
 		"imageType":"txz",
         "md5":"313c81faf1a13226a56aa0f081c3318e"
@@ -134,7 +134,7 @@
 		"subvariant":"Education",
 		"version":"9.0",
 		"arch":"aarch64",
-        "board":"nano",
+        "board":"jetson-nano",
 		"variant":"Education",
 		"imageType":"txz",
         "md5":"f6bf689d04f448fe38ed7bd35ff83c32"

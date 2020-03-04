@@ -115,7 +115,7 @@ Dialog {
                 }
                 PropertyChanges {
                     target: rightButton;
-                    enabled: true;
+                    enabled: releases.variant.imageType.supportedForWriting;
                     color: "red";
                     onClicked: drives.selected.write(releases.variant)
                 }
@@ -375,7 +375,7 @@ Dialog {
                         }
                         AdwaitaCheckBox {
                             id: writeImmediately
-                            enabled: driveCombo.count && opacity > 0.0
+                            enabled: driveCombo.count && opacity > 0.0 && releases.variant.imageType.supportedForWriting
                             visible: platformSupportsDelayedWriting
                             opacity: (releases.variant.status == Variant.DOWNLOADING || (releases.variant.status == Variant.DOWNLOAD_VERIFYING && releases.variant.progress.ratio < 0.95)) ? 1.0 : 0.0
                             text: qsTr("Write the image immediately when the download is finished")
@@ -466,6 +466,26 @@ Dialog {
                         Item {
                             height: $(3)
                             width: 1
+                        }
+                        Text {
+                            // Show this if image type is not supported and can't be rootfs'ed
+                            visible: releases.variant && releases.variant.imageType.supportedForWriting && !releases.variant.imageType.canWriteWithRootfs
+                            font.pointSize: $$(10)
+                            Layout.fillWidth: true
+                            width: Layout.width
+                            wrapMode: Text.WordWrap
+                            text: qsTr("Writing this image type is not supported.")
+                            color: "red"
+                        }
+                        Text {
+                            // Show this if image type is not supported BUT can be rootfs'ed
+                            visible: releases.variant && releases.variant.imageType.canWriteWithRootfs
+                            font.pointSize: $$(10)
+                            Layout.fillWidth: true
+                            width: Layout.width
+                            wrapMode: Text.WordWrap
+                            text: qsTr("Writing this image type is not supported here but you can write it using rootfs:\nsudo alt-rootfs-installer --rootfs=%1 --media=%2 --target=%3").arg(releases.variant.image).arg(drives.selected.devicePath).arg(releases.variant.board.abbreviation[0])
+                            color: "black"
                         }
                         RowLayout {
                             height: rightButton.height
