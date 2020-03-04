@@ -112,6 +112,16 @@
         <source>Write to Disk</source>
         <translation>Записать на диск</translation>
     </message>
+    <message>
+        <source>Writing this image type is not supported.</source>
+        <translation>Запись этого типа образа не поддерживается.</translation>
+    </message>
+    <message>
+        <source>Writing this image type is not supported here but you can write it using rootfs:
+sudo alt-rootfs-installer --rootfs=%1 --media=%2 --target=%3</source>
+        <translation>Запись этого типа образа не поддерживается, но вы можете написать его используя rootfs:
+sudo alt-rootfs-installer --rootfs=%1 --media=%2 --target=%3</translation>
+    </message>
 </context>
 <context>
     <name>Drive</name>
@@ -146,10 +156,6 @@
     <message>
         <source>Other variants...</source>
         <translation>Другие варианты...</translation>
-    </message>
-    <message>
-        <source>The image type of this release (%1) is currently not supported.</source>
-        <translation>Тип этого образа (%1) пока не поддерживается.</translation>
     </message>
 </context>
 <context>
