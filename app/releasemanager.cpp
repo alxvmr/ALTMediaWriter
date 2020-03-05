@@ -258,11 +258,6 @@ void ReleaseManager::loadReleases(const QString &text) {
         QString version;
         QString status;
 
-        if (QStringList{"cloud", "minimal", "docker", "regular"}.contains(release))
-            continue;
-
-        release.replace("_", " ");
-
         if (re.indexIn(versionWithStatus) < 0)
             continue;
 
