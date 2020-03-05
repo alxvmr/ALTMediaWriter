@@ -104,7 +104,7 @@ bool ReleaseManager::filterAcceptsRow(int source_row, const QModelIndex &source_
             if (containsArch)
                 break;
         }
-        return r->isLocal() || (containsArch && (r->name().contains(m_filterText, Qt::CaseInsensitive) || r->summary().contains(m_filterText, Qt::CaseInsensitive)));
+        return r->isLocal() || (containsArch && r->subvariant().contains(m_filterText, Qt::CaseInsensitive));
     }
 }
 
@@ -178,7 +178,7 @@ bool ReleaseManager::updateUrl(const QString &release, const QString &version, c
     }
     for (int i = 0; i < m_sourceModel->rowCount(); i++) {
         Release *r = get(i);
-        if (r->name().toLower().contains(release))
+        if (r->subvariant().toLower().contains(release))
             return r->updateUrl(version, status, type, releaseDate, architecture, imageType, board, url, sha256, md5, size);
     }
     return false;
@@ -369,12 +369,12 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
         if (obj.contains("icon"))
             icon = obj["icon"].toString();
 
-        m_releases.append(new Release(manager(), m_releases.count(), name, summary, description, source, icon, screenshots));
+        m_releases.append(new Release(manager(), m_releases.count(), subvariant, name, summary, description, source, icon, screenshots));
 
-        // Append "Custom image" variant to 4th position of the front page
+        // Append "Custom image" variant to 3rd position of the front page
         // TODO: tried to move this out of frontpage and this caused file not to load, getting stuck on "Preparing", likely caused by this position being hardcoded somewhere (probably in qml's), find where
         if (m_releases.count() == 2) {
-            custom = new Release (manager(), m_releases.count(), tr("Custom image"), QT_TRANSLATE_NOOP("Release", "Pick a file from your drive(s)"), { QT_TRANSLATE_NOOP("Release", "<p>Here you can choose a OS image from your hard drive to be written to your flash disk</p><p>Currently it is only supported to write raw disk images (.iso or .bin)</p>") }, Release::LOCAL, "qrc:/logos/folder", {});
+            custom = new Release (manager(), m_releases.count(), "custom", tr("Custom image"), QT_TRANSLATE_NOOP("Release", "Pick a file from your drive(s)"), { QT_TRANSLATE_NOOP("Release", "<p>Here you can choose a OS image from your hard drive to be written to your flash disk</p><p>Currently it is only supported to write raw disk images (.iso or .bin)</p>") }, Release::LOCAL, "qrc:/logos/folder", {});
             m_releases.append(custom);
         }
     }
@@ -413,8 +413,8 @@ int Release::index() const {
     return m_index;
 }
 
-Release::Release(ReleaseManager *parent, int index, const QString &name, const QString &summary, const QString &description, Release::Source source, const QString &icon, const QStringList &screenshots)
-    : QObject(parent), m_index(index), m_name(name), m_summary(summary), m_description(description), m_source(source), m_icon(icon), m_screenshots(screenshots)
+Release::Release(ReleaseManager *parent, int index, const QString &subvariant, const QString &name, const QString &summary, const QString &description, Release::Source source, const QString &icon, const QStringList &screenshots)
+    : QObject(parent), m_index(index), m_subvariant(subvariant), m_name(name), m_summary(summary), m_description(description), m_source(source), m_icon(icon), m_screenshots(screenshots)
 {
     connect(this, SIGNAL(selectedVersionChanged()), parent, SLOT(variantChangedFilter()));
 }
@@ -471,6 +471,10 @@ bool Release::updateUrl(const QString &version, const QString &status, const QSt
 
 ReleaseManager *Release::manager() {
     return qobject_cast<ReleaseManager*>(parent());
+}
+
+QString Release::subvariant() const {
+    return m_subvariant;
 }
 
 QString Release::name() const {
@@ -759,7 +763,7 @@ ReleaseVariant::Type ReleaseVariant::type() const {
 }
 
 QString ReleaseVariant::name() const {
-    if (type() == INSTALL && release()->name().toLower().contains("workstation"))
+    if (type() == INSTALL && release()->subvariant().toLower().contains("workstation"))
         return m_arch->description() + " - Install Image";
     else if (type() == RESCUE)
         return m_arch->description() + " - Rescue Image";
