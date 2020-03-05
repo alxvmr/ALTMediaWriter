@@ -469,7 +469,7 @@ Dialog {
                         }
                         Text {
                             // Show this if image type is not supported and can't be rootfs'ed
-                            visible: releases.variant && releases.variant.imageType.supportedForWriting && !releases.variant.imageType.canWriteWithRootfs
+                            visible: releases.variant && !releases.variant.imageType.supportedForWriting && !releases.variant.imageType.canWriteWithRootfs
                             font.pointSize: $$(10)
                             Layout.fillWidth: true
                             width: Layout.width
@@ -479,7 +479,7 @@ Dialog {
                         }
                         Text {
                             // Show this if image type is not supported BUT can be rootfs'ed
-                            visible: releases.variant && releases.variant.imageType.canWriteWithRootfs
+                            visible: releases.variant && !releases.variant.imageType.supportedForWriting && releases.variant.imageType.canWriteWithRootfs
                             font.pointSize: $$(10)
                             Layout.fillWidth: true
                             width: Layout.width
