@@ -26,7 +26,7 @@ import "../simple"
 Item {
     id: root
     width: parent.width
-    height: $(100)
+    height: $(120)
     activeFocusOnTab: true
 
     readonly property bool isTop: !releases.get(index-1) || (release.category !== releases.get(index-1).category)
