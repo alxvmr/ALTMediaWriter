@@ -153,16 +153,6 @@ void ReleaseManager::setFilterText(const QString &o) {
     }
 }
 
-void ReleaseManager::setLocalFile(const QString &path) {
-    mDebug() << this->metaObject()->className() << "Setting local file to" << path;
-    for (int i = 0; i < m_sourceModel->rowCount(); i++) {
-        Release *r = m_sourceModel->get(i);
-        if (r->isLocal()) {
-            r->setLocalFile(path);
-        }
-    }
-}
-
 bool ReleaseManager::updateUrl(const QString &release, const QString &version, const QString &status, const QString &type, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size) {
     if (!ReleaseArchitecture::isKnown(architecture)) {
         mWarning() << "Architecture" << architecture << "is not known!";
