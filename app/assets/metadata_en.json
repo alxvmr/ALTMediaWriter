@@ -22,7 +22,7 @@
     "category": "product",
     "name": "ALT Education",
     "summary": "Operating system for all kinds of educational institutions from preschool to high school which provides integration of both students' and teacher's workplaces. ",
-    "icon": "qrc:/logos/kde",
+    "icon": "qrc:/logos/education",
     "screenshots": [],
     "description": "ALT Education 9 is aimed to ease the modern effective learning\nprocess for educational institutions at any level, including\nschools, colleges and universities.\nThe distribution includes a wide range of desktop and server\napplications allowing to integrate students' and teacher's\nworkplaces providing rich functionality.\n\n<p>\n\nThe downloaded version can be freely used by private persons;\nlegal entities can use it for testing but production use\nrequires acquiring licenses or signing a\n<a href=\"http://ftp.altlinux.org/pub/distributions/ALTLinux/p9/images/education/license.all.html\">license agreement</a>\nin written form.\n"
   },

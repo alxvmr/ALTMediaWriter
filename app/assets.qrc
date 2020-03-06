@@ -5,7 +5,7 @@
         <file alias="workstation">assets/logos/png/workstation-logo_color.png</file>
         <file alias="server">assets/logos/png/server-logo_color.png</file>
         <file alias="cinnamon">assets/logos/png/cinnamon_icon_grey_pattern.png</file>
-        <file alias="kde">assets/logos/png/kde_icon_grey_pattern.png</file>
+        <file alias="education">assets/logos/png/education.png</file>
         <file alias="lxde">assets/logos/png/lxde_icon_grey_pattern.png</file>
         <file alias="lxqt">assets/logos/png/lxqt_icon_grey_pattern.png</file>
         <file alias="mate">assets/logos/png/mate-compiz_icon_grey_pattern.png</file>
