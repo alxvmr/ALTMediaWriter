@@ -252,28 +252,6 @@ FocusScope {
                 NumberAnimation { properties: "x,y"; duration: 300 }
             }
 
-            section {
-                property: "release.category"
-                criteria: ViewSection.FullString
-                labelPositioning: ViewSection.InlineLabels
-                delegate: Item {
-                    height: section == "main" ? 0 : $(64)
-                    width: parent.width
-                    Text {
-                        text: section
-                        textFormat: Text.RichText
-                        font.pointSize: $$(9)
-                        color: palette.windowText
-                        anchors {
-                            left: parent.left
-                            bottom: parent.bottom
-                            leftMargin: $(18)
-                            bottomMargin: $(12)
-                        }
-                    }
-                }
-            }
-
             footer: Item {
                 id: footerRoot
                 height: !releases.frontPage ? aboutColumn.height + $(72) : $(36)

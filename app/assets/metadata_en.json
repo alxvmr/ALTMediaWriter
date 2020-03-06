@@ -1,7 +1,6 @@
 [
   {
     "subvariant": "workstation",
-    "category": "product",
     "name": "ALT Workstation",
     "summary": "Operating system and application suite designed for workplace at both office and home. ",
     "icon": "qrc:/logos/workstation",
@@ -10,7 +9,6 @@
   },
   {
     "subvariant": "server",
-    "category": "product",
     "name": "ALT Server",
     "summary": "Operating system and services to bring up and control enterprise IT infrastructure. ",
     "icon": "qrc:/logos/server",
@@ -19,7 +17,6 @@
   },
   {
     "subvariant": "education",
-    "category": "product",
     "name": "ALT Education",
     "summary": "Operating system for all kinds of educational institutions from preschool to high school which provides integration of both students' and teacher's workplaces. ",
     "icon": "qrc:/logos/education",
@@ -28,7 +25,6 @@
   },
   {
     "subvariant": "simply",
-    "category": "product",
     "name": "ALT Simply",
     "summary": "An operating system for everyone. Easy to use and doesn't demand much resources, functional and secure.",
     "icon": "qrc:/logos/simply",

@@ -348,11 +348,7 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
     for (auto i : doc.array()) {
         QJsonObject obj = i.toObject();
         QString subvariant = obj["subvariant"].toString();
-        QString sourceString = obj["category"].toString();
-        Release::Source source = sourceString == "product"     ? Release::PRODUCT :
-                                 sourceString == "starterkits" ? Release::STARTERKITS :
-                                 sourceString == "regulars"    ? Release::REGULARS :
-                                                                 Release::OTHER;
+        Release::Source source = Release::PRODUCT;
         QString name = obj["name"].toString();
         QString summary = obj["summary"].toString();
         QString description = obj["description"].toString();
@@ -389,20 +385,6 @@ Release *ReleaseListModel::get(int index) {
     return nullptr;
 }
 
-
-QString Release::sourceString() {
-    switch (m_source) {
-    case LOCAL:
-    case PRODUCT:
-        return QString();
-    case STARTERKITS:
-        return tr("ALT Starter kits");
-    case REGULARS:
-        return tr("ALT Regulars");
-    default:
-        return tr("Other");
-    }
-}
 
 int Release::index() const {
     return m_index;

@@ -12,7 +12,7 @@ echo "Generating metadata"
 # Generate empty json's for writing
 for lang in "en" "ru"
 do
-    jq -n '[ { "subvariant": "workstation", "category": "product", "name": "", "summary": "", "icon": "qrc:/logos/workstation", "screenshots": [], "description": "" }, { "subvariant": "server", "category": "product", "name": "", "summary": "", "icon": "qrc:/logos/server", "screenshots": [], "description": "" }, { "subvariant": "education", "category": "product", "name": "", "summary": "", "icon": "qrc:/logos/education", "screenshots": [], "description": "" } ]' > metadata_$lang.json
+    jq -n '[ { "subvariant": "workstation", "name": "", "summary": "", "icon": "qrc:/logos/workstation", "screenshots": [], "description": "" }, { "subvariant": "server", "name": "", "summary": "", "icon": "qrc:/logos/server", "screenshots": [], "description": "" }, { "subvariant": "education", "name": "", "summary": "", "icon": "qrc:/logos/education", "screenshots": [], "description": "" } ]' > metadata_$lang.json
 done
 
 function extract_all_members {

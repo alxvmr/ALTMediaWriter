@@ -29,13 +29,12 @@ Item {
     height: $(120)
     activeFocusOnTab: true
 
-    readonly property bool isTop: !releases.get(index-1) || (release.category !== releases.get(index-1).category)
+    readonly property bool isTop: !releases.get(index-1)
     readonly property bool isBottom:
         typeof release !== 'undefined' &&
         !releases.frontPage &&
         (!releases.get(index+1) ||
-         typeof releases.get(index+1) == 'undefined' ||
-         (release && release.category !== releases.get(index+1).category)
+         typeof releases.get(index+1) == 'undefined'
         )
 
     property color color: delegateMouse.containsPress ? Qt.darker(palette.button, 1.2) : delegateMouse.containsMouse ? palette.button : palette.background

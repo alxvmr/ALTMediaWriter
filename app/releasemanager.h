@@ -181,7 +181,6 @@ private:
  * @property description the extensive description of the release - displayed on the detail screen
  * @property source one of the sources listed in the @ref Source enum
  * @property isLocal true if @ref source is @ref Source::LOCAL
- * @property category a string representation of @ref source
  * @property icon path of the icon of this release
  * @property screenshots a list of paths to screenshots (typically HTTP URLs)
  * @property prerelease true if the release contains a prerelease version of a future version
@@ -199,7 +198,6 @@ class Release : public QObject {
 
     Q_PROPERTY(Source source READ source CONSTANT)
     Q_PROPERTY(bool isLocal READ isLocal CONSTANT)
-    Q_PROPERTY(QString category READ sourceString CONSTANT)
 
     Q_PROPERTY(QString icon READ icon CONSTANT)
     Q_PROPERTY(QStringList screenshots READ screenshots CONSTANT)
@@ -213,13 +211,9 @@ class Release : public QObject {
 public:
     enum Source {
         PRODUCT,
-        LOCAL,
-        STARTERKITS,
-        REGULARS,
-        OTHER
+        LOCAL
     };
     Q_ENUMS(Source)
-    Q_INVOKABLE QString sourceString();
 
     Release(ReleaseManager *parent, int index, const QString &subvariant, const QString &name, const QString &summary, const QString &description, Release::Source source, const QString &icon, const QStringList &screenshots);
     void setLocalFile(const QString &path);
