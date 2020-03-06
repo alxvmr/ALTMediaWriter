@@ -122,6 +122,10 @@ sudo alt-rootfs-installer --rootfs=%1 --media=%2 --target=%3</source>
         <translation>Запись этого типа образа не поддерживается, но вы можете написать его используя rootfs:
 sudo alt-rootfs-installer --rootfs=%1 --media=%2 --target=%3</translation>
     </message>
+    <message>
+        <source>Writing this image type is not supported here but you can write it using rootfs. Insert a drive to get a formatted command.</source>
+        <translation>Запись этого типа образа не поддерживается, но вы можете написать его используя rootfs.</translation>
+    </message>
 </context>
 <context>
     <name>Drive</name>
@@ -259,19 +263,6 @@ sudo alt-rootfs-installer --rootfs=%1 --media=%2 --target=%3</translation>
     <message>
         <source>&lt;p&gt;Here you can choose a OS image from your hard drive to be written to your flash disk&lt;/p&gt;&lt;p&gt;Currently it is only supported to write raw disk images (.iso or .bin)&lt;/p&gt;</source>
         <translation>&lt;p&gt;Здесь можно выбрать образ ОС с жесткого диска для записи на флэш-накопитель&lt;/p&gt;&lt;p&gt;В настоящее время поддерживается только запись raw-образов диска (.iso или .bin)&lt;/p&gt;</translation>
-    </message>
-    <message>
-        <source>ALT Starter kits</source>
-        <translation>ALT стартовые наборы</translation>
-    </message>
-    <message>
-        <source>ALT Regulars</source>
-        <translatorcomment>probably incorrect</translatorcomment>
-        <translation>ALT обычные</translation>
-    </message>
-    <message>
-        <source>Other</source>
-        <translation>Другое</translation>
     </message>
 </context>
 <context>
