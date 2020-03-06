@@ -1,23 +1,20 @@
 <RCC>
     <qresource prefix="/logos">
-        <file alias="placeholder">assets/logos/png/media-optical-symbolic.png</file>
-        <file alias="folder">assets/logos/png/icon_folder.png</file>
-        <file alias="workstation">assets/logos/png/workstation-logo_color.png</file>
-        <file alias="server">assets/logos/png/server-logo_color.png</file>
-        <file alias="cinnamon">assets/logos/png/cinnamon_icon_grey_pattern.png</file>
+        <file alias="blank">assets/logos/png/blank.png</file>
+        <file alias="cd">assets/logos/png/cd.png</file>
+        <file alias="chip">assets/logos/png/chip.png</file>
         <file alias="education">assets/logos/png/education.png</file>
-        <file alias="lxde">assets/logos/png/lxde_icon_grey_pattern.png</file>
-        <file alias="lxqt">assets/logos/png/lxqt_icon_grey_pattern.png</file>
-        <file alias="mate">assets/logos/png/mate-compiz_icon_grey_pattern.png</file>
-        <file alias="soas">assets/logos/png/soas_icon_grey_pattern.png</file>
-        <file alias="xfce">assets/logos/png/xfce_icon_grey_pattern.png</file>
-        <file alias="astronomy">assets/logos/png/astronomy_icon_grey_pattern.png</file>
-        <file alias="design">assets/logos/png/design-suite_icon_grey_pattern.png</file>
-        <file alias="games">assets/logos/png/games_icon_grey_pattern.png</file>
-        <file alias="jam">assets/logos/png/jam_icon_grey_pattern.png</file>
-        <file alias="robotics">assets/logos/png/robotics_icon_grey_pattern.png</file>
-        <file alias="scientific">assets/logos/png/scientific_icon_grey_pattern.png</file>
-        <file alias="security">assets/logos/png/security-lab_icon_grey_pattern.png</file>
+        <file alias="elbrus">assets/logos/png/elbrus.png</file>
+        <file alias="folder">assets/logos/png/folder.png</file>
+        <file alias="keys">assets/logos/png/keys.png</file>
+        <file alias="kits1">assets/logos/png/kits1.png</file>
+        <file alias="kits2">assets/logos/png/kits2.png</file>
+        <file alias="letter_b">assets/logos/png/letter_b.png</file>
+        <file alias="pi">assets/logos/png/pi.png</file>
+        <file alias="server">assets/logos/png/server.png</file>
+        <file alias="server_virtual">assets/logos/png/server_virtual.png</file>
+        <file alias="simply">assets/logos/png/simply.png</file>
+        <file alias="workstation">assets/logos/png/workstation.png</file>
     </qresource>
     <qresource prefix="/">
         <file alias="metadata_en.json">assets/metadata_en.json</file>

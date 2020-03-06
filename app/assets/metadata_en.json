@@ -31,7 +31,7 @@
     "category": "product",
     "name": "ALT Simply",
     "summary": "An operating system for everyone. Easy to use and doesn't demand much resources, functional and secure.",
-    "icon": "qrc:/logos/lxqt",
+    "icon": "qrc:/logos/simply",
     "screenshots": [],
     "description": "Simply Linux is easy to install and comfortable to work with, allowing users to do everyday tasks without worrying about viruses and without requiring frequent internet searches for new programs. Simply Linux includes more than 30 programs oriented to satisfy the needs of most users. This package also includes a wide array of drivers, allowing easy operation."
   }

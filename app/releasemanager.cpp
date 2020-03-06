@@ -360,7 +360,7 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
         for (auto j : obj["screenshots"].toArray()) {
             screenshots.append(j.toString());
         }
-        QString icon = "qrc:/logos/placeholder";
+        QString icon = "qrc:/logos/blank";
         if (obj.contains("icon"))
             icon = obj["icon"].toString();
 
