@@ -157,7 +157,7 @@ void ReleaseManager::setLocalFile(const QString &path) {
     mDebug() << this->metaObject()->className() << "Setting local file to" << path;
     for (int i = 0; i < m_sourceModel->rowCount(); i++) {
         Release *r = m_sourceModel->get(i);
-        if (r->source() == Release::LOCAL) {
+        if (r->isLocal()) {
             r->setLocalFile(path);
         }
     }
@@ -348,7 +348,6 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
     for (auto i : doc.array()) {
         QJsonObject obj = i.toObject();
         QString subvariant = obj["subvariant"].toString();
-        Release::Source source = Release::PRODUCT;
         QString name = obj["name"].toString();
         QString summary = obj["summary"].toString();
         QString description = obj["description"].toString();
@@ -360,12 +359,12 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
         if (obj.contains("icon"))
             icon = obj["icon"].toString();
 
-        m_releases.append(new Release(manager(), m_releases.count(), subvariant, name, summary, description, source, icon, screenshots));
+        m_releases.append(new Release(manager(), m_releases.count(), subvariant, name, summary, description, icon, screenshots));
 
         // Append "Custom image" variant to 3rd position of the front page
         // TODO: tried to move this out of frontpage and this caused file not to load, getting stuck on "Preparing", likely caused by this position being hardcoded somewhere (probably in qml's), find where
         if (m_releases.count() == 2) {
-            custom = new Release (manager(), m_releases.count(), "custom", tr("Custom image"), QT_TRANSLATE_NOOP("Release", "Pick a file from your drive(s)"), { QT_TRANSLATE_NOOP("Release", "<p>Here you can choose a OS image from your hard drive to be written to your flash disk</p><p>Currently it is only supported to write raw disk images (.iso or .bin)</p>") }, Release::LOCAL, "qrc:/logos/folder", {});
+            custom = new Release (manager(), m_releases.count(), "custom", tr("Custom image"), QT_TRANSLATE_NOOP("Release", "Pick a file from your drive(s)"), { QT_TRANSLATE_NOOP("Release", "<p>Here you can choose a OS image from your hard drive to be written to your flash disk</p><p>Currently it is only supported to write raw disk images (.iso or .bin)</p>") }, "qrc:/logos/folder", {});
             m_releases.append(custom);
         }
     }
@@ -390,16 +389,13 @@ int Release::index() const {
     return m_index;
 }
 
-Release::Release(ReleaseManager *parent, int index, const QString &subvariant, const QString &name, const QString &summary, const QString &description, Release::Source source, const QString &icon, const QStringList &screenshots)
-    : QObject(parent), m_index(index), m_subvariant(subvariant), m_name(name), m_summary(summary), m_description(description), m_source(source), m_icon(icon), m_screenshots(screenshots)
+Release::Release(ReleaseManager *parent, int index, const QString &subvariant, const QString &name, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots)
+    : QObject(parent), m_index(index), m_subvariant(subvariant), m_name(name), m_summary(summary), m_description(description), m_icon(icon), m_screenshots(screenshots)
 {
     connect(this, SIGNAL(selectedVersionChanged()), parent, SLOT(variantChangedFilter()));
 }
 
 void Release::setLocalFile(const QString &path) {
-    if (m_source != LOCAL)
-        return;
-
     QFileInfo info(QUrl(path).toLocalFile());
 
     if (!info.exists()) {
@@ -466,12 +462,8 @@ QString Release::description() const {
     return m_description;
 }
 
-Release::Source Release::source() const {
-    return m_source;
-}
-
 bool Release::isLocal() const {
-    return m_source == Release::LOCAL;
+    return m_subvariant == "custom";
 }
 
 QString Release::icon() const {

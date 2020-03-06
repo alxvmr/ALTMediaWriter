@@ -179,8 +179,7 @@ private:
  * @property name the name of the release, like "Fedora Workstation"
  * @property summary the summary describing the release - displayed on the main screen
  * @property description the extensive description of the release - displayed on the detail screen
- * @property source one of the sources listed in the @ref Source enum
- * @property isLocal true if @ref source is @ref Source::LOCAL
+ * @property isLocal true if subvariant is "custom"
  * @property icon path of the icon of this release
  * @property screenshots a list of paths to screenshots (typically HTTP URLs)
  * @property prerelease true if the release contains a prerelease version of a future version
@@ -196,7 +195,6 @@ class Release : public QObject {
     Q_PROPERTY(QString summary READ summary CONSTANT)
     Q_PROPERTY(QString description READ description CONSTANT)
 
-    Q_PROPERTY(Source source READ source CONSTANT)
     Q_PROPERTY(bool isLocal READ isLocal CONSTANT)
 
     Q_PROPERTY(QString icon READ icon CONSTANT)
@@ -209,13 +207,7 @@ class Release : public QObject {
     Q_PROPERTY(ReleaseVersion* version READ selectedVersion NOTIFY selectedVersionChanged)
     Q_PROPERTY(int versionIndex READ selectedVersionIndex WRITE setSelectedVersionIndex NOTIFY selectedVersionChanged)
 public:
-    enum Source {
-        PRODUCT,
-        LOCAL
-    };
-    Q_ENUMS(Source)
-
-    Release(ReleaseManager *parent, int index, const QString &subvariant, const QString &name, const QString &summary, const QString &description, Release::Source source, const QString &icon, const QStringList &screenshots);
+    Release(ReleaseManager *parent, int index, const QString &subvariant, const QString &name, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots);
     void setLocalFile(const QString &path);
     bool updateUrl(const QString &version, const QString &status, const QString &type, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size);
     ReleaseManager *manager();
@@ -225,7 +217,6 @@ public:
     QString name() const;
     QString summary() const;
     QString description() const;
-    Release::Source source() const;
     bool isLocal() const;
     QString icon() const;
     QStringList screenshots() const;
@@ -250,7 +241,6 @@ private:
     QString m_name {};
     QString m_summary {};
     QString m_description {};
-    Release::Source m_source { LOCAL };
     QString m_icon {};
     QStringList m_screenshots {};
     QList<ReleaseVersion *> m_versions {};
