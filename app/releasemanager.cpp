@@ -64,17 +64,17 @@ ReleaseManager::ReleaseManager(QObject *parent)
         local_json = true;
     } else {
         // Try to load releases.json from cache
-        QFile cache(releasesCachePath());
-        if (cache.open(QIODevice::ReadOnly)) {
-            loadReleases(cache.readAll());
-            cache.close();
-        } else {
+        // QFile cache(releasesCachePath());
+        // if (cache.open(QIODevice::ReadOnly)) {
+            // loadReleases(cache.readAll());
+            // cache.close();
+        // } else {
             // Load built-in releases.json if failed to open cache file
             QFile releases(":/releases.json");
             releases.open(QIODevice::ReadOnly);
             loadReleases(releases.readAll());
             releases.close();
-        }
+        // }
     }
 
     connect(this, SIGNAL(selectedChanged()), this, SLOT(variantChangedFilter()));
