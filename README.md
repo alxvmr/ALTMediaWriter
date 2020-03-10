@@ -52,3 +52,5 @@ To deploy run `dist/mac/build.sh`.
 For details about cryptography, see [CRYPTOGRAPHY.md](CRYPTOGRAPHY.md).
 
 Some brief privacy information (regarding User-Agent strings) is in [PRIVACY.md](PRIVACY.md).
+
+For development/testing, you can force load a local releases.json by placing it in root of the project and naming it LOADME.json.

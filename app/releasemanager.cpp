@@ -57,11 +57,16 @@ ReleaseManager::ReleaseManager(QObject *parent)
 
     // Try to load local releases.json (for testing)
     bool local_json = false;
-    QFile releases("releases.json");
+    QFile releases("LOADME.json");
     if (releases.open(QIODevice::ReadOnly) ) {
         loadReleases(releases.readAll());
         releases.close();
         local_json = true;
+        qInfo("-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-");
+        qInfo("-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-");
+        qInfo("LOADING LOCAL JSON");
+        qInfo("-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-");
+        qInfo("-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-");
     } else {
         // Try to load releases.json from cache
         QFile cache(releasesCachePath());
