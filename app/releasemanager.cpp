@@ -109,7 +109,7 @@ bool ReleaseManager::filterAcceptsRow(int source_row, const QModelIndex &source_
             if (containsArch)
                 break;
         }
-        return r->isLocal() || (containsArch && r->subvariant().contains(m_filterText, Qt::CaseInsensitive));
+        return r->isLocal() || (containsArch && r->variant().contains(m_filterText, Qt::CaseInsensitive));
     }
 }
 
@@ -158,7 +158,7 @@ void ReleaseManager::setFilterText(const QString &o) {
     }
 }
 
-bool ReleaseManager::updateUrl(const QString &release, const QString &version, const QString &status, const QString &type, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size) {
+bool ReleaseManager::updateUrl(const QString &variant, const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size) {
     if (!ReleaseArchitecture::isKnown(architecture)) {
         mWarning() << "Architecture" << architecture << "is not known!";
         return false;
@@ -173,8 +173,8 @@ bool ReleaseManager::updateUrl(const QString &release, const QString &version, c
     }
     for (int i = 0; i < m_sourceModel->rowCount(); i++) {
         Release *r = get(i);
-        if (r->subvariant().toLower().contains(release))
-            return r->updateUrl(version, status, type, releaseDate, architecture, imageType, board, url, sha256, md5, size);
+        if (r->variant().toLower().contains(variant))
+            return r->updateUrl(version, status, releaseDate, architecture, imageType, board, url, sha256, md5, size);
     }
     return false;
 }
@@ -241,11 +241,10 @@ void ReleaseManager::loadReleases(const QString &text) {
         QString arch = obj["arch"].toString().toLower();
         QString url = obj["link"].toString();
         QString category = obj["variant"].toString().toLower();
-        QString release = obj["subvariant"].toString().toLower();
+        QString variant = obj["variant"].toString().toLower();
         QString versionWithStatus = obj["version"].toString().toLower();
         QString md5 = obj["md5"].toString();
         QString sha256 = obj["sha256"].toString();
-        QString type = "live";
         QString imageType = obj["imageType"].toString();
         QString board = obj["board"].toString();
         QDateTime releaseDate = QDateTime::fromString((obj["releaseDate"].toString()), "yyyy-MM-dd");
@@ -259,10 +258,10 @@ void ReleaseManager::loadReleases(const QString &text) {
         version = re.capturedTexts()[1];
         status = re.capturedTexts()[2];
 
-        mDebug() << this->metaObject()->className() << "Adding" << release << versionWithStatus << arch;
+        mDebug() << this->metaObject()->className() << "Adding" << variant << versionWithStatus << arch;
 
-        if (!release.isEmpty() && !url.isEmpty() && !arch.isEmpty() && !imageType.isEmpty() && !board.isEmpty())
-            updateUrl(release, version, status, type, releaseDate, arch, imageType, board, url, sha256, md5, size);
+        if (!variant.isEmpty() && !url.isEmpty() && !arch.isEmpty() && !imageType.isEmpty() && !board.isEmpty())
+            updateUrl(variant, version, status, releaseDate, arch, imageType, board, url, sha256, md5, size);
     }
 
     m_beingUpdated = false;
@@ -342,7 +341,7 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
     auto doc = QJsonDocument::fromJson(metadata.readAll());
     for (auto i : doc.array()) {
         QJsonObject obj = i.toObject();
-        QString subvariant = obj["subvariant"].toString();
+        QString variant = obj["variant"].toString();
         QString name = obj["name"].toString();
         QString summary = obj["summary"].toString();
         QString description = obj["description"].toString();
@@ -354,7 +353,7 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
         if (obj.contains("icon"))
             icon = obj["icon"].toString();
 
-        m_releases.append(new Release(manager(), m_releases.count(), subvariant, name, summary, description, icon, screenshots));
+        m_releases.append(new Release(manager(), m_releases.count(), variant, name, summary, description, icon, screenshots));
 
         // Append "Custom image" variant to 3rd position of the front page
         // TODO: tried to move this out of frontpage and this caused file not to load, getting stuck on "Preparing", likely caused by this position being hardcoded somewhere (probably in qml's), find where
@@ -384,8 +383,8 @@ int Release::index() const {
     return m_index;
 }
 
-Release::Release(ReleaseManager *parent, int index, const QString &subvariant, const QString &name, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots)
-    : QObject(parent), m_index(index), m_subvariant(subvariant), m_name(name), m_summary(summary), m_description(description), m_icon(icon), m_screenshots(screenshots)
+Release::Release(ReleaseManager *parent, int index, const QString &variant, const QString &name, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots)
+    : QObject(parent), m_index(index), m_variant(variant), m_name(name), m_summary(summary), m_description(description), m_icon(icon), m_screenshots(screenshots)
 {
     connect(this, SIGNAL(selectedVersionChanged()), parent, SLOT(variantChangedFilter()));
 }
@@ -408,11 +407,11 @@ void Release::setLocalFile(const QString &path) {
     emit selectedVersionChanged();
 }
 
-bool Release::updateUrl(const QString &version, const QString &status, const QString &type, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size) {
+bool Release::updateUrl(const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size) {
     int finalVersions = 0;
     for (auto i : m_versions) {
         if (i->number() == version)
-            return i->updateUrl(status, type, releaseDate, architecture, imageType, board, url, sha256, md5, size);
+            return i->updateUrl(status, releaseDate, architecture, imageType, board, url, sha256, md5, size);
         if (i->status() == ReleaseVersion::FINAL)
             finalVersions++;
     }
@@ -441,8 +440,8 @@ ReleaseManager *Release::manager() {
     return qobject_cast<ReleaseManager*>(parent());
 }
 
-QString Release::subvariant() const {
-    return m_subvariant;
+QString Release::variant() const {
+    return m_variant;
 }
 
 QString Release::name() const {
@@ -458,7 +457,7 @@ QString Release::description() const {
 }
 
 bool Release::isLocal() const {
-    return m_subvariant == "custom";
+    return m_variant == "custom";
 }
 
 QString Release::icon() const {
@@ -562,7 +561,7 @@ const Release *ReleaseVersion::release() const {
     return qobject_cast<const Release*>(parent());
 }
 
-bool ReleaseVersion::updateUrl(const QString &status, const QString &type, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size) {
+bool ReleaseVersion::updateUrl(const QString &status, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size) {
     // first determine and eventually update the current alpha/beta/final level of this version
     Status s = status == "alpha" ? ALPHA : status == "beta" ? BETA : FINAL;
     if (s <= m_status) {
@@ -580,20 +579,16 @@ bool ReleaseVersion::updateUrl(const QString &status, const QString &type, const
         m_releaseDate = releaseDate;
         emit releaseDateChanged();
     }
-    // determine what type of release it is
-    ReleaseVariant::Type t = type == "install" || type == "altinst"    ? ReleaseVariant::INSTALL :
-                             type == "netinst" || type == "netinstall" ? ReleaseVariant::NETINSTALL :
-                                                  type == "rescue"     ? ReleaseVariant::RESCUE :
-                                                                         ReleaseVariant::LIVE;
+
     for (auto i : m_variants) {
-        if (i->arch() == ReleaseArchitecture::fromAbbreviation(architecture) && i->type() == t && i->board() == ReleaseBoard::fromAbbreviation(board))
+        if (i->arch() == ReleaseArchitecture::fromAbbreviation(architecture) && i->board() == ReleaseBoard::fromAbbreviation(board))
             return i->updateUrl(url, sha256, size);
     }
     // preserve the order from the ReleaseArchitecture::Id enum (to not have ARM first, etc.)
     // it's actually an array so comparing pointers is fine
     int order = 0;
     for (auto i : m_variants) {
-        if (i->type() >= t && i->arch() > ReleaseArchitecture::fromAbbreviation(architecture))
+        if (i->arch() > ReleaseArchitecture::fromAbbreviation(architecture))
             break;
         order++;
     }
@@ -659,8 +654,8 @@ QList<ReleaseVariant *> ReleaseVersion::variantList() const {
 }
 
 
-ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, QString url, QString shaHash, QString md5, int64_t size, ReleaseArchitecture *arch, ReleaseImageType *imageType, ReleaseBoard *board, ReleaseVariant::Type type)
-    : QObject(parent), m_arch(arch), m_image_type(imageType), m_board(board), m_type(type), m_url(url), m_shaHash(shaHash), m_md5(md5), m_size(size)
+ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, QString url, QString shaHash, QString md5, int64_t size, ReleaseArchitecture *arch, ReleaseImageType *imageType, ReleaseBoard *board)
+    : QObject(parent), m_arch(arch), m_image_type(imageType), m_board(board), m_url(url), m_shaHash(shaHash), m_md5(md5), m_size(size)
 {
     connect(this, &ReleaseVariant::sizeChanged, this, &ReleaseVariant::realSizeChanged);
 }
@@ -722,23 +717,11 @@ ReleaseBoard *ReleaseVariant::board() const {
     return m_board;
 }
 
-ReleaseVariant::Type ReleaseVariant::type() const {
-    return m_type;
-}
-
 QString ReleaseVariant::name() const {
-    if (type() == INSTALL && release()->subvariant().toLower().contains("workstation"))
-        return m_arch->description() + " - Install Image";
-    else if (type() == RESCUE)
-        return m_arch->description() + " - Rescue Image";
-    else if (type() == NETINSTALL)
-        return m_arch->description() + " - Net Install";
-    else {
-        if (m_board != NULL) {
-            return m_arch->description() + " | " + m_board->description();
-        } else {
-            return m_arch->description();
-        }
+    if (m_board != NULL) {
+        return m_arch->description() + " | " + m_board->description();
+    } else {
+        return m_arch->description();
     }
 }
 

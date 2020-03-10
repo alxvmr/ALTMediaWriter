@@ -103,7 +103,7 @@ public:
     QString filterText() const;
     void setFilterText(const QString &o);
 
-    bool updateUrl(const QString &release, const QString &version, const QString &status, const QString &type, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size);
+    bool updateUrl(const QString &release, const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size);
 
     QStringList architectures() const;
     int filterArchitecture() const;
@@ -177,7 +177,7 @@ private:
  * @property name the name of the release, like "Fedora Workstation"
  * @property summary the summary describing the release - displayed on the main screen
  * @property description the extensive description of the release - displayed on the detail screen
- * @property isLocal true if subvariant is "custom"
+ * @property isLocal true if variant is "custom"
  * @property icon path of the icon of this release
  * @property screenshots a list of paths to screenshots (typically HTTP URLs)
  * @property prerelease true if the release contains a prerelease version of a future version
@@ -205,13 +205,13 @@ class Release : public QObject {
     Q_PROPERTY(ReleaseVersion* version READ selectedVersion NOTIFY selectedVersionChanged)
     Q_PROPERTY(int versionIndex READ selectedVersionIndex WRITE setSelectedVersionIndex NOTIFY selectedVersionChanged)
 public:
-    Release(ReleaseManager *parent, int index, const QString &subvariant, const QString &name, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots);
+    Release(ReleaseManager *parent, int index, const QString &variant, const QString &name, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots);
     Q_INVOKABLE void setLocalFile(const QString &path);
-    bool updateUrl(const QString &version, const QString &status, const QString &type, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size);
+    bool updateUrl(const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size);
     ReleaseManager *manager();
 
     int index() const;
-    QString subvariant() const;
+    QString variant() const;
     QString name() const;
     QString summary() const;
     QString description() const;
@@ -235,7 +235,7 @@ signals:
     void prereleaseChanged();
 private:
     int m_index { 0 };
-    QString m_subvariant {};
+    QString m_variant {};
     QString m_name {};
     QString m_summary {};
     QString m_description {};
@@ -286,7 +286,7 @@ public:
     Release *release();
     const Release *release() const;
 
-    bool updateUrl(const QString &status, const QString &type, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size);
+    bool updateUrl(const QString &status, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size);
 
     QString number() const;
     QString name() const;
@@ -321,8 +321,7 @@ private:
  * The variant of the release version. Usually it represents different architectures. It's possible to differentiate netinst and dvd images here too.
  *
  * @property arch architecture of the variant
- * @property type the type of the variant, like live or netinst
- * @property name the name of the release, generated from @ref arch and @ref type
+ * @property name the name of the release, generated from @ref arch and @ref board
  * @property board the name of supported hardware of the image
  * @property url the URL pointing to the image
  * @property shaHash SHA256 hash of the image
@@ -338,7 +337,6 @@ private:
 class ReleaseVariant : public QObject, public DownloadReceiver {
     Q_OBJECT
     Q_PROPERTY(ReleaseArchitecture* arch READ arch CONSTANT)
-    Q_PROPERTY(ReleaseVariant::Type type READ type CONSTANT)
     Q_PROPERTY(QString name READ name CONSTANT)
     Q_PROPERTY(ReleaseBoard* board READ board CONSTANT)
 
@@ -354,12 +352,6 @@ class ReleaseVariant : public QObject, public DownloadReceiver {
     Q_PROPERTY(QString statusString READ statusString NOTIFY statusChanged)
     Q_PROPERTY(QString errorString READ errorString WRITE setErrorString NOTIFY errorStringChanged)
 public:
-    enum Type {
-        LIVE = 0,
-        NETINSTALL,
-        INSTALL,
-        RESCUE
-    };
     Q_ENUMS(Type)
     enum Status {
         PREPARING = 0,
@@ -389,7 +381,7 @@ public:
         tr("Error")
     };
 
-    ReleaseVariant(ReleaseVersion *parent, QString url,  QString shaHash, QString md5, int64_t size, ReleaseArchitecture *arch, ReleaseImageType *imageType, ReleaseBoard *board, Type type = LIVE);
+    ReleaseVariant(ReleaseVersion *parent, QString url,  QString shaHash, QString md5, int64_t size, ReleaseArchitecture *arch, ReleaseImageType *imageType, ReleaseBoard *board);
     ReleaseVariant(ReleaseVersion *parent, const QString &file, int64_t size);
 
     bool updateUrl(const QString &url, const QString &sha256, int64_t size);
@@ -400,7 +392,6 @@ public:
     const Release *release() const;
 
     ReleaseArchitecture *arch() const;
-    ReleaseVariant::Type type() const;
     QString name() const;
     QString fullName();
     ReleaseBoard *board() const;
@@ -452,7 +443,6 @@ private:
     ReleaseArchitecture *m_arch { nullptr };
     ReleaseImageType *m_image_type { nullptr };
     ReleaseBoard *m_board { nullptr };
-    ReleaseVariant::Type m_type { LIVE };
     QString m_url {};
     QString m_shaHash {};
     QString m_md5 {};
