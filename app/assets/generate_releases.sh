@@ -52,6 +52,10 @@ do
               *"SUM"*) continue ;;
               *".txt"*) continue ;;
               *".list"*) continue ;;
+            # Skip "live" images
+              *"live"*) continue ;;
+            # Skip "beta" images
+              *"beta"*) continue ;;
             esac
 
             # Convert image to fields for json
@@ -89,7 +93,7 @@ do
             fi
 
             # NOTE: version hardcoded, can't extract it from url directly because it's position varies and sometimes it's not there at all
-            json_string="${json_string}\n{\n\"link\":\"$link\",\n\"variant\":\"$variant\",\n\"version\":\"9.0\",\n\"arch\":\"$arch\",\n\"board\":\"$board\",\n\"imageType\":\"$imageType\",\n\"md5\":\"\"\n}"
+            json_string="${json_string}\n\t{\n\t\t\"link\":\"$link\",\n\t\t\"variant\":\"$variant\",\n\t\t\"version\":\"9.0\",\n\t\t\"arch\":\"$arch\",\n\t\t\"board\":\"$board\",\n\t\t\"imageType\":\"$imageType\",\n\t\t\"md5\":\"\"\n\t}"
         done
     done
 done
