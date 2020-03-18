@@ -74,7 +74,7 @@ do
                         *"tegra"*) board="jetson-nano";;
                         *"rpi4"*) board="rpi4";;
                         *"tar.xz"*) board="rpi3";;
-                        *"iso"*) board="arm";;
+                        *"iso"*) board="arm64";;
                         *) board="UNKNOWN AARCH64";;
                     esac
                     ;;
