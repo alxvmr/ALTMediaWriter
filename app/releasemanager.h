@@ -580,6 +580,7 @@ public:
     Q_ENUMS(Id);
     static ReleaseImageType *fromId(Id id);
     static ReleaseImageType *fromAbbreviation(const QString &abbr);
+    static ReleaseImageType *fromFilename(const QString &filename);
     static bool isKnown(const QString &abbr);
     static QList<ReleaseImageType *> listAll();
     static QStringList listAllNames();

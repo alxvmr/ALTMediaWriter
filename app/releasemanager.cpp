@@ -661,7 +661,7 @@ ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, QString url, QString shaH
 }
 
 ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, const QString &file, int64_t size)
-    : QObject(parent), m_image(file), m_arch(ReleaseArchitecture::fromId(ReleaseArchitecture::X86_64)), m_size(size)
+    : QObject(parent), m_image(file), m_arch(ReleaseArchitecture::fromId(ReleaseArchitecture::X86_64)), m_image_type(ReleaseImageType::fromFilename(file)), m_board(ReleaseBoard::fromId(ReleaseBoard::UNKNOWN)), m_shaHash(""), m_md5(""), m_size(size)
 {
     connect(this, &ReleaseVariant::sizeChanged, this, &ReleaseVariant::realSizeChanged);
     m_status = READY;
@@ -1161,6 +1161,17 @@ ReleaseImageType *ReleaseImageType::fromAbbreviation(const QString &abbr) {
         if (m_all[i].abbreviation().contains(abbr, Qt::CaseInsensitive))
             return &m_all[i];
     }
+    return nullptr;
+}
+
+ReleaseImageType *ReleaseImageType::fromFilename(const QString &filename) {
+    for (int i = 0; i < _IMAGETYPECOUNT; i++) {
+        ReleaseImageType *type = &m_all[i];
+        for (unsigned int j = 0; j < sizeof(type->m_name); j++) {
+            if (filename.contains(type->m_name[j], Qt::CaseInsensitive))
+                return &m_all[i];
+            }
+        }
     return nullptr;
 }
 
