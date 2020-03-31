@@ -3,7 +3,7 @@
         <file alias="blank">assets/logos/png/blank.png</file>
         <file alias="cd">assets/logos/png/cd.png</file>
         <file alias="chip">assets/logos/png/chip.png</file>
-        <file alias="education">assets/logos/png/education.png</file>
+        <file alias="alt-edu">assets/logos/png/education.png</file>
         <file alias="elbrus">assets/logos/png/elbrus.png</file>
         <file alias="folder">assets/logos/png/folder.png</file>
         <file alias="keys">assets/logos/png/keys.png</file>
@@ -11,10 +11,10 @@
         <file alias="kits2">assets/logos/png/kits2.png</file>
         <file alias="letter_b">assets/logos/png/letter_b.png</file>
         <file alias="pi">assets/logos/png/pi.png</file>
-        <file alias="server">assets/logos/png/server.png</file>
-        <file alias="server_virtual">assets/logos/png/server_virtual.png</file>
+        <file alias="arm">assets/logos/png/server.png</file>
+        <file alias="alt-server-v">assets/logos/png/server_virtual.png</file>
         <file alias="simply">assets/logos/png/simply.png</file>
-        <file alias="workstation">assets/logos/png/workstation.png</file>
+        <file alias="alt-workstation">assets/logos/png/workstation.png</file>
     </qresource>
     <qresource prefix="/">
         <file alias="metadata_en.json">assets/metadata_en.json</file>

@@ -367,9 +367,7 @@ void ReleaseListModel::loadSection(const char *sectionName, const char *sections
     description.replace("&nbsp;", " ");
     // NOTE: currently no screenshots
     QStringList screenshots;
-    QString icon = "qrc:/logos/blank";
-    // if (section.contains("img"))
-    //     icon = ymlToQString(section["img"]);
+    QString icon = "qrc:/logos/" + ymlToQString(section["img"]);
 
     m_releases.append(new Release(manager(), m_releases.count(), variant, name, summary, description, icon, screenshots));
 }
