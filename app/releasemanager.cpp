@@ -358,7 +358,13 @@ void ReleaseListModel::loadSection(const char *sectionName, const char *sections
     QString variant = ymlToQString(section["code"]);
     QString name = ymlToQString(section[("name" + lang).c_str()]);
     QString summary = ymlToQString(section[("descr" + lang).c_str()]);
+    // Remove HTML character entities that don't render in Qt
+    summary.replace("&colon;", ":");
+    summary.replace("&nbsp;", " ");
     QString description = ymlToQString(section[("descr_full" + lang).c_str()]);
+    // Remove HTML character entities that don't render in Qt
+    description.replace("&colon;", ":");
+    description.replace("&nbsp;", " ");
     // NOTE: currently no screenshots
     QStringList screenshots;
     QString icon = "qrc:/logos/blank";
@@ -383,7 +389,7 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
 
     loadSection("alt-education", "_data_sections_2-additional.yml");
     loadSection("alt-server-v", "_data_sections_2-additional.yml");
-    loadSection("alt-simply", "_data_sections_3-community.yml");
+    loadSection("simply", "_data_sections_3-community.yml");
 }
 
 ReleaseManager *ReleaseListModel::manager() {
