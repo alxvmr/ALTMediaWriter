@@ -161,6 +161,7 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 private:
+    void loadSection(const char *sectionName, const char *sectionsFilename);
 
     QList<Release*> m_releases {};
 };

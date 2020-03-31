@@ -21,6 +21,7 @@
 #include "drivemanager.h"
 
 #include "isomd5/libcheckisomd5.h"
+#include <yaml-cpp/yaml.h>
 
 #include <QtQml>
 #include <QApplication>
@@ -323,49 +324,66 @@ QVariant ReleaseListModel::data(const QModelIndex &index, int role) const {
     return QVariant();
 }
 
+QString ymlToQString(YAML::Node ymlStr) {
+    return QString::fromStdString(ymlStr.as<std::string>());
+}
+
+void ReleaseListModel::loadSection(const char *sectionName, const char *sectionsFilename) {
+    // Load section named "sectionName" from .yml file named "sectionsFilename"
+    // Translate it into a Release
+    YAML::Node sectionsFile = YAML::LoadFile(sectionsFilename);
+    YAML::Node section;
+    bool foundSection = false;
+    for(unsigned int i = 0; i < sectionsFile["members"].size(); i++) {
+        std::string code = sectionsFile["members"][i]["code"].as<std::string>();
+        if (code == sectionName) {
+            section = sectionsFile["members"][i];
+            foundSection = true;
+            break;
+        }
+    }
+
+    if (!foundSection) {
+        qInfo() << "ReleaseListModel::loadSection(): Failed to find section " << sectionName << "in file " << sectionsFilename;
+        return;
+    }
+
+    std::string lang = "_en";
+    if (QLocale().language() == QLocale::Russian) {
+        lang = "_ru";
+    }
+    
+    Release *custom = nullptr;
+
+    QString variant = ymlToQString(section["code"]);
+    QString name = ymlToQString(section[("name" + lang).c_str()]);
+    QString summary = ymlToQString(section[("descr" + lang).c_str()]);
+    QString description = ymlToQString(section[("descr_full" + lang).c_str()]);
+    // NOTE: currently no screenshots
+    QStringList screenshots;
+    QString icon = "qrc:/logos/blank";
+    // if (section.contains("img"))
+    //     icon = ymlToQString(section["img"]);
+
+    m_releases.append(new Release(manager(), m_releases.count(), variant, name, summary, description, icon, screenshots));
+}
 
 ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
     : QAbstractListModel(parent) {
-    // Load metadata based on language
-    // Right now only en/ru are available
-    QString metadata_file = ":/metadata_en.json";
-    if (QLocale().language() == QLocale::Russian) {
-        metadata_file = ":/metadata_ru.json";
-    }
+    loadSection("alt-workstation", "_data_sections_1-basic.yml");
+    loadSection("alt-server", "_data_sections_1-basic.yml");
 
-    QFile metadata(metadata_file);
-    metadata.open(QIODevice::ReadOnly);
-
-    Release *custom = nullptr;
-
-    auto doc = QJsonDocument::fromJson(metadata.readAll());
-    for (auto i : doc.array()) {
-        QJsonObject obj = i.toObject();
-        QString variant = obj["variant"].toString();
-        QString name = obj["name"].toString();
-        QString summary = obj["summary"].toString();
-        QString description = obj["description"].toString();
-        QStringList screenshots;
-        for (auto j : obj["screenshots"].toArray()) {
-            screenshots.append(j.toString());
-        }
-        QString icon = "qrc:/logos/blank";
-        if (obj.contains("icon"))
-            icon = obj["icon"].toString();
-
-        m_releases.append(new Release(manager(), m_releases.count(), variant, name, summary, description, icon, screenshots));
-
-        // Append "Custom image" variant to 3rd position of the front page
-        // TODO: tried to move this out of frontpage and this caused file not to load, getting stuck on "Preparing", likely caused by this position being hardcoded somewhere (probably in qml's), find where
-        if (m_releases.count() == 2) {
-            custom = new Release (manager(), m_releases.count(), "custom", tr("Custom image"), QT_TRANSLATE_NOOP("Release", "Pick a file from your drive(s)"), { QT_TRANSLATE_NOOP("Release", "<p>Here you can choose a OS image from your hard drive to be written to your flash disk</p><p>Currently it is only supported to write raw disk images (.iso or .bin)</p>") }, "qrc:/logos/folder", {});
-            m_releases.append(custom);
-        }
-    }
-
+    // Insert custom version at 3rd position
+    // TODO: tried to move this out of frontpage and this caused file not to load, getting stuck on "Preparing", likely caused by this position being hardcoded somewhere (probably in qml's), couldn't find where
+    Release *custom = new Release (manager(), m_releases.count(), "custom", tr("Custom image"), QT_TRANSLATE_NOOP("Release", "Pick a file from your drive(s)"), { QT_TRANSLATE_NOOP("Release", "<p>Here you can choose a OS image from your hard drive to be written to your flash disk</p><p>Currently it is only supported to write raw disk images (.iso or .bin)</p>") }, "qrc:/logos/folder", {});
+    m_releases.append(custom);
     ReleaseVersion *customVersion = new ReleaseVersion(custom, 0);
     custom->addVersion(customVersion);
     customVersion->addVariant(new ReleaseVariant(customVersion, QString(), QString(), QString(), 0, ReleaseArchitecture::fromId(ReleaseArchitecture::UNKNOWN), ReleaseImageType::fromId(ReleaseImageType::ISO), ReleaseBoard::fromId(ReleaseBoard::UNKNOWN)));
+
+    loadSection("alt-education", "_data_sections_2-additional.yml");
+    loadSection("alt-server-v", "_data_sections_2-additional.yml");
+    loadSection("alt-simply", "_data_sections_3-community.yml");
 }
 
 ReleaseManager *ReleaseListModel::manager() {

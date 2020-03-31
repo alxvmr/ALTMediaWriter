@@ -6,7 +6,7 @@ TARGET = $$MEDIAWRITER_NAME
 
 QT += qml quick widgets network
 
-LIBS += -lisomd5
+LIBS += -lisomd5 -lyaml-cpp
 
 CONFIG += c++11
 

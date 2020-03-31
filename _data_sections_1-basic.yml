@@ -1,0 +1,108 @@
+code: basic
+name_en: Basic solutions
+name_ru: Базовые решения
+order: 1
+bgcolor: f8f8f8
+members:
+ - code: alt-workstation
+   name_en: ALT Workstation
+   name_ru: Альт Рабочая станция
+   descr_ru: |
+     Операционная система и набор приложений для организации рабочих мест
+     пользователей как в&nbsp;офисной среде, так и дома.
+   descr_en: |
+     Operating system and application suite designed for workplace
+     at both office and home.
+   descr_full_ru: |
+     <a href="http://altlinux.org/workstation">Альт Рабочая станция 9</a>
+     после установки на ноутбук или настольную систему
+     — это классическое персональное рабочее место
+     с&nbsp;программами, которые помогут&colon;
+
+     <ul>
+     <li>работать с интернет-ресурсами (веб-сайты, почта, мессенджеры);</li>
+     <li>править тексты, таблицы и презентации (офисный пакет);</li>
+     <li>слушать музыку и смотреть видео (мультимедиа);</li>
+     <li>создавать и улучшать растровую и векторную графику;</li>
+     <li>выполнять математические расчёты;</li>
+     <li>заниматься программированием</li>
+     <li>...и не только.</li>
+     </ul>
+
+
+     Загруженную версию могут свободно использовать физические лица;
+     юридические лица могут воспользоваться ею для тестирования,
+     а&nbsp;для применения необходимо приобрести лицензии или заключить
+     <a href="http://ftp.altlinux.org/pub/distributions/ALTLinux/p9/images/workstation/license.ru.html">лицензионный договор</a>
+     в&nbsp;письменной форме.
+   descr_full_en: |
+     ALT Workstation 9 installed on a laptop or desktop provides
+     a classic personal workplace allowing to&colon;
+
+     <ul>
+     <li>work with internet (web, email, instant messaging);</li>
+     <li>edit texts, spreadsheets and presentations (office suite);</li>
+     <li>listen to music and watch videos (multimedia);</li>
+     <li>create and improve raster and vector images;</li>
+     <li>perform mathematical computations;</li>
+     <li>develop software</li>
+     <li>...and much more!</li>
+     </ul>
+
+     
+     The downloaded version can be freely used by private persons;
+     legal entities can use it for testing but production use
+     requires acquiring licenses or signing a
+     <a href="http://ftp.altlinux.org/pub/distributions/ALTLinux/p9/images/workstation/license.all.html">license agreement</a>
+     in written form.
+
+   img: alt-workstation
+
+ - code: alt-server
+   name_ru: Альт Сервер
+   name_en: ALT Server
+   descr_ru: |
+     Операционная система и набор служб для организации и&nbsp;управления
+     информационной инфраструктурой предприятия.
+   descr_en: |
+     Operating system and services to bring up and control enterprise
+     IT infrastructure.
+   img: arm
+   descr_full_ru: |
+     <a href="http://altlinux.org/server">Альт Сервер 9</a> предоставляет
+     надёжную основу для построения информационной
+     инфраструктуры предприятия, включая&colon;
+
+     <ul>
+     <li>современные производительные и&nbsp;масштабируемые базы данных;</li>
+     <li>средства виртуализации;</li>
+     <li>инструментарий управления инфраструктурой предприятия;</li>
+     <li>поддержку доменов Active Directory и FreeIPA;</li>
+     <li>широкий набор internet- и&nbsp;intranet-сервисов.</li>
+     </ul>
+
+     Загруженную версию могут свободно использовать физические лица;
+     юридические лица могут воспользоваться ею для тестирования,
+     а&nbsp;для применения необходимо приобрести лицензии или заключить
+     <a href="http://ftp.altlinux.org/pub/distributions/ALTLinux/p9/images/server/license.ru.html">лицензионный договор</a> в&nbsp;письменной форме.
+     </a>
+   descr_full_en: |
+     ALT Server 9 provides reliable foundation for enterprise IT infrastructure,
+     including&colon;
+
+     <ul>
+     <li>modern scalable high-performance databases;</li>
+     <li>virtualization;</li>
+     <li>infrastructure management tools;</li>
+     <li>Active Directory and FreeIPA domain integration;</li>
+     <li>extensive set of internet and intranet services.</li>
+     </ul>
+
+
+     The downloaded version can be freely used by private persons;
+     legal entities can use it for testing but production use
+     requires acquiring licenses or signing a 
+     <a href="http://ftp.altlinux.org/pub/distributions/ALTLinux/p9/images/server/license.all.html">license agreement</a>
+     in written form.
+   img: alt-server
+
