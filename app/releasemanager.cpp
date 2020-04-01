@@ -82,7 +82,7 @@ ReleaseManager::ReleaseManager(QObject *parent)
     qmlRegisterUncreatableType<ReleaseImageType>("MediaWriter", 1, 0, "ImageType", "");
     qmlRegisterUncreatableType<Progress>("MediaWriter", 1, 0, "Progress", "");
 
-    // Try to load releases.json from cache
+    // Try to load releases from cache
     bool loadedCachedReleases = true;
     for (unsigned int i = 0; i < releaseFilesCount; i++) {
         QString cachePath = releasesCacheDir() + releaseFiles[i];
