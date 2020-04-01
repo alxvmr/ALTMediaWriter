@@ -81,32 +81,18 @@ ReleaseManager::ReleaseManager(QObject *parent)
     qmlRegisterUncreatableType<ReleaseImageType>("MediaWriter", 1, 0, "ImageType", "");
     qmlRegisterUncreatableType<Progress>("MediaWriter", 1, 0, "Progress", "");
 
-    // Try to load local releases.json (for testing)
-    // bool local_json = false;
-    // QFile releases("LOADME.json");
-    // if (releases.open(QIODevice::ReadOnly) ) {
-    //     loadReleases(releases.readAll());
-    //     releases.close();
-    //     local_json = true;
-    //     qInfo("-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-");
-    //     qInfo("-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-");
-    //     qInfo("LOADING LOCAL JSON");
-    //     qInfo("-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-");
-    //     qInfo("-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-");
-    // } else {
-    //     // Try to load releases.json from cache
-    //     QFile cache(releasesCachePath());
-    //     if (cache.open(QIODevice::ReadOnly)) {
-    //         loadReleases(cache.readAll());
-    //         cache.close();
-    //     } else {
-    //         // Load built-in releases.json if failed to open cache file
-            // QFile releases(":/releases.json");
-            // releases.open(QIODevice::ReadOnly);
-            // loadReleases(releases.readAll());
-            // releases.close();
-    //     }
-    // }
+    // Try to load releases.json from cache
+    QFile cache(releasesCachePath());
+    if (cache.open(QIODevice::ReadOnly)) {
+        loadReleases(cache.readAll());
+        cache.close();
+    } else {
+        // Load built-in releases.json if failed to open cache file
+        QFile releases(":/releases.json");
+        releases.open(QIODevice::ReadOnly);
+        loadReleases(releases.readAll());
+        releases.close();
+    }
 
     for (unsigned int i = 0; i < releaseFilesCount; i++) {
         loadReleases(fileToString(QString(":/assets/") + releaseFiles[i]));
@@ -114,9 +100,7 @@ ReleaseManager::ReleaseManager(QObject *parent)
 
     connect(this, SIGNAL(selectedChanged()), this, SLOT(variantChangedFilter()));
 
-    // if (!local_json) {
-    //     QTimer::singleShot(0, this, SLOT(fetchReleases()));
-    // }
+    // QTimer::singleShot(0, this, SLOT(fetchReleases()));
 }
 
 bool ReleaseManager::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const {
