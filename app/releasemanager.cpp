@@ -1197,11 +1197,11 @@ ReleaseImageType *ReleaseImageType::fromAbbreviation(const QString &abbr) {
 ReleaseImageType *ReleaseImageType::fromFilename(const QString &filename) {
     for (int i = 0; i < _IMAGETYPECOUNT; i++) {
         ReleaseImageType *type = &m_all[i];
-        for (unsigned int j = 0; j < sizeof(type->m_name); j++) {
-            if (filename.contains(type->m_name[j], Qt::CaseInsensitive))
+        for (unsigned int j = 0; j < type->m_abbreviation.size(); j++) {
+            if (filename.contains(type->m_abbreviation[j], Qt::CaseInsensitive))
                 return &m_all[i];
-            }
         }
+    }
     return nullptr;
 }
 
