@@ -331,7 +331,15 @@ QString ymlToQString(YAML::Node ymlStr) {
 void ReleaseListModel::loadSection(const char *sectionName, const char *sectionsFilename) {
     // Load section named "sectionName" from .yml file named "sectionsFilename"
     // Translate it into a Release
-    YAML::Node sectionsFile = YAML::LoadFile(sectionsFilename);
+    // NOTE: couldn't figure out how to use YAML::loadFile on qrc file directly so have to do it through string
+    QFile file(sectionsFilename);
+    if (!file.open(QFile::ReadOnly | QFile::Text)) {
+        qInfo() << "ReleaseListModel::loadSection(): Failed to open file " << sectionsFilename;
+        return;
+    }
+    QTextStream fileStream(&file);
+    QString fileContents = fileStream.readAll();
+    YAML::Node sectionsFile = YAML::Load(fileContents.toStdString());
     YAML::Node section;
     bool foundSection = false;
     for(unsigned int i = 0; i < sectionsFile["members"].size(); i++) {
@@ -374,8 +382,8 @@ void ReleaseListModel::loadSection(const char *sectionName, const char *sections
 
 ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
     : QAbstractListModel(parent) {
-    loadSection("alt-workstation", "_data_sections_1-basic.yml");
-    loadSection("alt-server", "_data_sections_1-basic.yml");
+    loadSection("alt-workstation", ":/assets/_data_sections_1-basic.yml");
+    loadSection("alt-server", ":/assets/_data_sections_1-basic.yml");
 
     // Insert custom version at 3rd position
     // TODO: tried to move this out of frontpage and this caused file not to load, getting stuck on "Preparing", likely caused by this position being hardcoded somewhere (probably in qml's), couldn't find where
@@ -385,9 +393,9 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
     custom->addVersion(customVersion);
     customVersion->addVariant(new ReleaseVariant(customVersion, QString(), QString(), QString(), 0, ReleaseArchitecture::fromId(ReleaseArchitecture::UNKNOWN), ReleaseImageType::fromId(ReleaseImageType::ISO), ReleaseBoard::fromId(ReleaseBoard::UNKNOWN)));
 
-    loadSection("alt-education", "_data_sections_2-additional.yml");
-    loadSection("alt-server-v", "_data_sections_2-additional.yml");
-    loadSection("simply", "_data_sections_3-community.yml");
+    loadSection("alt-education", ":/assets/_data_sections_2-additional.yml");
+    loadSection("alt-server-v", ":/assets/_data_sections_2-additional.yml");
+    loadSection("simply", ":/assets/_data_sections_3-community.yml");
 }
 
 ReleaseManager *ReleaseListModel::manager() {

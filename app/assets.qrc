@@ -19,10 +19,9 @@
     <qresource prefix="/">
         <file alias="metadata_en.json">assets/metadata_en.json</file>
         <file alias="metadata_ru.json">assets/metadata_ru.json</file>
-        <file alias="metadata_ru.json">assets/metadata_ru.json</file>
-        <file alias="_data_sections_1-basic.json">assets/_data_sections_1-basic.yml</file>
-        <file alias="_data_sections_2-additional.yml">assets/_data_sections_2-additional.yml</file>
-        <file alias="_data_sections_3-community.yml">assets/_data_sections_3-community.yml</file>
+        <file>assets/_data_sections_1-basic.yml</file>
+        <file>assets/_data_sections_2-additional.yml</file>
+        <file>assets/_data_sections_3-community.yml</file>
         <file alias="releases.json">assets/releases.json</file>
         <file alias="focusRect">assets/focusrect.png</file>
     </qresource>
