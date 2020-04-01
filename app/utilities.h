@@ -81,7 +81,6 @@ public:
 #else
     bool logging { true };
 #endif
-    QString releasesUrl { "http://getalt.mastersin.ru/releases.json" };
     bool noUserAgent { false }; // disables sending the custom ALT Media Writer user agent header
 };
 

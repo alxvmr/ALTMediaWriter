@@ -99,12 +99,6 @@ void Options::parse(QStringList argv) {
     }
     if (argv.contains("--logging") || argv.contains("-l"))
         logging = true;
-    if ((index = argv.indexOf("--releasesUrl")) >= 0) {
-        if (index >= argv.length() - 1)
-            printHelp();
-        else
-            releasesUrl = argv[index + 1];
-    }
     if (argv.contains("--no-user-agent")) {
         noUserAgent = true;
     }
