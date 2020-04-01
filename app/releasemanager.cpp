@@ -37,6 +37,7 @@ const char *releaseFiles[releaseFilesCount] = {
     "_data_images_p9-server-v.yml",
     "_data_images_p9-simply.yml"
 };
+unsigned int currentDownloadingReleaseIndex = 0;
 
 QString releasesCachePath() {
     QString appdataPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
@@ -82,25 +83,27 @@ ReleaseManager::ReleaseManager(QObject *parent)
     qmlRegisterUncreatableType<Progress>("MediaWriter", 1, 0, "Progress", "");
 
     // Try to load releases.json from cache
-    QFile cache(releasesCachePath());
-    if (cache.open(QIODevice::ReadOnly)) {
-        loadReleases(cache.readAll());
-        cache.close();
-    } else {
-        // Load built-in releases.json if failed to open cache file
-        QFile releases(":/releases.json");
-        releases.open(QIODevice::ReadOnly);
-        loadReleases(releases.readAll());
-        releases.close();
-    }
+    // QFile cache(releasesCachePath());
+    // if (cache.open(QIODevice::ReadOnly)) {
+    //     loadReleases(cache.readAll());
+    //     cache.close();
+    // } else {
+    //     // Load built-in releases.json if failed to open cache file
+    //     QFile releases(":/releases.json");
+    //     releases.open(QIODevice::ReadOnly);
+    //     loadReleases(releases.readAll());
+    //     releases.close();
+    // }
 
+    // Load built-in releases
     for (unsigned int i = 0; i < releaseFilesCount; i++) {
         loadReleases(fileToString(QString(":/assets/") + releaseFiles[i]));
     }
 
     connect(this, SIGNAL(selectedChanged()), this, SLOT(variantChangedFilter()));
 
-    // QTimer::singleShot(0, this, SLOT(fetchReleases()));
+    // Download releases from getalt.org
+    QTimer::singleShot(0, this, SLOT(fetchReleases()));
 }
 
 bool ReleaseManager::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const {
@@ -135,7 +138,9 @@ void ReleaseManager::fetchReleases() {
     m_beingUpdated = true;
     emit beingUpdatedChanged();
 
-    DownloadManager::instance()->fetchPageAsync(this, options.releasesUrl);
+    // Start by downloading the first file, the other files will chain download one after another
+    currentDownloadingReleaseIndex = 0;
+    DownloadManager::instance()->fetchPageAsync(this, QString("http://getalt.mastersin.ru/") + releaseFiles[0]);
 }
 
 void ReleaseManager::variantChangedFilter() {
@@ -299,23 +304,31 @@ void ReleaseManager::loadReleases(const QString &text) {
         if (!variant.isEmpty() && !url.isEmpty() && !arch.isEmpty() && !imageType.isEmpty() && !board.isEmpty())
             updateUrl(variant, version, status, releaseDate, arch, imageType, board, url, sha256, md5, size);
     }
-
-    m_beingUpdated = false;
-    emit beingUpdatedChanged();
 }
 
 void ReleaseManager::onStringDownloaded(const QString &text) {
-    mDebug() << this->metaObject()->className() << "Downloaded releases.json";
-
-    // Save downloaded releases.json
-    auto doc = QJsonDocument::fromJson(text.toUtf8());
-    QFile cache(releasesCachePath());
-    if (cache.open(QFile::WriteOnly)) {
-        cache.write(doc.toJson());
-        cache.close();
-    }
+    mDebug() << this->metaObject()->className() << "Downloaded releases file" << releaseFiles[currentDownloadingReleaseIndex];
+    
+    // Cache downloaded releases file
+    // auto doc = QJsonDocument::fromJson(text.toUtf8());
+    // QFile cache(releasesCachePath());
+    // if (cache.open(QFile::WriteOnly)) {
+    //     cache.write(doc.toJson());
+    //     cache.close();
+    // }
 
     loadReleases(text);
+
+    currentDownloadingReleaseIndex++;
+    if (currentDownloadingReleaseIndex < releaseFilesCount) {
+        DownloadManager::instance()->fetchPageAsync(this, QString("http://getalt.mastersin.ru/") + releaseFiles[currentDownloadingReleaseIndex]);
+    } else if (currentDownloadingReleaseIndex == releaseFilesCount) {
+        // Downloaded the last releases file
+        // Reset index and turn off beingUpdate flag
+        currentDownloadingReleaseIndex = 0;
+        m_beingUpdated = false;
+        emit beingUpdatedChanged();
+    }
 }
 
 void ReleaseManager::onDownloadError(const QString &message) {
