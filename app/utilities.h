@@ -23,12 +23,6 @@
 #include <QObject>
 #include <QLoggingCategory>
 
-#ifdef _WIN32
-    #define SLASH           '\\'
-#else
-    #define SLASH           '/'
-#endif
-
 class Progress;
 class Options;
 class MessageHandler;

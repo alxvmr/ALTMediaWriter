@@ -23,11 +23,11 @@
 #include "isomd5/libcheckisomd5.h"
 #include <yaml-cpp/yaml.h>
 
+#include <fstream>
+
 #include <QtQml>
 #include <QApplication>
 #include <QAbstractEventDispatcher>
-
-#include <QJsonDocument>
 
 const int releaseFilesCount = 5;
 const char *releaseFiles[releaseFilesCount] = {
@@ -39,7 +39,7 @@ const char *releaseFiles[releaseFilesCount] = {
 };
 unsigned int currentDownloadingReleaseIndex = 0;
 
-QString releasesCachePath() {
+QString releasesCacheDir() {
     QString appdataPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
 
     QDir dir(appdataPath);
@@ -49,7 +49,7 @@ QString releasesCachePath() {
         dir.mkpath(appdataPath);
     }
 
-    return appdataPath + SLASH + "releases.json";
+    return appdataPath + "/";
 }
 
 QString fileToString(const QString &filename) {
@@ -83,21 +83,24 @@ ReleaseManager::ReleaseManager(QObject *parent)
     qmlRegisterUncreatableType<Progress>("MediaWriter", 1, 0, "Progress", "");
 
     // Try to load releases.json from cache
-    // QFile cache(releasesCachePath());
-    // if (cache.open(QIODevice::ReadOnly)) {
-    //     loadReleases(cache.readAll());
-    //     cache.close();
-    // } else {
-    //     // Load built-in releases.json if failed to open cache file
-    //     QFile releases(":/releases.json");
-    //     releases.open(QIODevice::ReadOnly);
-    //     loadReleases(releases.readAll());
-    //     releases.close();
-    // }
-
-    // Load built-in releases
+    bool loadedCachedReleases = true;
     for (unsigned int i = 0; i < releaseFilesCount; i++) {
-        loadReleases(fileToString(QString(":/assets/") + releaseFiles[i]));
+        QString cachePath = releasesCacheDir() + releaseFiles[i];
+        QFile cache(cachePath);
+        if (!cache.open(QIODevice::ReadOnly)) {
+            loadedCachedReleases = false;
+            break;
+        } else {
+            cache.close();
+        }
+        loadReleases(fileToString(cachePath));
+    }
+
+    if (!loadedCachedReleases) {
+        // Load built-in releases if failed to load cache
+        for (unsigned int i = 0; i < releaseFilesCount; i++) {
+            loadReleases(fileToString(QString(":/assets/") + releaseFiles[i]));
+        }
     }
 
     connect(this, SIGNAL(selectedChanged()), this, SLOT(variantChangedFilter()));
@@ -308,14 +311,11 @@ void ReleaseManager::loadReleases(const QString &text) {
 
 void ReleaseManager::onStringDownloaded(const QString &text) {
     mDebug() << this->metaObject()->className() << "Downloaded releases file" << releaseFiles[currentDownloadingReleaseIndex];
-    
+
     // Cache downloaded releases file
-    // auto doc = QJsonDocument::fromJson(text.toUtf8());
-    // QFile cache(releasesCachePath());
-    // if (cache.open(QFile::WriteOnly)) {
-    //     cache.write(doc.toJson());
-    //     cache.close();
-    // }
+    QString cachePath = releasesCacheDir() + releaseFiles[currentDownloadingReleaseIndex];
+    std::ofstream cacheFile(cachePath.toStdString());
+    cacheFile << text.toStdString();
 
     loadReleases(text);
 
@@ -399,8 +399,6 @@ void ReleaseListModel::loadSection(const char *sectionName, const char *sections
         lang = "_ru";
     }
     
-    Release *custom = nullptr;
-
     QString variant = ymlToQString(section["code"]);
     QString name = ymlToQString(section[("name" + lang).c_str()]);
     QString summary = ymlToQString(section[("descr" + lang).c_str()]);
@@ -866,42 +864,35 @@ void ReleaseVariant::onStringDownloaded(const QString &text) {
             // Update internal md5
             m_md5 = prev;
 
-            // Update md5 in cached json
-            QFile cache(releasesCachePath());
-            if (cache.open(QFile::ReadOnly)) {
-                auto jsonDoc = QJsonDocument::fromJson(cache.readAll());
-                cache.close();
+            // Update md5 in cached releases file
+            // Have to look in all files because don't know which one contains this variant
+            for (unsigned int i = 0; i < releaseFilesCount; i++) {
+                QString cachePath = releasesCacheDir() + releaseFiles[i];
 
-                auto jsonArray = jsonDoc.array();
-                QJsonObject obj;
-                bool found_variant = false;
-                int i = 0;
-
-                // Find this variant in json
-                for (auto e : jsonArray) {
-                    obj = e.toObject();
-                    if (obj["link"] == m_url) {
-                        found_variant = true;
-                        break;
-                    }
-                    i++;
-                }
-
-                if (found_variant) {
-                    // Replace this variant's md5sum
-                    obj["md5"] = m_md5;
-                    jsonArray.removeAt(i);
-                    jsonArray.insert(i, obj);
-
-                    jsonDoc.setArray(jsonArray);
-                }
-
-                if (cache.open(QFile::WriteOnly)) {
-                    cache.write(jsonDoc.toJson());
+                // Check that file exists
+                QFile cache(cachePath);
+                if (cache.open(QFile::ReadOnly)) {
                     cache.close();
+                } else {
+                    continue;
                 }
+
+                // Open yaml file and edit it
+                YAML::Node file = YAML::Load(fileToString(cachePath).toStdString());
+                for (auto e : file["entries"]) {
+                    if (e["link"] && ymlToQString(e["link"]) == m_url) {
+                        e["md5"] = m_md5.toStdString();
+                    }
+                }
+
+                // Write yaml file back out to cache
+                std::ofstream fout(cachePath.toStdString()); 
+                fout << file;
             }
+
+            break;
         }
+
         prev = elements[i];
     }
 
@@ -1098,7 +1089,7 @@ ReleaseArchitecture *ReleaseArchitecture::fromAbbreviation(const QString &abbr) 
 ReleaseArchitecture *ReleaseArchitecture::fromFilename(const QString &filename) {
     for (int i = 0; i < _ARCHCOUNT; i++) {
         ReleaseArchitecture *arch = &m_all[i];
-        for (unsigned int j = 0; j < arch->m_abbreviation.size(); j++) {
+        for (int j = 0; j < arch->m_abbreviation.size(); j++) {
             if (filename.contains(arch->m_abbreviation[j], Qt::CaseInsensitive))
                 return &m_all[i];
         }
@@ -1143,7 +1134,6 @@ int ReleaseArchitecture::index() const {
 }
 
 // TODO: maybe can drop abbreviation/description stuff? was only needed before because abbreviations WERE abbreviations but now they are pretty much descriptions
-// TODO: remove pc? leave board blank
 ReleaseBoard ReleaseBoard::m_all[] = {
     {{"unknown"}, QT_TR_NOOP("Unknown board")},
     {{"none"}, QT_TR_NOOP("")},
@@ -1243,7 +1233,7 @@ ReleaseImageType *ReleaseImageType::fromAbbreviation(const QString &abbr) {
 ReleaseImageType *ReleaseImageType::fromFilename(const QString &filename) {
     for (int i = 0; i < _IMAGETYPECOUNT; i++) {
         ReleaseImageType *type = &m_all[i];
-        for (unsigned int j = 0; j < type->m_abbreviation.size(); j++) {
+        for (int j = 0; j < type->m_abbreviation.size(); j++) {
             if (filename.contains(type->m_abbreviation[j], Qt::CaseInsensitive))
                 return &m_all[i];
         }
@@ -1304,11 +1294,10 @@ bool ReleaseImageType::supportedForWriting() const {
 }
 
 bool ReleaseImageType::canWriteWithRootfs() const {
-    ReleaseImageType::Id index = (ReleaseImageType::Id)this->index();
-    
 #if defined(__APPLE__) || defined(_WIN32)
     return false;
 #else
+    ReleaseImageType::Id index = (ReleaseImageType::Id)this->index();
     if (index == TAR_XZ) {
         return true;
     } else {
