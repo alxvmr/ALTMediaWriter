@@ -271,7 +271,7 @@ void ReleaseManager::loadReleases(const QString &text) {
         QString variant = ymlToQString(e["solution"]);
 
         QString arch = "unknown";
-        if (e["arch"].IsDefined()) {
+        if (e["arch"]) {
             arch = ymlToQString(e["arch"]);
         } else {
             // NOTE: yml files missing arch for a couple entries so get it from filename(url)
@@ -291,12 +291,12 @@ void ReleaseManager::loadReleases(const QString &text) {
 
         // NOTE: yml file doesn't define "board" for pc32/pc64
         QString board = "none";
-        if (e["board"].IsDefined()) {
+        if (e["board"]) {
             board = ymlToQString(e["board"]);
         }
 
         QString md5 = "";
-        if (e["md5"].IsDefined()) {
+        if (e["md5"]) {
             // NOTE: yml files has md5's for only a few entries
             md5 = ymlToQString(e["md5"]);
         }
