@@ -29,6 +29,15 @@
 
 #include <QJsonDocument>
 
+const int releaseFilesCount = 5;
+const char *releaseFiles[releaseFilesCount] = {
+    "_data_images_p9-workstation.yml",
+    "_data_images_p9-education.yml",
+    "_data_images_p9-server.yml",
+    "_data_images_p9-server-v.yml",
+    "_data_images_p9-simply.yml"
+};
+
 QString releasesCachePath() {
     QString appdataPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
 
@@ -40,6 +49,22 @@ QString releasesCachePath() {
     }
 
     return appdataPath + SLASH + "releases.json";
+}
+
+QString fileToString(const QString &filename) {
+    QFile file(filename);
+    if (!file.open(QFile::ReadOnly | QFile::Text)) {
+        qInfo() << "fileToString(): Failed to open file " << filename;
+        return "";
+    }
+    QTextStream fileStream(&file);
+    QString str = fileStream.readAll();
+    file.close();
+    return str;
+}
+
+QString ymlToQString(YAML::Node ymlStr) {
+    return QString::fromStdString(ymlStr.as<std::string>());
 }
 
 ReleaseManager::ReleaseManager(QObject *parent)
@@ -57,37 +82,41 @@ ReleaseManager::ReleaseManager(QObject *parent)
     qmlRegisterUncreatableType<Progress>("MediaWriter", 1, 0, "Progress", "");
 
     // Try to load local releases.json (for testing)
-    bool local_json = false;
-    QFile releases("LOADME.json");
-    if (releases.open(QIODevice::ReadOnly) ) {
-        loadReleases(releases.readAll());
-        releases.close();
-        local_json = true;
-        qInfo("-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-");
-        qInfo("-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-");
-        qInfo("LOADING LOCAL JSON");
-        qInfo("-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-");
-        qInfo("-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-");
-    } else {
-        // Try to load releases.json from cache
-        QFile cache(releasesCachePath());
-        if (cache.open(QIODevice::ReadOnly)) {
-            loadReleases(cache.readAll());
-            cache.close();
-        } else {
-            // Load built-in releases.json if failed to open cache file
-            QFile releases(":/releases.json");
-            releases.open(QIODevice::ReadOnly);
-            loadReleases(releases.readAll());
-            releases.close();
-        }
+    // bool local_json = false;
+    // QFile releases("LOADME.json");
+    // if (releases.open(QIODevice::ReadOnly) ) {
+    //     loadReleases(releases.readAll());
+    //     releases.close();
+    //     local_json = true;
+    //     qInfo("-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-");
+    //     qInfo("-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-");
+    //     qInfo("LOADING LOCAL JSON");
+    //     qInfo("-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-");
+    //     qInfo("-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-!-");
+    // } else {
+    //     // Try to load releases.json from cache
+    //     QFile cache(releasesCachePath());
+    //     if (cache.open(QIODevice::ReadOnly)) {
+    //         loadReleases(cache.readAll());
+    //         cache.close();
+    //     } else {
+    //         // Load built-in releases.json if failed to open cache file
+            // QFile releases(":/releases.json");
+            // releases.open(QIODevice::ReadOnly);
+            // loadReleases(releases.readAll());
+            // releases.close();
+    //     }
+    // }
+
+    for (unsigned int i = 0; i < releaseFilesCount; i++) {
+        loadReleases(fileToString(QString(":/assets/") + releaseFiles[i]));
     }
 
     connect(this, SIGNAL(selectedChanged()), this, SLOT(variantChangedFilter()));
 
-    if (!local_json) {
-        QTimer::singleShot(0, this, SLOT(fetchReleases()));
-    }
+    // if (!local_json) {
+    //     QTimer::singleShot(0, this, SLOT(fetchReleases()));
+    // }
 }
 
 bool ReleaseManager::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const {
@@ -234,32 +263,54 @@ ReleaseVariant *ReleaseManager::variant() {
 }
 
 void ReleaseManager::loadReleases(const QString &text) {
-    QRegExp re("(\\d+)\\s?(\\S+)?");
-    auto doc = QJsonDocument::fromJson(text.toUtf8());
+    YAML::Node file = YAML::Load(text.toStdString());
 
-    for (auto i : doc.array()) {
-        QJsonObject obj = i.toObject();
-        QString arch = obj["arch"].toString().toLower();
-        QString url = obj["link"].toString();
-        QString category = obj["variant"].toString().toLower();
-        QString variant = obj["variant"].toString().toLower();
-        QString versionWithStatus = obj["version"].toString().toLower();
-        QString md5 = obj["md5"].toString();
-        QString sha256 = obj["sha256"].toString();
-        QString imageType = obj["imageType"].toString();
-        QString board = obj["board"].toString();
-        QDateTime releaseDate = QDateTime::fromString((obj["releaseDate"].toString()), "yyyy-MM-dd");
-        int64_t size = obj["size"].toString().toLongLong();
-        QString version;
-        QString status;
+    for (auto e : file["entries"]) {
+        QString url = ymlToQString(e["link"]);
 
-        if (re.indexIn(versionWithStatus) < 0)
-            continue;
+        QString variant = ymlToQString(e["solution"]);
 
-        version = re.capturedTexts()[1];
-        status = re.capturedTexts()[2];
+        QString arch = "unknown";
+        if (e["arch"].IsDefined()) {
+            arch = ymlToQString(e["arch"]);
+        } else {
+            // NOTE: yml files missing arch for a couple entries so get it from filename(url)
+            ReleaseArchitecture *fileNameArch = ReleaseArchitecture::fromFilename(url);
 
-        mDebug() << this->metaObject()->className() << "Adding" << variant << versionWithStatus << arch;
+            if (fileNameArch != nullptr) {
+                arch = fileNameArch->abbreviation()[0];
+            }
+        }
+
+        QString imageType = ymlToQString(e["type"]);
+        if (url.contains("recovery.tar")) {
+            // NOTE: have to manually distinguish here because yml's just mark recovery.tar as "archive"
+            // TODO: figure out how to deal with this imageType
+            imageType = "trc";
+        }
+
+        // NOTE: yml file doesn't define "board" for pc32/pc64
+        QString board = "none";
+        if (e["board"].IsDefined()) {
+            board = ymlToQString(e["board"]);
+        }
+
+        QString md5 = "";
+        if (e["md5"].IsDefined()) {
+            // NOTE: yml files has md5's for only a few entries
+            md5 = ymlToQString(e["md5"]);
+        }
+        QString sha256 = "";
+
+        // TODO: implement these fields if/when yml files start to include these
+        QDateTime releaseDate = QDateTime::fromString("", "yyyy-MM-dd");
+        int64_t size = 0;
+
+        // TODO: handle versions if needed
+        QString version = "9";
+        QString status = "0";
+
+        mDebug() << this->metaObject()->className() << "Adding" << variant << arch;
 
         if (!variant.isEmpty() && !url.isEmpty() && !arch.isEmpty() && !imageType.isEmpty() && !board.isEmpty())
             updateUrl(variant, version, status, releaseDate, arch, imageType, board, url, sha256, md5, size);
@@ -324,21 +375,11 @@ QVariant ReleaseListModel::data(const QModelIndex &index, int role) const {
     return QVariant();
 }
 
-QString ymlToQString(YAML::Node ymlStr) {
-    return QString::fromStdString(ymlStr.as<std::string>());
-}
-
 void ReleaseListModel::loadSection(const char *sectionName, const char *sectionsFilename) {
     // Load section named "sectionName" from .yml file named "sectionsFilename"
     // Translate it into a Release
     // NOTE: couldn't figure out how to use YAML::loadFile on qrc file directly so have to do it through string
-    QFile file(sectionsFilename);
-    if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        qInfo() << "ReleaseListModel::loadSection(): Failed to open file " << sectionsFilename;
-        return;
-    }
-    QTextStream fileStream(&file);
-    QString fileContents = fileStream.readAll();
+    QString fileContents = fileToString(QString(sectionsFilename));
     YAML::Node sectionsFile = YAML::Load(fileContents.toStdString());
     YAML::Node section;
     bool foundSection = false;
@@ -748,7 +789,7 @@ ReleaseBoard *ReleaseVariant::board() const {
 }
 
 QString ReleaseVariant::name() const {
-    if (m_board != NULL) {
+    if (m_board != NULL && m_board->index() != ReleaseBoard::Id::NONE) {
         return m_arch->description() + " | " + m_board->description();
     } else {
         return m_arch->description();
@@ -1026,7 +1067,7 @@ void ReleaseVariant::setErrorString(const QString &o) {
 
 
 ReleaseArchitecture ReleaseArchitecture::m_all[] = {
-    {{"x86_64"}, QT_TR_NOOP("AMD 64bit")},
+    {{"x86-64"}, QT_TR_NOOP("AMD 64bit")},
     {{"x86", "i386", "i586", "i686"}, QT_TR_NOOP("Intel 32bit")},
     {{"armv7hl", "armhfp", "armh"}, QT_TR_NOOP("ARM v7")},
     {{"aarch64"}, QT_TR_NOOP("AArch64")},
@@ -1053,6 +1094,17 @@ ReleaseArchitecture *ReleaseArchitecture::fromAbbreviation(const QString &abbr) 
     for (int i = 0; i < _ARCHCOUNT; i++) {
         if (m_all[i].abbreviation().contains(abbr, Qt::CaseInsensitive))
             return &m_all[i];
+    }
+    return nullptr;
+}
+
+ReleaseArchitecture *ReleaseArchitecture::fromFilename(const QString &filename) {
+    for (int i = 0; i < _ARCHCOUNT; i++) {
+        ReleaseArchitecture *arch = &m_all[i];
+        for (unsigned int j = 0; j < arch->m_abbreviation.size(); j++) {
+            if (filename.contains(arch->m_abbreviation[j], Qt::CaseInsensitive))
+                return &m_all[i];
+        }
     }
     return nullptr;
 }
@@ -1093,17 +1145,17 @@ int ReleaseArchitecture::index() const {
     return this - m_all;
 }
 
-
+// TODO: maybe can drop abbreviation/description stuff? was only needed before because abbreviations WERE abbreviations but now they are pretty much descriptions
+// TODO: remove pc? leave board blank
 ReleaseBoard ReleaseBoard::m_all[] = {
-    {{"", "unknown"}, QT_TR_NOOP("Unknown board")},
-    {{"pc", "pc64"}, QT_TR_NOOP("Intel, AMD and other compatible PCs (64-bit)")},
-    {{"ibmpc", "pc32"}, QT_TR_NOOP("Legacy Intel, AMD and other compatible PCs (32-bit)")},
-    {{"tavolga"}, QT_TR_NOOP("Tavolga Terminal (MIPSel)")},
-    {{"rpi3"}, QT_TR_NOOP("RaspberryPi 3")},
-    {{"rpi4"}, QT_TR_NOOP("RaspberryPi 4")},
-    {{"powerpc"}, QT_TR_NOOP("Power8/9")},
-    {{"arm64"}, QT_TR_NOOP("ARM64 UEFI")},
-    {{"jetson-nano"}, QT_TR_NOOP("Jetson Nano")},
+    {{"unknown"}, QT_TR_NOOP("Unknown board")},
+    {{"none"}, QT_TR_NOOP("")},
+    {{"Tavolga Terminal"}, QT_TR_NOOP("Tavolga Terminal (MIPSel)")},
+    {{"RPi3"}, QT_TR_NOOP("RaspberryPi 3")},
+    {{"RPi4"}, QT_TR_NOOP("RaspberryPi 4")},
+    {{"POWER8/9"}, QT_TR_NOOP("Power8/9")},
+    {{"ARM64 UEFI"}, QT_TR_NOOP("ARM64 UEFI")},
+    {{"Nvidia Jetson Nano"}, QT_TR_NOOP("Jetson Nano")},
 };
 
 ReleaseBoard::ReleaseBoard(const QStringList &abbreviation, const char *description)
@@ -1164,13 +1216,10 @@ int ReleaseBoard::index() const {
 
 
 ReleaseImageType ReleaseImageType::m_all[] = {
-    {{"iso", "dvd"}, QT_TR_NOOP("ISO DVD"), QT_TR_NOOP("ISO format image")},
-    {{"tar"}, QT_TR_NOOP("TAR Archive"), QT_TR_NOOP("tar archive of rootfs")},
-    {{"tgz", "tar.gz"}, QT_TR_NOOP("GZip TAR Archive"), QT_TR_NOOP("GNU Zip compressed tar archive of rootfs")},
-    {{"txz", "tar.xz"}, QT_TR_NOOP("LZMA TAR Archive"), QT_TR_NOOP("LZMA-compressed tar archive of rootfs")},
-    {{"img"}, QT_TR_NOOP("Raw image"), QT_TR_NOOP("raw image")},
-    {{"igz", "img.gz"}, QT_TR_NOOP("GZip TAR Archive"), QT_TR_NOOP("GNU Zip compressed raw image")},
-    {{"ixz", "img.xz"}, QT_TR_NOOP("LZMA TAR Archive"), QT_TR_NOOP("LZMA-compressed raw image")},
+    {{"iso"}, QT_TR_NOOP("ISO DVD"), QT_TR_NOOP("ISO format image")},
+    // TODO: translate this "LZMA IMG"
+    {{"image", "img.xz"}, QT_TR_NOOP("LZMA IMG"), QT_TR_NOOP("LZMA-compressed raw image")},
+    {{"archive", "tar.xz"}, QT_TR_NOOP("LZMA TAR Archive"), QT_TR_NOOP("LZMA-compressed tar archive of rootfs")},
     {{"trc", "recovery.tar"}, QT_TR_NOOP("Recovery TAR Archive"), QT_TR_NOOP("Special recovery archive for Tavolga Terminal")},
 };
 
@@ -1249,12 +1298,8 @@ bool ReleaseImageType::supportedForWriting() const {
     ReleaseImageType::Id index = (ReleaseImageType::Id)this->index();
     switch (index) {
         case ISO: return true; 
-        case TAR: return false;
-        case TAR_GZ: return false;
-        case TAR_XZ: return false;
-        case IMG: return true;
-        case IMG_GZ: return false;
         case IMG_XZ: return true;
+        case TAR_XZ: return false;
         case RECOVERY_TAR: return false;
         case _IMAGETYPECOUNT: return false;
     }

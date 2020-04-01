@@ -484,6 +484,7 @@ public:
     Q_ENUMS(Id);
     static ReleaseArchitecture *fromId(Id id);
     static ReleaseArchitecture *fromAbbreviation(const QString &abbr);
+    static ReleaseArchitecture *fromFilename(const QString &filename);
     static bool isKnown(const QString &abbr);
     static QList<ReleaseArchitecture *> listAll();
     static QStringList listAllDescriptions();
@@ -518,8 +519,7 @@ class ReleaseBoard : public QObject {
 public:
     enum Id {
         UNKNOWN = 0,
-        PC,
-        PC32,
+        NONE,
         TAVOLGA,
         RPI3,
         RPI4,
@@ -569,12 +569,8 @@ class ReleaseImageType : public QObject {
 public:
     enum Id {
         ISO = 0,
-        TAR,
-        TAR_GZ,
-        TAR_XZ,
-        IMG,
-        IMG_GZ,
         IMG_XZ,
+        TAR_XZ,
         RECOVERY_TAR,
         _IMAGETYPECOUNT,
     };
