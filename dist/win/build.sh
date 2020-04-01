@@ -39,7 +39,7 @@ fi
 # 
 if [ $opt_install = true ]
 then
-	PACKAGES="base-devel mingw-w64-i686-toolchain mingw-w64-i686-qt5 mingw-w64-i686-xz  mingw-w64-i686-nsis mingw-w64-i686-mesa git dos2unix"
+	PACKAGES="base-devel mingw-w64-i686-toolchain mingw-w64-i686-qt5 mingw-w64-i686-xz  mingw-w64-i686-nsis mingw-w64-i686-mesa git dos2unix mingw-w64-i686-yaml-cpp"
 
 	pacman -S --needed --noconfirm $PACKAGES
 fi
@@ -77,7 +77,7 @@ then
 
 	windeployqt --compiler-runtime --qmldir app "$BUILDPATH/mediawriter.exe"
 	
-	DLLS="libbz2-1 libdouble-conversion libfreetype-6 libglib-2.0-0 libgraphite2 libharfbuzz-0 libiconv-2 libicudt65 libicuin65 libicuio65 libicutest65 libicutu65 libicuuc65 libpcre-1 libpcre2-16-0 libpcre16-0 libpng16-16 libzstd zlib1 libintl-8 opengl32 libglapi"
+	DLLS="libbz2-1 libdouble-conversion libfreetype-6 libglib-2.0-0 libgraphite2 libharfbuzz-0 libiconv-2 libicudt65 libicuin65 libicuio65 libicutest65 libicutu65 libicuuc65 libpcre-1 libpcre2-16-0 libpcre16-0 libpng16-16 libzstd zlib1 libintl-8 opengl32 libglapi yaml-cpp"
 
 	for dll in $DLLS
 	do
