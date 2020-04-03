@@ -1281,7 +1281,7 @@ int ReleaseImageType::index() const {
 
 bool ReleaseImageType::supportedForWriting() const {
     ReleaseImageType::Id index = (ReleaseImageType::Id)this->index();
-    
+
     switch (index) {
         case ISO: return true; 
         case IMG_XZ: return true;
@@ -1306,7 +1306,7 @@ bool ReleaseImageType::canWriteWithRootfs() const {
 #endif
 }
 
-bool canMD5checkAfterWrite() const {
+bool ReleaseImageType::canMD5checkAfterWrite() const {
     ReleaseImageType::Id index = (ReleaseImageType::Id)this->index();
 
     if (index == ISO) {
