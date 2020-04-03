@@ -588,6 +588,7 @@ public:
     QString description() const;
     bool supportedForWriting() const;
     bool canWriteWithRootfs() const;
+    bool canMD5checkAfterWrite() const;
     int index() const;
 
 private:

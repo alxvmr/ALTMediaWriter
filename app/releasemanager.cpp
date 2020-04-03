@@ -924,7 +924,6 @@ void ReleaseVariant::onFileDownloaded(const QString &path, const QString &hash) 
         setStatus(FAILED_DOWNLOAD);
         return;
     }
-
     else if (checkResult == ISOMD5SUM_FILE_NOT_FOUND) {
         setErrorString(tr("The downloaded file is not readable."));
         setStatus(FAILED_DOWNLOAD);
@@ -1282,6 +1281,7 @@ int ReleaseImageType::index() const {
 
 bool ReleaseImageType::supportedForWriting() const {
     ReleaseImageType::Id index = (ReleaseImageType::Id)this->index();
+    
     switch (index) {
         case ISO: return true; 
         case IMG_XZ: return true;
@@ -1297,10 +1297,21 @@ bool ReleaseImageType::canWriteWithRootfs() const {
     return false;
 #else
     ReleaseImageType::Id index = (ReleaseImageType::Id)this->index();
+
     if (index == TAR_XZ) {
         return true;
     } else {
         return false;
     }
 #endif
+}
+
+bool canMD5checkAfterWrite() const {
+    ReleaseImageType::Id index = (ReleaseImageType::Id)this->index();
+
+    if (index == ISO) {
+        return true;
+    } else {
+        return false;
+    }
 }

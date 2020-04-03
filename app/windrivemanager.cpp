@@ -279,7 +279,11 @@ bool WinDrive::write(ReleaseVariant *data) {
     else
         args << data->temporaryPath();
     args << QString("%1").arg(m_device);
-    args << data->md5();
+    if (data->imageType()->canMD5checkAfterWrite()) {
+        args << data->md5();
+    } else {
+        args << "";
+    }
     m_child->setArguments(args);
 
     mDebug() << this->metaObject()->className() << "Starting" << m_child->program() << args;

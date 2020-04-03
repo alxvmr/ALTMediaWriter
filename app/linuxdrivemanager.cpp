@@ -218,7 +218,11 @@ bool LinuxDrive::write(ReleaseVariant *data) {
     else
         args << data->temporaryPath();
     args << m_device;
-    args << data->md5();
+    if (data->imageType()->noMD5checkAfterWrite()) {
+        args << data->md5();
+    } else {
+        args << "";
+    }
     mDebug() << this->metaObject()->className() << "Helper command will be" << args;
     m_process->setArguments(args);
 
