@@ -24,12 +24,12 @@
 
 VersionChecker::VersionChecker(QObject *parent)
     : QObject(parent) {
-#if defined(__APPLE__) || defined(_WIN32)
-    mDebug() << this->metaObject()->className() << "Asking for new FMW version information";
-    DownloadManager::instance()->fetchPageAsync(this, "https://getfedora.org/static/fmw-version.json");
-#else
-    mDebug() << this->metaObject()->className() << "This platform doesn't need to ask about new FMW versions";
-#endif
+// #if defined(__APPLE__) || defined(_WIN32)
+//     mDebug() << this->metaObject()->className() << "Asking for new FMW version information";
+//     DownloadManager::instance()->fetchPageAsync(this, "https://getfedora.org/static/fmw-version.json");
+// #else
+//     mDebug() << this->metaObject()->className() << "This platform doesn't need to ask about new FMW versions";
+// #endif
 }
 
 void VersionChecker::onStringDownloaded(const QString &text) {

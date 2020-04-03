@@ -37,7 +37,6 @@ const char *releaseFiles[releaseFilesCount] = {
     "_data_images_p9-server-v.yml",
     "_data_images_p9-simply.yml"
 };
-unsigned int currentDownloadingReleaseIndex = 0;
 
 QString releasesCacheDir() {
     QString appdataPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);

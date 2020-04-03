@@ -138,6 +138,7 @@ private:
     int m_filterArchitecture { 0 };
     int m_selectedIndex { 0 };
     bool m_beingUpdated { false };
+    unsigned int currentDownloadingReleaseIndex = 0;
 
     void loadReleases(const QString &text);
 };
