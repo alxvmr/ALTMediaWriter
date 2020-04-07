@@ -218,7 +218,7 @@ bool LinuxDrive::write(ReleaseVariant *data) {
     else
         args << data->temporaryPath();
     args << m_device;
-    if (data->imageType()->noMD5checkAfterWrite()) {
+    if (data->imageType()->canMD5checkAfterWrite()) {
         args << data->md5();
     } else {
         args << "";

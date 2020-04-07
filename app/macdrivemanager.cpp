@@ -114,7 +114,7 @@ bool MacDrive::write(ReleaseVariant *data) {
         command.append(QString("'%1'").arg(data->temporaryPath()));
     }
     command.append(" ");
-    if (data->imageType()->noMD5checkAfterWrite()) {
+    if (data->imageType()->canMD5checkAfterWrite()) {
         command.append(QString("'%1'").arg(data->md5()));
     } else {
         command.append(QString("'%1'").arg(""));
