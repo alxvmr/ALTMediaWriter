@@ -31,11 +31,11 @@
 
 const int releaseFilesCount = 5;
 const char *releaseFiles[releaseFilesCount] = {
-    "_data_images_p9-workstation.yml",
-    "_data_images_p9-education.yml",
-    "_data_images_p9-server.yml",
-    "_data_images_p9-server-v.yml",
-    "_data_images_p9-simply.yml"
+    "p9-workstation.yml",
+    "p9-education.yml",
+    "p9-server.yml",
+    "p9-server-v.yml",
+    "p9-simply.yml"
 };
 
 QString releasesCacheDir() {
@@ -417,8 +417,8 @@ void ReleaseListModel::loadSection(const char *sectionName, const char *sections
 
 ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
     : QAbstractListModel(parent) {
-    loadSection("alt-workstation", ":/assets/_data_sections_1-basic.yml");
-    loadSection("alt-server", ":/assets/_data_sections_1-basic.yml");
+    loadSection("alt-workstation", ":/assets/1-basic.yml");
+    loadSection("alt-server", ":/assets/1-basic.yml");
 
     // Insert custom version at 3rd position
     // TODO: tried to move this out of frontpage and this caused file not to load, getting stuck on "Preparing", likely caused by this position being hardcoded somewhere (probably in qml's), couldn't find where
@@ -428,9 +428,9 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
     custom->addVersion(customVersion);
     customVersion->addVariant(new ReleaseVariant(customVersion, QString(), QString(), QString(), 0, ReleaseArchitecture::fromId(ReleaseArchitecture::UNKNOWN), ReleaseImageType::fromId(ReleaseImageType::ISO), ReleaseBoard::fromId(ReleaseBoard::UNKNOWN)));
 
-    loadSection("alt-education", ":/assets/_data_sections_2-additional.yml");
-    loadSection("alt-server-v", ":/assets/_data_sections_2-additional.yml");
-    loadSection("simply", ":/assets/_data_sections_3-community.yml");
+    loadSection("alt-education", ":/assets/2-additional.yml");
+    loadSection("alt-server-v", ":/assets/2-additional.yml");
+    loadSection("simply", ":/assets/3-community.yml");
 }
 
 ReleaseManager *ReleaseListModel::manager() {

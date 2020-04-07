@@ -17,15 +17,15 @@
         <file alias="alt-workstation">assets/logos/png/workstation.png</file>
     </qresource>
     <qresource prefix="/">
-        <file>assets/_data_sections_1-basic.yml</file>
-        <file>assets/_data_sections_2-additional.yml</file>
-        <file>assets/_data_sections_3-community.yml</file>
+        <file>assets/1-basic.yml</file>
+        <file>assets/2-additional.yml</file>
+        <file>assets/3-community.yml</file>
 
-        <file>assets/_data_images_p9-education.yml</file>
-        <file>assets/_data_images_p9-server-v.yml</file>
-        <file>assets/_data_images_p9-server.yml</file>
-        <file>assets/_data_images_p9-simply.yml</file>
-        <file>assets/_data_images_p9-workstation.yml</file>
+        <file>assets/p9-education.yml</file>
+        <file>assets/p9-server-v.yml</file>
+        <file>assets/p9-server.yml</file>
+        <file>assets/p9-simply.yml</file>
+        <file>assets/p9-workstation.yml</file>
 
         <file alias="focusRect">assets/focusrect.png</file>
     </qresource>
