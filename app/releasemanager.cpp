@@ -37,6 +37,7 @@ const char *releaseFiles[releaseFilesCount] = {
     "p9-server-v.yml",
     "p9-simply.yml"
 };
+const char *getaltImagesLocation = "http://getalt.mastersin.ru/_data/images/";
 
 QString releasesCacheDir() {
     QString appdataPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
@@ -142,7 +143,7 @@ void ReleaseManager::fetchReleases() {
 
     // Start by downloading the first file, the other files will chain download one after another
     currentDownloadingReleaseIndex = 0;
-    DownloadManager::instance()->fetchPageAsync(this, QString("http://getalt.mastersin.ru/") + releaseFiles[0]);
+    DownloadManager::instance()->fetchPageAsync(this, QString(getaltImagesLocation) + releaseFiles[0]);
 }
 
 void ReleaseManager::variantChangedFilter() {
@@ -320,7 +321,7 @@ void ReleaseManager::onStringDownloaded(const QString &text) {
 
     currentDownloadingReleaseIndex++;
     if (currentDownloadingReleaseIndex < releaseFilesCount) {
-        DownloadManager::instance()->fetchPageAsync(this, QString("http://getalt.mastersin.ru/") + releaseFiles[currentDownloadingReleaseIndex]);
+        DownloadManager::instance()->fetchPageAsync(this, QString(getaltImagesLocation) + releaseFiles[currentDownloadingReleaseIndex]);
     } else if (currentDownloadingReleaseIndex == releaseFilesCount) {
         // Downloaded the last releases file
         // Reset index and turn off beingUpdate flag
