@@ -1135,6 +1135,10 @@ int ReleaseArchitecture::index() const {
 ReleaseBoard ReleaseBoard::m_all[] = {
     {{"unknown"}, QT_TR_NOOP("Unknown board")},
     {{"none"}, QT_TR_NOOP("")},
+    // NOTE: this has to be before "ARM64 UEFI" because searches through this array use contains()
+    {{"ARM64 UEFI Live"}, QT_TR_NOOP("Live")},
+    {{"i586 Live"}, QT_TR_NOOP("Live")},
+    {{"x86-64 Live"}, QT_TR_NOOP("Live")},
     {{"Tavolga Terminal"}, QT_TR_NOOP("Tavolga Terminal (MIPSel)")},
     {{"RPi3"}, QT_TR_NOOP("RaspberryPi 3")},
     {{"RPi4"}, QT_TR_NOOP("RaspberryPi 4")},

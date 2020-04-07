@@ -521,6 +521,9 @@ public:
     enum Id {
         UNKNOWN = 0,
         NONE,
+        ARM64_LIVE,
+        I586_LIVE,
+        X86_64_LIVE,
         TAVOLGA,
         RPI3,
         RPI4,
