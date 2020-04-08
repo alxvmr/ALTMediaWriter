@@ -2,7 +2,7 @@
 %define oname ALTMediaWriter
 
 Name:           altmediawriter
-Version:        0.3.0
+Version:        0.4.0
 Release:        alt1
 Summary:        ALT Media Writer
 Group:          System/Configuration/Other
@@ -17,6 +17,7 @@ BuildRequires:  gettext
 BuildRequires:  libappstream-glib
 BuildRequires:  gcc-c++
 BuildRequires:  liblzma-devel
+BuildRequires:  libyaml-cpp-devel
 
 Requires:       qt5-quickcontrols2
 Requires:       polkit
@@ -58,6 +59,12 @@ appstream-util validate-relax --nonet %buildroot/%_datadir/appdata/%name.appdata
 
 
 %changelog
+* Wed Apr 08 2020 Dmitry Degtyarev <kevl@altlinux.org> 0.4.0-alt1
+- Changed metadata and image assets to yaml files from getalt.org
+- Turned off md5 check for compressed images
+- Added Simply variant
+- Added Live releases to some variants
+
 * Tue Mar 10 2020 Dmitry Degtyarev <kevl@altlinux.org> 0.3.0-alt1
 - Added generate_releases.sh
 - Cleaned up releasesmanager.h by removing unused and unneded fields/logic
