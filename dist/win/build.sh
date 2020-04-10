@@ -55,6 +55,13 @@ BUILDPATH="$ROOTPATH/build"
 
 if [ $opt_build = true ]
 then
+    # if [ command -v cloc ] 
+    if [ ! "$(command -v qmakes)" ] || [ ! "$(command -v mingw32-make)" ]
+    then
+        echo "You need to run \"./build.sh install\" to install dependencies before building"
+        exit 1
+    fi
+
 	echo "Building"
 
 	cd "$ROOTPATH"
