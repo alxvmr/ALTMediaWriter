@@ -920,6 +920,8 @@ void ReleaseVariant::onFileDownloaded(const QString &path, const QString &hash) 
 
     if (checkResult == ISOMD5SUM_CHECK_FAILED) {
         mWarning() << "Internal MD5 media check of" << path << "failed with status" << checkResult;
+        mWarning() << "sum should be:" << libcheckisomd5_last_mediasum;
+        mWarning() << "computed sum:" << libcheckisomd5_last_computedsum;
         QFile::remove(path);
         setErrorString(tr("The downloaded image is corrupted"));
         setStatus(FAILED_DOWNLOAD);

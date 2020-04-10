@@ -11,6 +11,10 @@ extern "C" {
 #define ISOMD5SUM_CHECK_NOT_FOUND       -1
 #define ISOMD5SUM_FILE_NOT_FOUND        -2
 
+#define MD5_DIGEST_LENGTH 16
+extern char libcheckisomd5_last_computedsum[MD5_DIGEST_LENGTH * 2 + 1];
+extern char libcheckisomd5_last_mediasum[MD5_DIGEST_LENGTH * 2 + 1];
+
 /* for non-zero return value, check is aborted */
 typedef int (*checkCallback)(void *, long long offset, long long total);
 

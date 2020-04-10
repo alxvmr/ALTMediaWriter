@@ -47,10 +47,12 @@ size_t getpagesize () {
 
 #define BUFSIZE 32768
 #define SIZE_OFFSET 84
-#define MD5_DIGEST_LENGTH 16
 
 #define MAX(x, y)  ((x > y) ? x : y)
 #define MIN(x, y)  ((x < y) ? x : y)
+
+char libcheckisomd5_last_computedsum[MD5_DIGEST_LENGTH * 2 + 1];
+char libcheckisomd5_last_mediasum[MD5_DIGEST_LENGTH * 2 + 1];
 
 static int checkmd5sum(int fd, const char *mediasum, checkCallback cb, void *cbdata, long long size) {
     // Md5 is empty, therefore md5 check not needed
@@ -116,6 +118,10 @@ static int checkmd5sum(int fd, const char *mediasum, checkCallback cb, void *cbd
 
     // printf("computedsum=%s\n", computedsum);
     // printf("mediasum=%s\n", mediasum);
+
+    // Save sums for debug purposes
+    memcpy(libcheckisomd5_last_mediasum, mediasum, sizeof(libcheckisomd5_last_mediasum) * sizeof(char));
+    memcpy(libcheckisomd5_last_computedsum, computedsum, sizeof(libcheckisomd5_last_computedsum) * sizeof(char));
 
     if (strcmp(mediasum, computedsum) == 0) {
         return ISOMD5SUM_CHECK_PASSED;
