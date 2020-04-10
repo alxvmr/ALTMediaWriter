@@ -138,8 +138,7 @@ int mediaCheckFile(const char *file, const char *md5,checkCallback cb, void *cbd
     }
 
     // Calculate file size
-    off_t size = lseek(fd, 0L, SEEK_END);
-    lseek(fd, 0L, SEEK_SET);
+    long long size = lseek64(fd, 0L, SEEK_END);
 
     int rc = checkmd5sum(fd, md5, cb, cbdata, size);
 
