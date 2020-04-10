@@ -37,7 +37,7 @@ const char *releaseFiles[releaseFilesCount] = {
     "p9-server-v.yml",
     "p9-simply.yml"
 };
-const char *getaltImagesLocation = "http://getalt.mastersin.ru/_data/images/";
+const char *getaltImagesLocation = "http://getalt.org/_data/images/";
 
 QString releasesCacheDir() {
     QString appdataPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
