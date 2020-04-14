@@ -56,13 +56,17 @@ BUILDPATH="$ROOTPATH/build"
 if [ $opt_build = true ]
 then
     # if [ command -v cloc ] 
-    if [ ! "$(command -v qmakes)" ] || [ ! "$(command -v mingw32-make)" ]
+    if [ ! "$(command -v qmake)" ] || [ ! "$(command -v mingw32-make)" ]
     then
         echo "You need to run \"./build.sh install\" to install dependencies before building"
         exit 1
     fi
 
 	echo "Building"
+
+    # Clean everything so that version gets embedded correctly in makefiles
+    find "$ROOTPATH" -name Makefile | xargs rm
+    find "$ROOTPATH" -name mediawriter.exe | xargs rm
 
 	cd "$ROOTPATH"
 	qmake
