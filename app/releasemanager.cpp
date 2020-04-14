@@ -59,6 +59,8 @@ QString fileToString(const QString &filename) {
         return "";
     }
     QTextStream fileStream(&file);
+    // NOTE: set codec manually, default codec is no good for cyrillic
+    fileStream.setCodec("UTF8");
     QString str = fileStream.readAll();
     file.close();
     return str;
