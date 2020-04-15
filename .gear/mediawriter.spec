@@ -2,7 +2,7 @@
 %define oname ALTMediaWriter
 
 Name:           altmediawriter
-Version:        0.4.2
+Version:        0.4.3
 Release:        alt1
 Summary:        ALT Media Writer
 Group:          System/Configuration/Other
@@ -59,6 +59,9 @@ appstream-util validate-relax --nonet %buildroot/%_datadir/appdata/%name.appdata
 
 
 %changelog
+* Wed Apr 15 2020 Dmitry Degtyarev <kevl@altlinux.org> 0.4.3-alt1
+- Add missing SSL dll's to windows build
+
 * Wed Apr 15 2020 Dmitry Degtyarev <kevl@altlinux.org> 0.4.2-alt1
 - Removed build instructions from README
 - Fixed Unknown architecture text going outside button
