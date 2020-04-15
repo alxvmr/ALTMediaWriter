@@ -2,7 +2,7 @@
 %define oname ALTMediaWriter
 
 Name:           altmediawriter
-Version:        0.4.0
+Version:        0.4.1
 Release:        alt1
 Summary:        ALT Media Writer
 Group:          System/Configuration/Other
@@ -59,6 +59,11 @@ appstream-util validate-relax --nonet %buildroot/%_datadir/appdata/%name.appdata
 
 
 %changelog
+* Wed Apr 15 2020 Dmitry Degtyarev <kevl@altlinux.org> 0.4.1-alt1
+- Fixed incorrect encoding of Russian text on Windows
+- Improved Windows build.sh so that latest version is displayed
+- Fixed MD5 check failing on large files on some 32bit platforms
+
 * Wed Apr 08 2020 Dmitry Degtyarev <kevl@altlinux.org> 0.4.0-alt1
 - Changed metadata and image assets to yaml files from getalt.org
 - Turned off md5 check for compressed images
