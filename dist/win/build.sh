@@ -91,7 +91,7 @@ then
 
 	windeployqt --compiler-runtime --qmldir app "$BUILDPATH/mediawriter.exe"
 	
-	DLLS="libbz2-1 libdouble-conversion libfreetype-6 libglib-2.0-0 libgraphite2 libharfbuzz-0 libiconv-2 libicudt65 libicuin65 libicuio65 libicutest65 libicutu65 libicuuc65 libpcre-1 libpcre2-16-0 libpcre16-0 libpng16-16 libzstd zlib1 libintl-8 opengl32 libglapi yaml-cpp"
+	DLLS="libssl-1_1 libcrypto-1_1 libbz2-1 libdouble-conversion libfreetype-6 libglib-2.0-0 libgraphite2 libharfbuzz-0 libiconv-2 libicudt65 libicuin65 libicuio65 libicutest65 libicutu65 libicuuc65 libpcre-1 libpcre2-16-0 libpcre16-0 libpng16-16 libzstd zlib1 libintl-8 opengl32 libglapi yaml-cpp"
 
 	for dll in $DLLS
 	do
