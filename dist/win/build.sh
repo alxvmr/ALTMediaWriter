@@ -72,6 +72,7 @@ then
 
 	cd "$ROOTPATH"
 	qmake
+    make clean
 	make -j 8
 
 	# Clear previous build results
