@@ -2,7 +2,7 @@
 %define oname ALTMediaWriter
 
 Name:           altmediawriter
-Version:        0.4.1
+Version:        0.4.2
 Release:        alt1
 Summary:        ALT Media Writer
 Group:          System/Configuration/Other
@@ -59,6 +59,10 @@ appstream-util validate-relax --nonet %buildroot/%_datadir/appdata/%name.appdata
 
 
 %changelog
+* Wed Apr 15 2020 Dmitry Degtyarev <kevl@altlinux.org> 0.4.2-alt1
+- Removed build instructions from README
+- Fixed Unknown architecture text going outside button
+
 * Wed Apr 15 2020 Dmitry Degtyarev <kevl@altlinux.org> 0.4.1-alt1
 - Fixed incorrect encoding of Russian text on Windows
 - Improved Windows build.sh so that latest version is displayed
