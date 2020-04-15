@@ -1,6 +1,8 @@
 #!/bin/bash
 
 # Usage
+# Install MSYS2 first, follow instructions on the website for
+# complete installation
 # Run this script from the mingw32 shell found in MSYS folder
 # ./build.sh - builds and deploys
 # ./build.sh install - install necessary packages
