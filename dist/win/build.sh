@@ -72,7 +72,7 @@ then
 
 	cd "$ROOTPATH"
 	qmake
-	mingw32-make
+	make -j 8
 
 	# Clear previous build results
 	if [ -d $BUILDPATH ]

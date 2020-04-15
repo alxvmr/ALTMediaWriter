@@ -1136,7 +1136,6 @@ int ReleaseArchitecture::index() const {
     return this - m_all;
 }
 
-// TODO: maybe can drop abbreviation/description stuff? was only needed before because abbreviations WERE abbreviations but now they are pretty much descriptions
 ReleaseBoard ReleaseBoard::m_all[] = {
     {{"unknown"}, QT_TR_NOOP("Unknown board")},
     {{"none"}, QT_TR_NOOP("")},
