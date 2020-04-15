@@ -65,8 +65,8 @@ then
 	echo "Building"
 
     # Clean everything so that version gets embedded correctly in makefiles
-    find "$ROOTPATH" -name Makefile | xargs rm
-    find "$ROOTPATH" -name mediawriter.exe | xargs rm
+    find "$ROOTPATH" -name Makefile -delete
+    find "$ROOTPATH" -name mediawriter.exe -delete
 
 	cd "$ROOTPATH"
 	qmake
