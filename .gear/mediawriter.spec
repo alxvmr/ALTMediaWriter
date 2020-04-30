@@ -11,18 +11,18 @@ License:        GPLv2+
 URL:            https://github.com/altlinux/ALTMediaWriter
 Source:         %oname-%version.tar
 
-BuildRequires:  qt5-base-devel
-BuildRequires:  qt5-declarative-devel qt5-x11extras-devel
-BuildRequires:  gettext
+BuildRequires:  libGConf
 BuildRequires:  libappstream-glib
-BuildRequires:  gcc-c++
 BuildRequires:  liblzma-devel
+BuildRequires:  libnss-mdns
 BuildRequires:  libyaml-cpp-devel
+BuildRequires:  qt5-declarative-devel
+BuildRequires:  qt5-x11extras-devel
 
+Requires:       qt5-quickcontrols
 Requires:       qt5-quickcontrols2
 Requires:       polkit
-
-Requires: udisks2
+Requires:       udisks2
 
 %description
 A tool to write images of ALT media to portable drives
@@ -33,7 +33,7 @@ like flash drives or memory cards.
 
 %build
 %qmake_qt5 PREFIX=%_prefix LIBEXECDIR=%_libexecdir/%name MEDIAWRITER_NAME=%name MEDIAWRITER_VERSION=%version-%release
-make
+%make_build
 
 %install
 make install INSTALL_ROOT=%buildroot
