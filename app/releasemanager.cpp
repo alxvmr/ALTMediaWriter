@@ -131,7 +131,7 @@ bool ReleaseManager::filterAcceptsRow(int source_row, const QModelIndex &source_
             if (containsArch)
                 break;
         }
-        return r->isLocal() || (containsArch && r->variant().contains(m_filterText, Qt::CaseInsensitive));
+        return r->isLocal() || (containsArch && r->name().contains(m_filterText, Qt::CaseInsensitive));
     }
 }
 
