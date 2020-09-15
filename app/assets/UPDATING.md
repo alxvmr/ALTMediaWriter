@@ -4,6 +4,8 @@
 
 Copy assets from getalt to appropriate locations in assets folder. The directory structure is similar to the one in getalt.
 
+Required files: logos from "i/logos", sections file from "_data/sections" directory, images files from "_data/images" directory.
+
 ## Update assets.qrc
 
 Add/update/remove entries in the qrc file so that all needed files are present there. Note that file alias must match filenames.
