@@ -56,7 +56,13 @@ QString fileToString(const QString &filename) {
     return str;
 }
 
-// TODO: optimize if needed, since this reads from file each time
+QList<QString> getReleaseImagesFiles(const QString &name) {
+    const QDir dir(":/images");
+    const QList<QString> releaseImagesFiles = sections_dir.entryList();
+
+    return releaseImagesFiles;
+}
+
 QList<QString> getMetadataList(const QString &name) {
     const QString fileContents = fileToString(":/metadata.yml");
     const YAML::Node file = YAML::Load(fileContents.toStdString());
@@ -104,7 +110,7 @@ ReleaseManager::ReleaseManager(QObject *parent)
     qmlRegisterUncreatableType<ReleaseImageType>("MediaWriter", 1, 0, "ImageType", "");
     qmlRegisterUncreatableType<Progress>("MediaWriter", 1, 0, "Progress", "");
 
-    const QList<QString> releaseImagesList = getMetadataList("release_images_files");
+    const QList<QString> releaseImagesList = getReleaseImagesFiles();
 
     // Try to load releases from cache
     bool loadedCachedReleases = true;
@@ -170,7 +176,7 @@ void ReleaseManager::fetchReleases() {
     // Start by downloading the first file, the other files will chain download one after another
     currentDownloadingReleaseIndex = 0;
 
-    const QList<QString> releaseImagesList = getMetadataList("release_images_files");
+    const QList<QString> releaseImagesList = getReleaseImagesFiles();
     const QString getalt_images_location = getMetadataValue("getalt_images_location");
     DownloadManager::instance()->fetchPageAsync(this, getalt_images_location + releaseImagesList.first());
 }
@@ -339,7 +345,7 @@ void ReleaseManager::loadReleaseImages(const QString &fileContents) {
 }
 
 void ReleaseManager::onStringDownloaded(const QString &text) {
-    const QList<QString> releaseImagesList = getMetadataList("release_images_files");
+    const QList<QString> releaseImagesList = getReleaseImagesFiles();
 
     mDebug() << this->metaObject()->className() << "Downloaded releases file" << releaseImagesList[currentDownloadingReleaseIndex];
 
@@ -462,7 +468,9 @@ bool ReleaseListModel::loadRelease(const QString &name, const QString &sectionFi
 ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
     : QAbstractListModel(parent) {
     const QList<QString> releaseNames = getMetadataList("release_names");
-    const QList<QString> sectionsFiles = getMetadataList("sections_files");
+
+    const QDir sections_dir(":/sections");
+    const QList<QString> sectionsFiles = sections_dir.entryList();
 
     for (auto name : releaseNames) {
         // Insert custom version at 3rd position
@@ -912,7 +920,7 @@ QString ReleaseVariant::statusString() const {
 void ReleaseVariant::onStringDownloaded(const QString &text) {
     mDebug() << this->metaObject()->className() << "Downloaded MD5SUM";
 
-    const QList<QString> releaseImagesList = getMetadataList("release_images_files");
+    const QList<QString> releaseImagesList = getReleaseImagesFiles();
 
     // MD5SUM is of the form "sum image \n sum image \n ..."
     // Search for the sum by finding image matching m_url

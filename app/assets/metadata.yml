@@ -1,20 +1,11 @@
+# List of releases to load
 release_names:
  - alt-workstation
  - alt-server
- - alt-education
  - alt-server-v
+ - alt-education
  - simply
 
-release_images_files:
- - p9-workstation.yml
- - p9-education.yml
- - p9-server.yml
- - p9-server-v.yml
- - p9-simply.yml
-
-sections_files:
- - 1-basic.yml
- - 2-additional.yml
- - 3-community.yml
-
+# Images files must be accesible at this URL
+# Like this: "getalt_images_location/image_file"
 getalt_images_location: "http://getalt.org/_data/images/"
