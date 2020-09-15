@@ -193,7 +193,7 @@ Dialog {
                 }
                 PropertyChanges {
                     target: deleteButton
-                    state: "ready"
+                    state: releases.selected.isLocal ? "hidden" : "ready"
                 }
             },
             State {

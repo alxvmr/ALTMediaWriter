@@ -24,6 +24,7 @@ RowLayout {
                 target: eraseButton
                 enabled: true
                 text: qsTr("Delete the Downloaded Image")
+                opacity: 1.0
             }
         },
         State {
