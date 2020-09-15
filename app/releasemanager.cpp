@@ -451,7 +451,7 @@ bool ReleaseListModel::loadRelease(const QString &name, const QString &sectionFi
     QStringList screenshots;
     
     // Check that icon file exists
-    const QString icon_path_test = ":/logos/" + ymlToQString(section["img"]);
+    const QString icon_path_test = ":/logo/" + ymlToQString(section["img"]);
     QFile icon_file(icon_path_test);
     if (!icon_file.exists()) {
         mWarning() << "Failed to find icon file at " << icon_path_test << " needed for release " << name;
@@ -476,7 +476,7 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
         // Insert custom version at 3rd position
         // TODO: tried to move this out of frontpage and this caused file not to load, getting stuck on "Preparing", likely caused by this position being hardcoded somewhere (probably in qml's), couldn't find where
         if (m_releases.count() == 2) {
-            Release *custom = new Release (manager(), m_releases.count(), "custom", tr("Custom image"), QT_TRANSLATE_NOOP("Release", "Pick a file from your drive(s)"), { QT_TRANSLATE_NOOP("Release", "<p>Here you can choose a OS image from your hard drive to be written to your flash disk</p><p>Currently it is only supported to write raw disk images (.iso or .bin)</p>") }, "qrc:/logos/custom", {});
+            Release *custom = new Release (manager(), m_releases.count(), "custom", tr("Custom image"), QT_TRANSLATE_NOOP("Release", "Pick a file from your drive(s)"), { QT_TRANSLATE_NOOP("Release", "<p>Here you can choose a OS image from your hard drive to be written to your flash disk</p><p>Currently it is only supported to write raw disk images (.iso or .bin)</p>") }, "qrc:/logo/custom", {});
             m_releases.append(custom);
             ReleaseVersion *customVersion = new ReleaseVersion(custom, 0);
             custom->addVersion(customVersion);

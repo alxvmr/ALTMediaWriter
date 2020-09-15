@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/logos">
+    <qresource prefix="/logo">
         <file alias="custom">assets/i/logo/custom.png</file>
         <file alias="alt-edu">assets/i/logo/alt-edu.png</file>
         <file alias="alt-server">assets/i/logo/alt-server.png</file>
