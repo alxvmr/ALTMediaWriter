@@ -17,6 +17,8 @@
         <file alias="alt-workstation">assets/logos/png/workstation.png</file>
     </qresource>
     <qresource prefix="/">
+        <file>assets/metadata.yml</file>
+
         <file>assets/1-basic.yml</file>
         <file>assets/2-additional.yml</file>
         <file>assets/3-community.yml</file>

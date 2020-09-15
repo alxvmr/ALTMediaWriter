@@ -1,0 +1,20 @@
+codes:
+ - alt-workstation
+ - alt-server
+ - alt-education
+ - alt-server-v
+ - simply
+
+metas:
+ - 1-basic.yml
+ - 2-additional.yml
+ - 3-community.yml
+
+releases:
+ - p9-workstation.yml
+ - p9-education.yml
+ - p9-server.yml
+ - p9-server-v.yml
+ - p9-simply.yml
+
+getalt_images_location: "http://getalt.org/_data/images/"

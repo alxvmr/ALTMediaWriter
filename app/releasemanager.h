@@ -138,7 +138,7 @@ private:
     int m_filterArchitecture { 0 };
     int m_selectedIndex { 0 };
     bool m_beingUpdated { false };
-    unsigned int currentDownloadingReleaseIndex = 0;
+    int currentDownloadingReleaseIndex = 0;
 
     void loadReleases(const QString &text);
 };
@@ -162,7 +162,7 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 private:
-    void loadSection(const char *sectionName, const char *sectionsFilename);
+    bool loadSection(const QString &sectionName, const QString &sectionsFilename);
 
     QList<Release*> m_releases {};
 };
