@@ -4,6 +4,7 @@ release_names:
  - alt-server
  - alt-server-v
  - alt-education
+ - alt-kworkstation
  - simply
 
 # Images files must be accesible at this URL

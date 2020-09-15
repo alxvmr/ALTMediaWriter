@@ -2,10 +2,11 @@
     <qresource prefix="/logo">
         <file alias="custom">assets/i/logo/custom.png</file>
         <file alias="alt-edu">assets/i/logo/alt-edu.png</file>
-        <file alias="alt-server">assets/i/logo/alt-server.png</file>
+        <file alias="arm">assets/i/logo/alt-server.png</file>
         <file alias="alt-server-v">assets/i/logo/alt-server-v.png</file>
         <file alias="simply">assets/i/logo/simply.png</file>
         <file alias="alt-workstation">assets/i/logo/alt-workstation.png</file>
+        <file alias="alt-kworkstation">assets/i/logo/alt-kworkstation.png</file>
     </qresource>
 
     <qresource>
@@ -15,9 +16,10 @@
     </qresource>
 
     <qresource prefix="/sections">
-        <file alias="1-basic.yml">assets/_data/sections/1-basic.yml</file>
-        <file alias="2-additional.yml">assets/_data/sections/2-additional.yml</file>
-        <file alias="3-community.yml">assets/_data/sections/3-community.yml</file>
+        <file alias="1-client.yml">assets/_data/sections/1-client.yml</file>
+        <file alias="2-server.yml">assets/_data/sections/2-server.yml</file>
+        <file alias="3-eduhome.yml">assets/_data/sections/3-eduhome.yml</file>
+        <file alias="4-community.yml">assets/_data/sections/4-community.yml</file>
     </qresource>
 
     <qresource prefix="/images">
@@ -26,5 +28,6 @@
         <file alias="p9-server.yml">assets/_data/images/p9-server.yml</file>
         <file alias="p9-simply.yml">assets/_data/images/p9-simply.yml</file>
         <file alias="p9-workstation.yml">assets/_data/images/p9-workstation.yml</file>
+        <file alias="p9-kworkstation.yml">assets/_data/images/p9-kworkstation.yml</file>
     </qresource>
 </RCC>
