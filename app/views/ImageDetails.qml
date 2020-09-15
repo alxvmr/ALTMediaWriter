@@ -135,7 +135,7 @@ Item {
                                 Layout.fillWidth: true
                                 Layout.alignment : Qt.AlignLeft
                                 font.pointSize: $$(14)
-                                text: releases.selected.name
+                                text: releases.selected.displayName
                                 color: palette.windowText
                             }
                             Text {

@@ -84,7 +84,7 @@ Item {
                 Text {
                     verticalAlignment: Text.AlignBottom
                     font.pointSize: $$(9)
-                    text: release.name
+                    text: release.displayName
                     color: palette.text
                 }
                 Text {

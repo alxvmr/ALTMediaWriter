@@ -153,7 +153,7 @@ bool ReleaseManager::filterAcceptsRow(int source_row, const QModelIndex &source_
             if (containsArch)
                 break;
         }
-        return r->isLocal() || (containsArch && r->name().contains(m_filterText, Qt::CaseInsensitive));
+        return r->isLocal() || (containsArch && r->displayName().contains(m_filterText, Qt::CaseInsensitive));
     }
 }
 
@@ -430,7 +430,7 @@ bool ReleaseListModel::loadSection(const QString &sectioName, const QString &sec
     }
     
     QString variant = ymlToQString(section["code"]);
-    QString name = ymlToQString(section[("name" + lang).c_str()]);
+    QString display_name = ymlToQString(section[("name" + lang).c_str()]);
     QString summary = ymlToQString(section[("descr" + lang).c_str()]);
     // Remove HTML character entities that don't render in Qt
     summary.replace("&colon;", ":");
@@ -452,7 +452,7 @@ bool ReleaseListModel::loadSection(const QString &sectioName, const QString &sec
     // NOTE: icon_path is consumed by QML, so it needs to begin with "qrc:/" not ":/"
     const QString icon_path = "qrc" + icon_path_test;
 
-    m_releases.append(new Release(manager(), m_releases.count(), variant, name, summary, description, icon_path, screenshots));
+    m_releases.append(new Release(manager(), m_releases.count(), variant, display_name, summary, description, icon_path, screenshots));
 
     return true;
 }
@@ -505,8 +505,8 @@ int Release::index() const {
     return m_index;
 }
 
-Release::Release(ReleaseManager *parent, int index, const QString &variant, const QString &name, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots)
-    : QObject(parent), m_index(index), m_variant(variant), m_name(name), m_summary(summary), m_description(description), m_icon(icon), m_screenshots(screenshots)
+Release::Release(ReleaseManager *parent, int index, const QString &variant, const QString &display_name, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots)
+    : QObject(parent), m_index(index), m_variant(variant), m_displayName(display_name), m_summary(summary), m_description(description), m_icon(icon), m_screenshots(screenshots)
 {
     connect(this, SIGNAL(selectedVersionChanged()), parent, SLOT(variantChangedFilter()));
 }
@@ -566,8 +566,8 @@ QString Release::variant() const {
     return m_variant;
 }
 
-QString Release::name() const {
-    return m_name;
+QString Release::displayName() const {
+    return m_displayName;
 }
 
 QString Release::summary() const {
@@ -851,7 +851,7 @@ QString ReleaseVariant::fullName() {
     if (release()->isLocal())
         return QFileInfo(image()).fileName();
     else
-        return QString("%1 %2 %3").arg(release()->name()).arg(releaseVersion()->name()).arg(name());
+        return QString("%1 %2 %3").arg(release()->displayName()).arg(releaseVersion()->name()).arg(name());
 }
 
 QString ReleaseVariant::url() const {

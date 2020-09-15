@@ -31,7 +31,7 @@ import "../complex"
 
 Dialog {
     id: dialog
-    title: qsTr("Write %1").arg(releases.selected.name)
+    title: qsTr("Write %1").arg(releases.selected.displayName)
 
     height: layout.height + $(36)
     standardButtons: StandardButton.NoButton
