@@ -207,7 +207,7 @@ void ReleaseManager::setFilterText(const QString &o) {
     }
 }
 
-bool ReleaseManager::updateUrl(const QString &variant, const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size) {
+bool ReleaseManager::updateUrl(const QString &name, const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size) {
     if (!ReleaseArchitecture::isKnown(architecture)) {
         mWarning() << "Architecture" << architecture << "is not known!";
         return false;
@@ -222,7 +222,7 @@ bool ReleaseManager::updateUrl(const QString &variant, const QString &version, c
     }
     for (int i = 0; i < m_sourceModel->rowCount(); i++) {
         Release *r = get(i);
-        if (r->variant().toLower().contains(variant))
+        if (r->name().toLower().contains(name))
             return r->updateUrl(version, status, releaseDate, architecture, imageType, board, url, sha256, md5, size);
     }
     return false;
@@ -287,7 +287,7 @@ void ReleaseManager::loadReleases(const QString &text) {
     for (auto e : file["entries"]) {
         QString url = ymlToQString(e["link"]);
 
-        QString variant = ymlToQString(e["solution"]);
+        QString name = ymlToQString(e["solution"]);
 
         QString arch = "unknown";
         if (e["arch"]) {
@@ -329,10 +329,10 @@ void ReleaseManager::loadReleases(const QString &text) {
         QString version = "9";
         QString status = "0";
 
-        mDebug() << this->metaObject()->className() << "Adding" << variant << arch;
+        mDebug() << this->metaObject()->className() << "Adding" << name << arch;
 
-        if (!variant.isEmpty() && !url.isEmpty() && !arch.isEmpty() && !imageType.isEmpty() && !board.isEmpty())
-            updateUrl(variant, version, status, releaseDate, arch, imageType, board, url, sha256, md5, size);
+        if (!name.isEmpty() && !url.isEmpty() && !arch.isEmpty() && !imageType.isEmpty() && !board.isEmpty())
+            updateUrl(name, version, status, releaseDate, arch, imageType, board, url, sha256, md5, size);
     }
 }
 
@@ -429,7 +429,7 @@ bool ReleaseListModel::loadSection(const QString &sectioName, const QString &sec
         lang = "_ru";
     }
     
-    QString variant = ymlToQString(section["code"]);
+    QString name = ymlToQString(section["code"]);
     QString display_name = ymlToQString(section[("name" + lang).c_str()]);
     QString summary = ymlToQString(section[("descr" + lang).c_str()]);
     // Remove HTML character entities that don't render in Qt
@@ -452,7 +452,7 @@ bool ReleaseListModel::loadSection(const QString &sectioName, const QString &sec
     // NOTE: icon_path is consumed by QML, so it needs to begin with "qrc:/" not ":/"
     const QString icon_path = "qrc" + icon_path_test;
 
-    m_releases.append(new Release(manager(), m_releases.count(), variant, display_name, summary, description, icon_path, screenshots));
+    m_releases.append(new Release(manager(), m_releases.count(), name, display_name, summary, description, icon_path, screenshots));
 
     return true;
 }
@@ -505,8 +505,8 @@ int Release::index() const {
     return m_index;
 }
 
-Release::Release(ReleaseManager *parent, int index, const QString &variant, const QString &display_name, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots)
-    : QObject(parent), m_index(index), m_variant(variant), m_displayName(display_name), m_summary(summary), m_description(description), m_icon(icon), m_screenshots(screenshots)
+Release::Release(ReleaseManager *parent, int index, const QString &name, const QString &display_name, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots)
+    : QObject(parent), m_index(index), m_name(name), m_displayName(display_name), m_summary(summary), m_description(description), m_icon(icon), m_screenshots(screenshots)
 {
     connect(this, SIGNAL(selectedVersionChanged()), parent, SLOT(variantChangedFilter()));
 }
@@ -562,8 +562,8 @@ ReleaseManager *Release::manager() {
     return qobject_cast<ReleaseManager*>(parent());
 }
 
-QString Release::variant() const {
-    return m_variant;
+QString Release::name() const {
+    return m_name;
 }
 
 QString Release::displayName() const {
@@ -579,7 +579,7 @@ QString Release::description() const {
 }
 
 bool Release::isLocal() const {
-    return m_variant == "custom";
+    return m_name == "custom";
 }
 
 QString Release::icon() const {

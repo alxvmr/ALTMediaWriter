@@ -103,7 +103,7 @@ public:
     QString filterText() const;
     void setFilterText(const QString &o);
 
-    bool updateUrl(const QString &release, const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size);
+    bool updateUrl(const QString &name, const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size);
 
     QStringList architectures() const;
     int filterArchitecture() const;
@@ -179,7 +179,7 @@ private:
  * @property name the name of the release, like "Fedora Workstation"
  * @property summary the summary describing the release - displayed on the main screen
  * @property description the extensive description of the release - displayed on the detail screen
- * @property isLocal true if variant is "custom"
+ * @property isLocal true if name is "custom"
  * @property icon path of the icon of this release
  * @property screenshots a list of paths to screenshots (typically HTTP URLs)
  * @property prerelease true if the release contains a prerelease version of a future version
@@ -207,13 +207,13 @@ class Release : public QObject {
     Q_PROPERTY(ReleaseVersion* version READ selectedVersion NOTIFY selectedVersionChanged)
     Q_PROPERTY(int versionIndex READ selectedVersionIndex WRITE setSelectedVersionIndex NOTIFY selectedVersionChanged)
 public:
-    Release(ReleaseManager *parent, int index, const QString &variant, const QString &displayName, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots);
+    Release(ReleaseManager *parent, int index, const QString &name, const QString &displayName, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots);
     Q_INVOKABLE void setLocalFile(const QString &path);
     bool updateUrl(const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size);
     ReleaseManager *manager();
 
     int index() const;
-    QString variant() const;
+    QString name() const;
     QString displayName() const;
     QString summary() const;
     QString description() const;
@@ -237,7 +237,7 @@ signals:
     void prereleaseChanged();
 private:
     int m_index { 0 };
-    QString m_variant {};
+    QString m_name {};
     QString m_displayName {};
     QString m_summary {};
     QString m_description {};
