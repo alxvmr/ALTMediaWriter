@@ -104,7 +104,7 @@ ReleaseManager::ReleaseManager(QObject *parent)
     qmlRegisterUncreatableType<ReleaseImageType>("MediaWriter", 1, 0, "ImageType", "");
     qmlRegisterUncreatableType<Progress>("MediaWriter", 1, 0, "Progress", "");
 
-    const QList<QString> releaseFiles = getMetadataList("releases");
+    const QList<QString> releaseFiles = getMetadataList("release_files");
 
     // Try to load releases from cache
     bool loadedCachedReleases = true;
@@ -117,13 +117,13 @@ ReleaseManager::ReleaseManager(QObject *parent)
         } else {
             cache.close();
         }
-        loadReleases(fileToString(cachePath));
+        loadReleaseFile(fileToString(cachePath));
     }
 
     if (!loadedCachedReleases) {
         // Load built-in releases if failed to load cache
         for (auto release : releaseFiles) {
-            loadReleases(fileToString(QString(":/assets/") + release));
+            loadReleaseFile(fileToString(QString(":/assets/") + release));
         }
     }
 
@@ -168,7 +168,7 @@ void ReleaseManager::fetchReleases() {
     // Start by downloading the first file, the other files will chain download one after another
     currentDownloadingReleaseIndex = 0;
 
-    const QList<QString> releaseFiles = getMetadataList("releases");
+    const QList<QString> releaseFiles = getMetadataList("release_files");
     const QString images_location = getMetadataValue("getalt_images_location");
     DownloadManager::instance()->fetchPageAsync(this, images_location + releaseFiles.first());
 }
@@ -281,8 +281,8 @@ ReleaseVariant *ReleaseManager::variant() {
     return nullptr;
 }
 
-void ReleaseManager::loadReleases(const QString &text) {
-    YAML::Node file = YAML::Load(text.toStdString());
+void ReleaseManager::loadReleaseFile(const QString &fileContents) {
+    YAML::Node file = YAML::Load(fileContents.toStdString());
 
     for (auto e : file["entries"]) {
         QString url = ymlToQString(e["link"]);
@@ -337,7 +337,7 @@ void ReleaseManager::loadReleases(const QString &text) {
 }
 
 void ReleaseManager::onStringDownloaded(const QString &text) {
-    const QList<QString> releaseFiles = getMetadataList("releases");
+    const QList<QString> releaseFiles = getMetadataList("release_files");
 
     mDebug() << this->metaObject()->className() << "Downloaded releases file" << releaseFiles[currentDownloadingReleaseIndex];
 
@@ -346,7 +346,7 @@ void ReleaseManager::onStringDownloaded(const QString &text) {
     std::ofstream cacheFile(cachePath.toStdString());
     cacheFile << text.toStdString();
 
-    loadReleases(text);
+    loadReleaseFile(text);
 
     currentDownloadingReleaseIndex++;
     if (currentDownloadingReleaseIndex < releaseFiles.size()) {
@@ -402,25 +402,26 @@ QVariant ReleaseListModel::data(const QModelIndex &index, int role) const {
     return QVariant();
 }
 
-bool ReleaseListModel::loadSection(const QString &sectioName, const QString &sectionsFilename) {
-    // Load section named "sectioName" from .yml file named "sectionsFilename"
-    // Translate it into a Release
-    // NOTE: couldn't figure out how to use YAML::loadFile on qrc file directly so have to do it through string
-    QString fileContents = fileToString(sectionsFilename);
-    YAML::Node sectionsFile = YAML::Load(fileContents.toStdString());
+// Load release info from section file, if it's there
+// Create Release object from this info
+bool ReleaseListModel::loadRelease(const QString &name, const QString &sectionFilePath) {
+    QString sectionFileContents = fileToString(sectionFilePath);
+    YAML::Node sectionsFile = YAML::Load(sectionFileContents.toStdString());
     YAML::Node section;
-    bool foundSection = false;
+
+    bool releaseIsInSection = false;
     for(unsigned int i = 0; i < sectionsFile["members"].size(); i++) {
-        const std::string code_std = sectionsFile["members"][i]["code"].as<std::string>();
-        const QString code = QString::fromStdString(code_std);
-        if (code == sectioName) {
+        const QString thisName = ymlToQString(sectionsFile["members"][i]["code"]);
+
+        if (thisName == name) {
             section = sectionsFile["members"][i];
-            foundSection = true;
+            releaseIsInSection = true;
+
             break;
         }
     }
 
-    if (!foundSection) {
+    if (!releaseIsInSection) {
         return false;
     }
 
@@ -429,7 +430,6 @@ bool ReleaseListModel::loadSection(const QString &sectioName, const QString &sec
         lang = "_ru";
     }
     
-    QString name = ymlToQString(section["code"]);
     QString display_name = ymlToQString(section[("name" + lang).c_str()]);
     QString summary = ymlToQString(section[("descr" + lang).c_str()]);
     // Remove HTML character entities that don't render in Qt
@@ -459,10 +459,10 @@ bool ReleaseListModel::loadSection(const QString &sectioName, const QString &sec
 
 ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
     : QAbstractListModel(parent) {
-    const QList<QString> codenames = getMetadataList("codes");
-    const QList<QString> metanames = getMetadataList("metas");
+    const QList<QString> releaseNames = getMetadataList("release_names");
+    const QList<QString> sectionFiles = getMetadataList("section_files");
 
-    for (auto codename : codenames) {
+    for (auto name : releaseNames) {
         // Insert custom version at 3rd position
         // TODO: tried to move this out of frontpage and this caused file not to load, getting stuck on "Preparing", likely caused by this position being hardcoded somewhere (probably in qml's), couldn't find where
         if (m_releases.count() == 2) {
@@ -473,19 +473,19 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
             customVersion->addVariant(new ReleaseVariant(customVersion, QString(), QString(), QString(), 0, ReleaseArchitecture::fromId(ReleaseArchitecture::UNKNOWN), ReleaseImageType::fromId(ReleaseImageType::ISO), ReleaseBoard::fromId(ReleaseBoard::UNKNOWN)));
         }
 
-        bool loaded_section = false;
-        for (auto metaname : metanames) {
-            const QString meta_path = ":/assets/" + metaname;
-            const bool loaded = loadSection(codename, meta_path);
+        bool loaded_release = false;
+        for (auto sectionFile : sectionFiles) {
+            const QString sectionFilePath = ":/assets/" + sectionFile;
+            const bool loaded = loadRelease(name, sectionFilePath);
 
             if (loaded) {
-                loaded_section = true;
+                loaded_release = true;
+                break;
             }
         }
 
-        if (!loaded_section) {
-            // TODO: terminology
-            printf("ERROR: Failed to load release \"%s\", check that there's a metadata YML file that contains this release\n", qPrintable(codename));
+        if (!loaded_release) {
+            mWarning() << "Failed to load release \"%s\", check that there's a section file that contains this release. Searched in these section files:" << sectionFiles;
         }
     }
 }
@@ -911,7 +911,7 @@ QString ReleaseVariant::statusString() const {
 void ReleaseVariant::onStringDownloaded(const QString &text) {
     mDebug() << this->metaObject()->className() << "Downloaded MD5SUM";
 
-    const QList<QString> releaseFiles = getMetadataList("releases");
+    const QList<QString> releaseFiles = getMetadataList("release_files");
 
     // MD5SUM is of the form "sum image \n sum image \n ..."
     // Search for the sum by finding image matching m_url

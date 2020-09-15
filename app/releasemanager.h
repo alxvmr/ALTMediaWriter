@@ -140,7 +140,7 @@ private:
     bool m_beingUpdated { false };
     int currentDownloadingReleaseIndex = 0;
 
-    void loadReleases(const QString &text);
+    void loadReleaseFile(const QString &fileContents);
 };
 
 
@@ -162,7 +162,7 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 private:
-    bool loadSection(const QString &sectionName, const QString &sectionsFilename);
+    bool loadRelease(const QString &name, const QString &sectionFilePath);
 
     QList<Release*> m_releases {};
 };
