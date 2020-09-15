@@ -56,9 +56,9 @@ QString fileToString(const QString &filename) {
     return str;
 }
 
-QList<QString> getReleaseImagesFiles(const QString &name) {
+QList<QString> getReleaseImagesFiles() {
     const QDir dir(":/images");
-    const QList<QString> releaseImagesFiles = sections_dir.entryList();
+    const QList<QString> releaseImagesFiles = dir.entryList();
 
     return releaseImagesFiles;
 }
