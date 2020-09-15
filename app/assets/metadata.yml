@@ -5,14 +5,14 @@ release_names:
  - alt-server-v
  - simply
 
-release_files:
+release_images_files:
  - p9-workstation.yml
  - p9-education.yml
  - p9-server.yml
  - p9-server-v.yml
  - p9-simply.yml
 
-section_files:
+sections_files:
  - 1-basic.yml
  - 2-additional.yml
  - 3-community.yml

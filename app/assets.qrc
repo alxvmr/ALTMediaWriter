@@ -1,34 +1,34 @@
 <RCC>
     <qresource prefix="/logos">
-        <file alias="blank">assets/logos/png/blank.png</file>
-        <file alias="cd">assets/logos/png/cd.png</file>
-        <file alias="chip">assets/logos/png/chip.png</file>
-        <file alias="alt-edu">assets/logos/png/education.png</file>
-        <file alias="elbrus">assets/logos/png/elbrus.png</file>
-        <file alias="folder">assets/logos/png/folder.png</file>
-        <file alias="keys">assets/logos/png/keys.png</file>
-        <file alias="kits1">assets/logos/png/kits1.png</file>
-        <file alias="kits2">assets/logos/png/kits2.png</file>
-        <file alias="letter_b">assets/logos/png/letter_b.png</file>
-        <file alias="pi">assets/logos/png/pi.png</file>
-        <file alias="arm">assets/logos/png/server.png</file>
-        <file alias="alt-server-v">assets/logos/png/server_virtual.png</file>
-        <file alias="simply">assets/logos/png/simply.png</file>
-        <file alias="alt-workstation">assets/logos/png/workstation.png</file>
+        <file alias="blank">assets/i/logo/blank.png</file>
+        <file alias="cd">assets/i/logo/cd.png</file>
+        <file alias="chip">assets/i/logo/chip.png</file>
+        <file alias="alt-edu">assets/i/logo/education.png</file>
+        <file alias="elbrus">assets/i/logo/elbrus.png</file>
+        <file alias="folder">assets/i/logo/folder.png</file>
+        <file alias="keys">assets/i/logo/keys.png</file>
+        <file alias="kits1">assets/i/logo/kits1.png</file>
+        <file alias="kits2">assets/i/logo/kits2.png</file>
+        <file alias="letter_b">assets/i/logo/letter_b.png</file>
+        <file alias="pi">assets/i/logo/pi.png</file>
+        <file alias="arm">assets/i/logo/server.png</file>
+        <file alias="alt-server-v">assets/i/logo/server_virtual.png</file>
+        <file alias="simply">assets/i/logo/simply.png</file>
+        <file alias="alt-workstation">assets/i/logo/workstation.png</file>
     </qresource>
-    <qresource prefix="/">
-        <file>assets/metadata.yml</file>
 
-        <file>assets/1-basic.yml</file>
-        <file>assets/2-additional.yml</file>
-        <file>assets/3-community.yml</file>
-
-        <file>assets/p9-education.yml</file>
-        <file>assets/p9-server-v.yml</file>
-        <file>assets/p9-server.yml</file>
-        <file>assets/p9-simply.yml</file>
-        <file>assets/p9-workstation.yml</file>
+    <qresource>
+        <file alias="metadata.yml">assets/metadata.yml</file>
 
         <file alias="focusRect">assets/focusrect.png</file>
+
+        <file alias="1-basic.yml">assets/_data/sections/1-basic.yml</file>
+        <file alias="2-additional.yml">assets/_data/sections/2-additional.yml</file>
+        <file alias="3-community.yml">assets/_data/sections/3-community.yml</file>
+        <file alias="p9-education.yml">assets/_data/images/p9-education.yml</file>
+        <file alias="p9-server-v.yml">assets/_data/images/p9-server-v.yml</file>
+        <file alias="p9-server.yml">assets/_data/images/p9-server.yml</file>
+        <file alias="p9-simply.yml">assets/_data/images/p9-simply.yml</file>
+        <file alias="p9-workstation.yml">assets/_data/images/p9-workstation.yml</file>
     </qresource>
 </RCC>
