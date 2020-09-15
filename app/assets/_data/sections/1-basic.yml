@@ -67,7 +67,6 @@ members:
    descr_en: |
      Operating system and services to bring up and control enterprise
      IT infrastructure.
-   img: arm
    descr_full_ru: |
      <a href="http://altlinux.org/server">Альт Сервер 9</a> предоставляет
      надёжную основу для построения информационной
