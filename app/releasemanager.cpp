@@ -79,7 +79,6 @@ ReleaseManager::ReleaseManager(QObject *parent)
     qmlRegisterUncreatableType<ReleaseVersion>("MediaWriter", 1, 0, "Version", "");
     qmlRegisterUncreatableType<ReleaseVariant>("MediaWriter", 1, 0, "Variant", "");
     qmlRegisterUncreatableType<ReleaseArchitecture>("MediaWriter", 1, 0, "Architecture", "");
-    qmlRegisterUncreatableType<ReleaseBoard>("MediaWriter", 1, 0, "Board", "");
     qmlRegisterUncreatableType<ReleaseImageType>("MediaWriter", 1, 0, "ImageType", "");
     qmlRegisterUncreatableType<Progress>("MediaWriter", 1, 0, "Progress", "");
 
@@ -196,10 +195,6 @@ bool ReleaseManager::updateUrl(const QString &name, const QString &version, cons
         mWarning() << "Image type" << imageType << "is not known!";
         return false;
     }
-    if (!ReleaseBoard::isKnown(board)) {
-        mWarning() << "Board" << board << "is not known!";
-        return false;
-    }
     for (int i = 0; i < m_sourceModel->rowCount(); i++) {
         Release *r = get(i);
         if (r->name().toLower().contains(name))
@@ -311,7 +306,7 @@ void ReleaseManager::loadReleaseImages(const QString &fileContents) {
 
         mDebug() << this->metaObject()->className() << "Adding" << name << arch;
 
-        if (!name.isEmpty() && !url.isEmpty() && !arch.isEmpty() && !imageType.isEmpty() && !board.isEmpty())
+        if (!name.isEmpty() && !url.isEmpty() && !arch.isEmpty() && !imageType.isEmpty())
             updateUrl(name, version, status, releaseDate, arch, imageType, board, url, sha256, md5, size);
     }
 }
@@ -435,7 +430,7 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
                 const auto customVersion = new ReleaseVersion(customRelease, 0);
                 customRelease->addVersion(customVersion);
 
-                const auto customVariant = new ReleaseVariant(customVersion, QString(), QString(), QString(), 0, ReleaseArchitecture::fromId(ReleaseArchitecture::UNKNOWN), ReleaseImageType::fromId(ReleaseImageType::ISO), ReleaseBoard::fromId(ReleaseBoard::UNKNOWN));
+                const auto customVariant = new ReleaseVariant(customVersion, QString(), QString(), QString(), 0, ReleaseArchitecture::fromId(ReleaseArchitecture::UNKNOWN), ReleaseImageType::fromId(ReleaseImageType::ISO), "UNKNOWN BOARD");
                 customVersion->addVariant(customVariant);
             }
         }
@@ -491,7 +486,7 @@ bool Release::updateUrl(const QString &version, const QString &status, const QDa
     }
     ReleaseVersion::Status s = status == "alpha" ? ReleaseVersion::ALPHA : status == "beta" ? ReleaseVersion::BETA : ReleaseVersion::FINAL;
     auto ver = new ReleaseVersion(this, version, s, releaseDate);
-    auto variant = new ReleaseVariant(ver, url, sha256, md5, size, ReleaseArchitecture::fromAbbreviation(architecture), ReleaseImageType::fromAbbreviation(imageType), ReleaseBoard::fromAbbreviation(board));
+    auto variant = new ReleaseVariant(ver, url, sha256, md5, size, ReleaseArchitecture::fromAbbreviation(architecture), ReleaseImageType::fromAbbreviation(imageType), board);
     ver->addVariant(variant);
     addVersion(ver);
     if (ver->status() == ReleaseVersion::FINAL)
@@ -655,7 +650,7 @@ bool ReleaseVersion::updateUrl(const QString &status, const QDateTime &releaseDa
     }
 
     for (auto i : m_variants) {
-        if (i->arch() == ReleaseArchitecture::fromAbbreviation(architecture) && i->board() == ReleaseBoard::fromAbbreviation(board))
+        if (i->arch() == ReleaseArchitecture::fromAbbreviation(architecture) && i->board() == board)
             return i->updateUrl(url, sha256, size);
     }
     // preserve the order from the ReleaseArchitecture::Id enum (to not have ARM first, etc.)
@@ -666,7 +661,7 @@ bool ReleaseVersion::updateUrl(const QString &status, const QDateTime &releaseDa
             break;
         order++;
     }
-    m_variants.insert(order, new ReleaseVariant(this, url, sha256, md5, size, ReleaseArchitecture::fromAbbreviation(architecture), ReleaseImageType::fromAbbreviation(imageType), ReleaseBoard::fromAbbreviation(board)));
+    m_variants.insert(order, new ReleaseVariant(this, url, sha256, md5, size, ReleaseArchitecture::fromAbbreviation(architecture), ReleaseImageType::fromAbbreviation(imageType), board));
     return true;
 }
 
@@ -728,14 +723,14 @@ QList<ReleaseVariant *> ReleaseVersion::variantList() const {
 }
 
 
-ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, QString url, QString shaHash, QString md5, int64_t size, ReleaseArchitecture *arch, ReleaseImageType *imageType, ReleaseBoard *board)
+ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, QString url, QString shaHash, QString md5, int64_t size, ReleaseArchitecture *arch, ReleaseImageType *imageType, QString board)
     : QObject(parent), m_arch(arch), m_image_type(imageType), m_board(board), m_url(url), m_shaHash(shaHash), m_md5(md5), m_size(size)
 {
     connect(this, &ReleaseVariant::sizeChanged, this, &ReleaseVariant::realSizeChanged);
 }
 
 ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, const QString &file, int64_t size)
-    : QObject(parent), m_image(file), m_arch(ReleaseArchitecture::fromId(ReleaseArchitecture::X86_64)), m_image_type(ReleaseImageType::fromFilename(file)), m_board(ReleaseBoard::fromId(ReleaseBoard::UNKNOWN)), m_shaHash(""), m_md5(""), m_size(size)
+    : QObject(parent), m_image(file), m_arch(ReleaseArchitecture::fromId(ReleaseArchitecture::X86_64)), m_image_type(ReleaseImageType::fromFilename(file)), m_board("UNKNOWN BOARD"), m_shaHash(""), m_md5(""), m_size(size)
 {
     connect(this, &ReleaseVariant::sizeChanged, this, &ReleaseVariant::realSizeChanged);
     m_status = READY;
@@ -787,16 +782,12 @@ ReleaseImageType *ReleaseVariant::imageType() const {
     return m_image_type;
 }
 
-ReleaseBoard *ReleaseVariant::board() const {
+QString ReleaseVariant::board() const {
     return m_board;
 }
 
 QString ReleaseVariant::name() const {
-    if (m_board != NULL && m_board->index() != ReleaseBoard::Id::NONE) {
-        return m_arch->description() + " | " + m_board->description();
-    } else {
-        return m_arch->description();
-    }
+    return m_arch->description() + " | " + m_board;
 }
 
 QString ReleaseVariant::fullName() {
@@ -1143,83 +1134,6 @@ QString ReleaseArchitecture::description() const {
 int ReleaseArchitecture::index() const {
     return this - m_all;
 }
-
-ReleaseBoard ReleaseBoard::m_all[] = {
-    {{"unknown"}, QT_TR_NOOP("Unknown board")},
-    {{"none"}, QT_TR_NOOP("")},
-    // NOTE: this has to be before "ARM64 UEFI" because searches through this array use contains()
-    {{"ARM64 UEFI Live"}, QT_TR_NOOP("Live")},
-    {{"i586 Live"}, QT_TR_NOOP("Live")},
-    {{"x86-64 Live"}, QT_TR_NOOP("Live")},
-    {{"Tavolga Terminal"}, QT_TR_NOOP("Tavolga Terminal (MIPSel)")},
-    {{"RPi3"}, QT_TR_NOOP("RaspberryPi 3")},
-    {{"RPi4"}, QT_TR_NOOP("RaspberryPi 4")},
-    {{"POWER8/9"}, QT_TR_NOOP("Power8/9")},
-    {{"ARM64 UEFI"}, QT_TR_NOOP("ARM64 UEFI")},
-    {{"RiscV64 QEmu", "RiscV64 QEmu Preview"}, QT_TR_NOOP("RiscV64 QEmu")},
-    {{"Nvidia Jetson Nano"}, QT_TR_NOOP("Jetson Nano")},
-    {{"Baikal-M ITX", "Baikal-M ITX Preview"}, QT_TR_NOOP("Baikal-M ITX")},
-    {{"Baikal-M DBM", "Baikal-M DBM Preview"}, QT_TR_NOOP("Baikal-M DBM")},
-    {{"MK150-02", "MK150-02 Preview"}, QT_TR_NOOP("MK150-02")},
-    {{"HiFive Unleashed", "HiFive Unleashed Preview"}, QT_TR_NOOP("HiFive Unleashed")},
-};
-
-ReleaseBoard::ReleaseBoard(const QStringList &abbreviation, const char *description)
-    : m_abbreviation(abbreviation), m_description(description)
-{
-
-}
-
-ReleaseBoard *ReleaseBoard::fromId(ReleaseBoard::Id id) {
-    if (id >= 0 && id < _BOARDCOUNT)
-        return &m_all[id];
-    return nullptr;
-}
-
-ReleaseBoard *ReleaseBoard::fromAbbreviation(const QString &abbr) {
-    for (int i = 0; i < _BOARDCOUNT; i++) {
-        if (m_all[i].abbreviation().contains(abbr, Qt::CaseInsensitive))
-            return &m_all[i];
-    }
-    return nullptr;
-}
-
-bool ReleaseBoard::isKnown(const QString &abbr) {
-    for (int i = 0; i < _BOARDCOUNT; i++) {
-        if (m_all[i].abbreviation().contains(abbr, Qt::CaseInsensitive))
-            return true;
-    }
-    return false;
-}
-
-QList<ReleaseBoard *> ReleaseBoard::listAll() {
-    QList<ReleaseBoard *> ret;
-    for (int i = 0; i < _BOARDCOUNT; i++) {
-        ret.append(&m_all[i]);
-    }
-    return ret;
-}
-
-QStringList ReleaseBoard::listAllDescriptions() {
-    QStringList ret;
-    for (int i = 0; i < _BOARDCOUNT; i++) {
-        ret.append(m_all[i].description());
-    }
-    return ret;
-}
-
-QStringList ReleaseBoard::abbreviation() const {
-    return m_abbreviation;
-}
-
-QString ReleaseBoard::description() const {
-    return tr(m_description);
-}
-
-int ReleaseBoard::index() const {
-    return this - m_all;
-}
-
 
 ReleaseImageType ReleaseImageType::m_all[] = {
     {{"iso"}, QT_TR_NOOP("ISO DVD"), QT_TR_NOOP("ISO format image")},

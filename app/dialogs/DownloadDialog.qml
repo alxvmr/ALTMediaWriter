@@ -484,7 +484,7 @@ Dialog {
                             Layout.fillWidth: true
                             width: Layout.width
                             wrapMode: Text.WordWrap
-                            text: drives.selected ? qsTr("Writing this image type is not supported here but you can write it using rootfs:\nsudo alt-rootfs-installer --rootfs=%1 --media=%2 --target=%3").arg(releases.variant.image).arg(drives.selected.devicePath).arg(releases.variant.board.abbreviation[0]) : qsTr("Writing this image type is not supported here but you can write it using rootfs. Insert a drive to get a formatted command.")
+                            text: drives.selected ? qsTr("Writing this image type is not supported here but you can write it using rootfs:\nsudo alt-rootfs-installer --rootfs=%1 --media=%2 --target=%3").arg(releases.variant.image).arg(drives.selected.devicePath).arg(releases.variant.board) : qsTr("Writing this image type is not supported here but you can write it using rootfs. Insert a drive to get a formatted command.")
                             color: "black"
                         }
                         RowLayout {

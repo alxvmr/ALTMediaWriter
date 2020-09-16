@@ -35,7 +35,6 @@ class ReleaseVersion;
 class ReleaseVariant;
 class ReleaseArchitecture;
 class ReleaseImageType;
-class ReleaseBoard;
 
 /*
  * Architecture - singleton (x86, x86_64, etc)
@@ -340,7 +339,7 @@ class ReleaseVariant : public QObject, public DownloadReceiver {
     Q_OBJECT
     Q_PROPERTY(ReleaseArchitecture* arch READ arch CONSTANT)
     Q_PROPERTY(QString name READ name CONSTANT)
-    Q_PROPERTY(ReleaseBoard* board READ board CONSTANT)
+    Q_PROPERTY(QString board READ board CONSTANT)
 
     Q_PROPERTY(QString url READ url NOTIFY urlChanged)
     Q_PROPERTY(QString shaHash READ shaHash NOTIFY shaHashChanged)
@@ -383,7 +382,7 @@ public:
         tr("Error")
     };
 
-    ReleaseVariant(ReleaseVersion *parent, QString url,  QString shaHash, QString md5, int64_t size, ReleaseArchitecture *arch, ReleaseImageType *imageType, ReleaseBoard *board);
+    ReleaseVariant(ReleaseVersion *parent, QString url,  QString shaHash, QString md5, int64_t size, ReleaseArchitecture *arch, ReleaseImageType *imageType, QString board);
     ReleaseVariant(ReleaseVersion *parent, const QString &file, int64_t size);
 
     bool updateUrl(const QString &url, const QString &sha256, int64_t size);
@@ -396,7 +395,7 @@ public:
     ReleaseArchitecture *arch() const;
     QString name() const;
     QString fullName();
-    ReleaseBoard *board() const;
+    QString board() const;
 
     QString url() const;
     QString shaHash() const;
@@ -444,7 +443,7 @@ private:
     QString m_image {};
     ReleaseArchitecture *m_arch { nullptr };
     ReleaseImageType *m_image_type { nullptr };
-    ReleaseBoard *m_board { nullptr };
+    QString m_board {};
     QString m_url {};
     QString m_shaHash {};
     QString m_md5 {};
@@ -503,61 +502,6 @@ private:
     const char *m_description {};
     const char *m_details {};
 };
-
-
-/**
- * @brief The ReleaseBoard class
- *
- * Class representing the possible boards of the releases
- *
- * @property abbreviation short names for the boards, like pc or rpi4
- * @property description a better description what the short stands for, like Intel, AMD and other compatible PCs
- */
-class ReleaseBoard : public QObject {
-    Q_OBJECT
-    Q_PROPERTY(QStringList abbreviation READ abbreviation CONSTANT)
-    Q_PROPERTY(QString description READ description CONSTANT)
-public:
-    enum Id {
-        UNKNOWN = 0,
-        NONE,
-        ARM64_LIVE,
-        I586_LIVE,
-        X86_64_LIVE,
-        TAVOLGA,
-        RPI3,
-        RPI4,
-        POWERPC,
-        ARM64,
-        RISCV64QEMU,
-        JETSON_NANO,
-        BAIKAL_M_ITX,
-        BAIKAL_M_DBM,
-        MK150_02,
-        HIFIVE_UNLEASHED,
-        _BOARDCOUNT,
-    };
-    Q_ENUMS(Id);
-    static ReleaseBoard *fromId(Id id);
-    static ReleaseBoard *fromAbbreviation(const QString &abbr);
-    static bool isKnown(const QString &abbr);
-    static QList<ReleaseBoard *> listAll();
-    static QStringList listAllDescriptions();
-
-    QStringList abbreviation() const;
-    QString description() const;
-    int index() const;
-
-private:
-    ReleaseBoard(const QStringList &abbreviation, const char *description);
-
-    static ReleaseBoard m_all[];
-
-    const QStringList m_abbreviation {};
-    const char *m_description {};
-    const char *m_details {};
-};
-
 
 /**
  * @brief The ReleaseImageType class
