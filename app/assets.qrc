@@ -7,6 +7,7 @@
         <file alias="simply">assets/i/logo/simply.png</file>
         <file alias="alt-workstation">assets/i/logo/alt-workstation.png</file>
         <file alias="alt-kworkstation">assets/i/logo/alt-kworkstation.png</file>
+        <file alias="starterkits">assets/i/logo/starterkits.png</file>
     </qresource>
 
     <qresource>
