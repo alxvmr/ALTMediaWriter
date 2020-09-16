@@ -29,6 +29,8 @@
 #include <QApplication>
 #include <QAbstractEventDispatcher>
 
+#define GETALT_IMAGES_LOCATION "http://getalt.org/_data/images/"
+
 QString releaseImagesCacheDir() {
     QString appdataPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
 
@@ -61,35 +63,6 @@ QList<QString> getReleaseImagesFiles() {
     const QList<QString> releaseImagesFiles = dir.entryList();
 
     return releaseImagesFiles;
-}
-
-QList<QString> getMetadataList(const QString &name) {
-    const QString fileContents = fileToString(":/metadata.yml");
-    const YAML::Node file = YAML::Load(fileContents.toStdString());
-
-    const std::string name_std = name.toStdString();
-
-    QList<QString> list;
-    for (unsigned int i = 0; i < file[name_std].size(); i++) {
-        const std::string value_std = file[name_std][i].as<std::string>();
-        const QString value = QString::fromStdString(value_std);
-
-        list.append(value);
-    }
-
-    return list;
-}
-
-QString getMetadataValue(const QString &name) {
-    const QString fileContents = fileToString(":/metadata.yml");
-    const YAML::Node file = YAML::Load(fileContents.toStdString());
-
-    const std::string name_std = name.toStdString();
-
-    const std::string value_std = file[name_std].as<std::string>();
-    const QString value = QString::fromStdString(value_std);
-
-    return value;
 }
 
 QString ymlToQString(YAML::Node ymlStr) {
@@ -177,8 +150,7 @@ void ReleaseManager::fetchReleases() {
     currentDownloadingReleaseIndex = 0;
 
     const QList<QString> releaseImagesList = getReleaseImagesFiles();
-    const QString getalt_images_location = getMetadataValue("getalt_images_location");
-    DownloadManager::instance()->fetchPageAsync(this, getalt_images_location + releaseImagesList.first());
+    DownloadManager::instance()->fetchPageAsync(this, GETALT_IMAGES_LOCATION + releaseImagesList.first());
 }
 
 void ReleaseManager::variantChangedFilter() {
@@ -358,8 +330,7 @@ void ReleaseManager::onStringDownloaded(const QString &text) {
 
     currentDownloadingReleaseIndex++;
     if (currentDownloadingReleaseIndex < releaseImagesList.size()) {
-        const QString getalt_images_location = getMetadataValue("getalt_images_location");
-        DownloadManager::instance()->fetchPageAsync(this, getalt_images_location + releaseImagesList[currentDownloadingReleaseIndex]);
+        DownloadManager::instance()->fetchPageAsync(this, GETALT_IMAGES_LOCATION + releaseImagesList[currentDownloadingReleaseIndex]);
     } else if (currentDownloadingReleaseIndex == releaseImagesList.size()) {
         // Downloaded the last releases file
         // Reset index and turn off beingUpdate flag
@@ -410,91 +381,62 @@ QVariant ReleaseListModel::data(const QModelIndex &index, int role) const {
     return QVariant();
 }
 
-// Load release info from section file, if it's there
-// Create Release object from this info
-bool ReleaseListModel::loadRelease(const QString &name, const QString &sectionFileName) {
-    QString sectionFileContents = fileToString(":/sections/" + sectionFileName);
-    YAML::Node sectionsFile = YAML::Load(sectionFileContents.toStdString());
-    YAML::Node section;
-
-    bool releaseIsInSection = false;
-    for(unsigned int i = 0; i < sectionsFile["members"].size(); i++) {
-        const QString thisName = ymlToQString(sectionsFile["members"][i]["code"]);
-
-        if (thisName == name) {
-            section = sectionsFile["members"][i];
-            releaseIsInSection = true;
-
-            break;
-        }
-    }
-
-    if (!releaseIsInSection) {
-        return false;
-    }
-
-    std::string lang = "_en";
-    if (QLocale().language() == QLocale::Russian) {
-        lang = "_ru";
-    }
-    
-    QString display_name = ymlToQString(section[("name" + lang).c_str()]);
-    QString summary = ymlToQString(section[("descr" + lang).c_str()]);
-    // Remove HTML character entities that don't render in Qt
-    summary.replace("&colon;", ":");
-    summary.replace("&nbsp;", " ");
-    QString description = ymlToQString(section[("descr_full" + lang).c_str()]);
-    // Remove HTML character entities that don't render in Qt
-    description.replace("&colon;", ":");
-    description.replace("&nbsp;", " ");
-    // NOTE: currently no screenshots
-    QStringList screenshots;
-    
-    // Check that icon file exists
-    const QString icon_path_test = ":/logo/" + ymlToQString(section["img"]);
-    QFile icon_file(icon_path_test);
-    if (!icon_file.exists()) {
-        mWarning() << "Failed to find icon file at " << icon_path_test << " needed for release " << name;
-    }
-
-    // NOTE: icon_path is consumed by QML, so it needs to begin with "qrc:/" not ":/"
-    const QString icon_path = "qrc" + icon_path_test;
-
-    m_releases.append(new Release(manager(), m_releases.count(), name, display_name, summary, description, icon_path, screenshots));
-
-    return true;
-}
-
 ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
     : QAbstractListModel(parent) {
-    const QList<QString> releaseNames = getMetadataList("release_names");
-
+    // Load releases from sections files
     const QDir sections_dir(":/sections");
     const QList<QString> sectionsFiles = sections_dir.entryList();
 
-    for (auto name : releaseNames) {
-        // Insert custom version at 3rd position
-        // TODO: tried to move this out of frontpage and this caused file not to load, getting stuck on "Preparing", likely caused by this position being hardcoded somewhere (probably in qml's), couldn't find where
-        if (m_releases.count() == 2) {
-            Release *custom = new Release (manager(), m_releases.count(), "custom", tr("Custom image"), QT_TRANSLATE_NOOP("Release", "Pick a file from your drive(s)"), { QT_TRANSLATE_NOOP("Release", "<p>Here you can choose a OS image from your hard drive to be written to your flash disk</p><p>Currently it is only supported to write raw disk images (.iso or .bin)</p>") }, "qrc:/logo/custom", {});
-            m_releases.append(custom);
-            ReleaseVersion *customVersion = new ReleaseVersion(custom, 0);
-            custom->addVersion(customVersion);
-            customVersion->addVariant(new ReleaseVariant(customVersion, QString(), QString(), QString(), 0, ReleaseArchitecture::fromId(ReleaseArchitecture::UNKNOWN), ReleaseImageType::fromId(ReleaseImageType::ISO), ReleaseBoard::fromId(ReleaseBoard::UNKNOWN)));
-        }
+    for (auto sectionFile : sectionsFiles) {
+        const QString sectionFileContents = fileToString(":/sections/" + sectionFile);
+        const YAML::Node sectionsFile = YAML::Load(sectionFileContents.toStdString());
 
-        bool loaded_release = false;
-        for (auto sectionFile : sectionsFiles) {
-            const bool loaded = loadRelease(name, sectionFile);
+        for (unsigned int i = 0; i < sectionsFile["members"].size(); i++) {
+            const YAML::Node release_yml = sectionsFile["members"][i];
+            const QString name = ymlToQString(release_yml["code"]);
 
-            if (loaded) {
-                loaded_release = true;
-                break;
+            std::string lang = "_en";
+            if (QLocale().language() == QLocale::Russian) {
+                lang = "_ru";
             }
-        }
+            
+            const QString display_name = ymlToQString(release_yml[("name" + lang).c_str()]);
+            QString summary = ymlToQString(release_yml[("descr" + lang).c_str()]);
+            // Remove HTML character entities that don't render in Qt
+            summary.replace("&colon;", ":");
+            summary.replace("&nbsp;", " ");
+            QString description = ymlToQString(release_yml[("descr_full" + lang).c_str()]);
+            // Remove HTML character entities that don't render in Qt
+            description.replace("&colon;", ":");
+            description.replace("&nbsp;", " ");
+            // NOTE: currently no screenshots
+            const QStringList screenshots;
+            
+            // Check that icon file exists
+            const QString icon_path_test = ":/logo/" + ymlToQString(release_yml["img"]);
+            const QFile icon_file(icon_path_test);
+            if (!icon_file.exists()) {
+                mWarning() << "Failed to find icon file at " << icon_path_test << " needed for release " << name;
+            }
 
-        if (!loaded_release) {
-            mWarning() << "Failed to load release \"%s\", check that there's a section file that contains this release. Searched in these section files:" << sectionsFiles;
+            // NOTE: icon_path is consumed by QML, so it needs to begin with "qrc:/" not ":/"
+            const QString icon_path = "qrc" + icon_path_test;
+
+            const auto release = new Release(manager(), m_releases.count(), name, display_name, summary, description, icon_path, screenshots);
+            m_releases.append(release);
+
+            // Insert custom release at 3rd position
+            // TODO: tried to move this out of frontpage and custom images failed to load, getting stuck on "Preparing", likely caused by this position being hardcoded somewhere (probably in qml's), couldn't find where
+            if (m_releases.count() == 2) {
+                const auto customRelease = new Release (manager(), m_releases.count(), "custom", tr("Custom image"), QT_TRANSLATE_NOOP("Release", "Pick a file from your drive(s)"), { QT_TRANSLATE_NOOP("Release", "<p>Here you can choose a OS image from your hard drive to be written to your flash disk</p><p>Currently it is only supported to write raw disk images (.iso or .bin)</p>") }, "qrc:/logo/custom", {});
+                m_releases.append(customRelease);
+
+                const auto customVersion = new ReleaseVersion(customRelease, 0);
+                customRelease->addVersion(customVersion);
+
+                const auto customVariant = new ReleaseVariant(customVersion, QString(), QString(), QString(), 0, ReleaseArchitecture::fromId(ReleaseArchitecture::UNKNOWN), ReleaseImageType::fromId(ReleaseImageType::ISO), ReleaseBoard::fromId(ReleaseBoard::UNKNOWN));
+                customVersion->addVariant(customVariant);
+            }
         }
     }
 }

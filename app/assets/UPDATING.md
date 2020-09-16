@@ -19,4 +19,4 @@ Run the app. Check for any errors or warnings to make sure that assets are setup
 
 Each release name must have an accompanying images file.
 
-Logo filenames must match the "img" attribute of release in the sections files.
+Logo filenames must match the "img" attribute of release in the sections files. This *could* be different from the filename!
