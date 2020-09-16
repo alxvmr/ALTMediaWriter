@@ -10,8 +10,6 @@
     </qresource>
 
     <qresource>
-        <file alias="metadata.yml">assets/metadata.yml</file>
-
         <file alias="focusRect">assets/focusrect.png</file>
     </qresource>
 

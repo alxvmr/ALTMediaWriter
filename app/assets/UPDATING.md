@@ -8,15 +8,7 @@ Required files: logos from "i/logos", sections file from "_data/sections" direct
 
 ## Update assets.qrc
 
-Add/update/remove entries in the qrc file so that all needed files are present there. Note that file alias must match filenames.
-
-## Update metadata.yml.
-Update "release_names" if needed.
-Make sure "getalt_images_location" is still valid.
+Add/update/remove entries in the qrc file so that all needed files are present there. In general, file aliases must match filenames, but logo filenames must match the "img" attribute of release in the sections files. This *could* be different from the filename!
 
 ## Troubleshooting
 Run the app. Check for any errors or warnings to make sure that assets are setup correctly.
-
-Each release name must have an accompanying images file.
-
-Logo filenames must match the "img" attribute of release in the sections files. This *could* be different from the filename!

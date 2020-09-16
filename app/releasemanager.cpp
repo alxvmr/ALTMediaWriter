@@ -413,7 +413,8 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
             const QStringList screenshots;
             
             // Check that icon file exists
-            const QString icon_path_test = ":/logo/" + ymlToQString(release_yml["img"]);
+            const QString icon_name = ymlToQString(release_yml["img"]);
+            const QString icon_path_test = ":/logo/" + icon_name;
             const QFile icon_file(icon_path_test);
             if (!icon_file.exists()) {
                 mWarning() << "Failed to find icon file at " << icon_path_test << " needed for release " << name;
