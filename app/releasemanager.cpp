@@ -186,13 +186,13 @@ void ReleaseManager::setFilterText(const QString &o) {
     }
 }
 
-bool ReleaseManager::updateUrl(const QString &name, const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size) {
+bool ReleaseManager::updateUrl(const QString &name, const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size) {
     if (!ReleaseArchitecture::isKnown(architecture)) {
         mWarning() << "Architecture" << architecture << "is not known!";
         return false;
     }
-    if (!ReleaseImageType::isKnown(imageType)) {
-        mWarning() << "Image type" << imageType << "is not known!";
+    if (imageType->id() == ReleaseImageType::UNKNOWN) {
+        mWarning() << "Image type for " << url << "is not known!";
         return false;
     }
     for (int i = 0; i < m_sourceModel->rowCount(); i++) {
@@ -276,13 +276,6 @@ void ReleaseManager::loadReleaseImages(const QString &fileContents) {
             }
         }
 
-        QString imageType = ymlToQString(e["type"]);
-        if (url.contains("recovery.tar")) {
-            // NOTE: have to manually distinguish here because yml's just mark recovery.tar as "archive"
-            // TODO: figure out how to deal with this imageType
-            imageType = "trc";
-        }
-
         // NOTE: yml file doesn't define "board" for pc32/pc64
         QString board = "none";
         if (e["board"]) {
@@ -304,9 +297,11 @@ void ReleaseManager::loadReleaseImages(const QString &fileContents) {
         QString version = "9";
         QString status = "0";
 
+        ReleaseImageType *imageType = ReleaseImageType::fromFilename(url);
+
         mDebug() << this->metaObject()->className() << "Adding" << name << arch;
 
-        if (!name.isEmpty() && !url.isEmpty() && !arch.isEmpty() && !imageType.isEmpty())
+        if (!name.isEmpty() && !url.isEmpty() && !arch.isEmpty())
             updateUrl(name, version, status, releaseDate, arch, imageType, board, url, sha256, md5, size);
     }
 }
@@ -345,6 +340,44 @@ QStringList ReleaseManager::architectures() const {
     return ReleaseArchitecture::listAllDescriptions();
 }
 
+QStringList ReleaseManager::fileNameFilters() const {
+    const QList<ReleaseImageType *> imageTypes = ReleaseImageType::all();
+
+    QStringList filters;
+    for (const auto type : imageTypes) {
+        if (type->id() == ReleaseImageType::UNKNOWN) {
+            continue;
+        }
+
+        const QString extensions =
+        [type]() {
+            QString out;
+            out += "(";
+
+            const QStringList abbreviation = type->abbreviation();
+            for (const auto e : abbreviation) {
+                if (abbreviation.indexOf(e) > 0) {
+                    out += " ";
+                }
+
+                out += "*." + e;
+            }
+
+            out += ")";
+
+            return out;
+        }();
+
+        const QString name = type->name();
+        
+        const QString filter = name + " " + extensions;
+        filters.append(filter);
+    }
+
+    filters.append(tr("All files") + " (*)");
+
+    return filters;
+}
 
 QVariant ReleaseListModel::headerData(int section, Qt::Orientation orientation, int role) const {
     Q_UNUSED(section); Q_UNUSED(orientation);
@@ -430,7 +463,7 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
                 const auto customVersion = new ReleaseVersion(customRelease, 0);
                 customRelease->addVersion(customVersion);
 
-                const auto customVariant = new ReleaseVariant(customVersion, QString(), QString(), QString(), 0, ReleaseArchitecture::fromId(ReleaseArchitecture::UNKNOWN), ReleaseImageType::fromId(ReleaseImageType::ISO), "UNKNOWN BOARD");
+                const auto customVariant = new ReleaseVariant(customVersion, QString(), QString(), QString(), 0, ReleaseArchitecture::fromId(ReleaseArchitecture::UNKNOWN), ReleaseImageType::all()[ReleaseImageType::ISO], "UNKNOWN BOARD");
                 customVersion->addVariant(customVariant);
             }
         }
@@ -476,7 +509,7 @@ void Release::setLocalFile(const QString &path) {
     emit selectedVersionChanged();
 }
 
-bool Release::updateUrl(const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size) {
+bool Release::updateUrl(const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size) {
     int finalVersions = 0;
     for (auto i : m_versions) {
         if (i->number() == version)
@@ -486,7 +519,7 @@ bool Release::updateUrl(const QString &version, const QString &status, const QDa
     }
     ReleaseVersion::Status s = status == "alpha" ? ReleaseVersion::ALPHA : status == "beta" ? ReleaseVersion::BETA : ReleaseVersion::FINAL;
     auto ver = new ReleaseVersion(this, version, s, releaseDate);
-    auto variant = new ReleaseVariant(ver, url, sha256, md5, size, ReleaseArchitecture::fromAbbreviation(architecture), ReleaseImageType::fromAbbreviation(imageType), board);
+    auto variant = new ReleaseVariant(ver, url, sha256, md5, size, ReleaseArchitecture::fromAbbreviation(architecture), imageType, board);
     ver->addVariant(variant);
     addVersion(ver);
     if (ver->status() == ReleaseVersion::FINAL)
@@ -630,7 +663,7 @@ const Release *ReleaseVersion::release() const {
     return qobject_cast<const Release*>(parent());
 }
 
-bool ReleaseVersion::updateUrl(const QString &status, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size) {
+bool ReleaseVersion::updateUrl(const QString &status, const QDateTime &releaseDate, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size) {
     // first determine and eventually update the current alpha/beta/final level of this version
     Status s = status == "alpha" ? ALPHA : status == "beta" ? BETA : FINAL;
     if (s <= m_status) {
@@ -661,7 +694,7 @@ bool ReleaseVersion::updateUrl(const QString &status, const QDateTime &releaseDa
             break;
         order++;
     }
-    m_variants.insert(order, new ReleaseVariant(this, url, sha256, md5, size, ReleaseArchitecture::fromAbbreviation(architecture), ReleaseImageType::fromAbbreviation(imageType), board));
+    m_variants.insert(order, new ReleaseVariant(this, url, sha256, md5, size, ReleaseArchitecture::fromAbbreviation(architecture), imageType, board));
     return true;
 }
 
@@ -1135,105 +1168,101 @@ int ReleaseArchitecture::index() const {
     return this - m_all;
 }
 
-ReleaseImageType ReleaseImageType::m_all[] = {
-    {{"iso"}, QT_TR_NOOP("ISO DVD"), QT_TR_NOOP("ISO format image")},
-    // TODO: translate this "LZMA IMG"
-    {{"image", "img.xz"}, QT_TR_NOOP("LZMA IMG"), QT_TR_NOOP("LZMA-compressed raw image")},
-    {{"archive", "tar.xz"}, QT_TR_NOOP("LZMA TAR Archive"), QT_TR_NOOP("LZMA-compressed tar archive of rootfs")},
-    {{"trc", "recovery.tar"}, QT_TR_NOOP("Recovery TAR Archive"), QT_TR_NOOP("Special recovery archive for Tavolga Terminal")},
-};
+// ReleaseImageType ReleaseImageType::m_all[] = {
+//     {{"iso", "dvd"}, QT_TR_NOOP("ISO DVD"), QT_TR_NOOP("ISO format image")},
+//     {{"tar"}, QT_TR_NOOP("TAR Archive"), QT_TR_NOOP("tar archive of rootfs")},
+//     {{"tgz", "tar.gz"}, QT_TR_NOOP("GZip TAR Archive"), QT_TR_NOOP("GNU Zip compressed tar archive of rootfs")},
+//     {{"txz", "tar.xz"}, QT_TR_NOOP("LZMA TAR Archive"), QT_TR_NOOP("LZMA-compressed tar archive of rootfs")},
+//     {{"img"}, QT_TR_NOOP("TAR Archive"), QT_TR_NOOP("raw image")},
+//     {{"igz", "img.gz"}, QT_TR_NOOP("GZip TAR Archive"), QT_TR_NOOP("GNU Zip compressed raw image")},
+//     {{"ixz", "img.xz"}, QT_TR_NOOP("LZMA TAR Archive"), QT_TR_NOOP("LZMA-compressed raw image")},
+//     {{"trc", "recovery.tar"}, QT_TR_NOOP("Recovery TAR Archive"), QT_TR_NOOP("Special recovery archive for Tavolga Terminal")},
+// };
 
-ReleaseImageType::ReleaseImageType(const QStringList &abbreviation, const char *name, const char *description)
-    : m_abbreviation(abbreviation), m_name(name), m_description(description)
-{
+QList<ReleaseImageType *> ReleaseImageType::all() {
+    static const QList<ReleaseImageType *> m_all =
+    []() {
+        QList<ReleaseImageType *> out;
 
+        for (int i = 0; i < COUNT; i++) {
+            const ReleaseImageType::Id id = (ReleaseImageType::Id) i;
+            out.append(new ReleaseImageType(id));
+        }
+
+        return out;
+    }();
+
+    return m_all;
 }
 
-ReleaseImageType *ReleaseImageType::fromId(ReleaseImageType::Id id) {
-    if (id >= 0 && id < _IMAGETYPECOUNT)
-        return &m_all[id];
-    return nullptr;
-}
+ReleaseImageType::ReleaseImageType(const ReleaseImageType::Id id_arg)
+: m_id(id_arg) {
 
-ReleaseImageType *ReleaseImageType::fromAbbreviation(const QString &abbr) {
-    for (int i = 0; i < _IMAGETYPECOUNT; i++) {
-        if (m_all[i].abbreviation().contains(abbr, Qt::CaseInsensitive))
-            return &m_all[i];
-    }
-    return nullptr;
 }
 
 ReleaseImageType *ReleaseImageType::fromFilename(const QString &filename) {
-    for (int i = 0; i < _IMAGETYPECOUNT; i++) {
-        ReleaseImageType *type = &m_all[i];
-        for (int j = 0; j < type->m_abbreviation.size(); j++) {
-            if (filename.contains(type->m_abbreviation[j], Qt::CaseInsensitive))
-                return &m_all[i];
+    for (int i = 0; i < COUNT; i++) {
+        ReleaseImageType *type = all()[i];
+
+        const QStringList abbreviations = type->abbreviation();
+        for (const QString abbreviation : abbreviations) {
+            if (filename.endsWith(abbreviation, Qt::CaseInsensitive)) {
+                return type;
+            }
         }
     }
-    return nullptr;
+    return all()[UNKNOWN];
 }
 
-bool ReleaseImageType::isKnown(const QString &abbr) {
-    for (int i = 0; i < _IMAGETYPECOUNT; i++) {
-        if (m_all[i].abbreviation().contains(abbr, Qt::CaseInsensitive))
-            return true;
-    }
-    return false;
-}
-
-QList<ReleaseImageType *> ReleaseImageType::listAll() {
-    QList<ReleaseImageType *> ret;
-    for (int i = 0; i < _IMAGETYPECOUNT; i++) {
-        ret.append(&m_all[i]);
-    }
-    return ret;
-}
-
-QStringList ReleaseImageType::listAllNames() {
-    QStringList ret;
-    for (int i = 0; i < _IMAGETYPECOUNT; i++) {
-        ret.append(m_all[i].description());
-    }
-    return ret;
+ReleaseImageType::Id ReleaseImageType::id() const {
+    return m_id;
 }
 
 QStringList ReleaseImageType::abbreviation() const {
-    return m_abbreviation;
-}
-
-QString ReleaseImageType::description() const {
-    return tr(m_description);
+    switch (m_id) {
+        case ISO: return {"iso", "dvd"};
+        case TAR: return {"tar"};
+        case TAR_GZ: return {"tgz", "tar.gz"};
+        case TAR_XZ: return {"archive", "tar.xz"};
+        case IMG: return {"img"};
+        case IMG_GZ: return {"igz", "img.gz"};
+        case IMG_XZ: return {"ixz", "img.xz"};
+        case RECOVERY_TAR: return {"trc", "recovery.tar"};
+        case UNKNOWN: return {};
+        case COUNT: return {};
+    }
+    return QStringList();
 }
 
 QString ReleaseImageType::name() const {
-    return tr(m_name);
-}
-
-int ReleaseImageType::index() const {
-    return this - m_all;
+    switch (m_id) {
+        case ISO: return tr("ISO DVD");
+        case TAR: return {"TAR Archive"};
+        case TAR_GZ: return tr("GZIP TAR Archive");
+        case TAR_XZ: return tr("LZMA TAR Archive");
+        case IMG: return tr("IMG");
+        case IMG_GZ: return tr("GZIP IMG");
+        case IMG_XZ: return tr("LZMA IMG");
+        case RECOVERY_TAR: return tr("Recovery TAR Archive");
+        case UNKNOWN: return tr("Unknown");
+        case COUNT: return QString();
+    }
+    return QString();
 }
 
 bool ReleaseImageType::supportedForWriting() const {
-    ReleaseImageType::Id index = (ReleaseImageType::Id)this->index();
+    static const QList<ReleaseImageType::Id> unsupported = {
+        TAR_GZ, TAR_XZ, IMG_GZ, RECOVERY_TAR, UNKNOWN, COUNT
+    };
 
-    switch (index) {
-        case ISO: return true; 
-        case IMG_XZ: return true;
-        case TAR_XZ: return false;
-        case RECOVERY_TAR: return false;
-        case _IMAGETYPECOUNT: return false;
-    }
-    return false;
+    return !unsupported.contains(m_id);
 }
 
 bool ReleaseImageType::canWriteWithRootfs() const {
 #if defined(__APPLE__) || defined(_WIN32)
     return false;
 #else
-    ReleaseImageType::Id index = (ReleaseImageType::Id)this->index();
-
-    if (index == TAR_XZ) {
+    if (m_id == TAR_XZ) {
         return true;
     } else {
         return false;
@@ -1242,9 +1271,7 @@ bool ReleaseImageType::canWriteWithRootfs() const {
 }
 
 bool ReleaseImageType::canMD5checkAfterWrite() const {
-    ReleaseImageType::Id index = (ReleaseImageType::Id)this->index();
-
-    if (index == ISO) {
+    if (m_id == ISO) {
         return true;
     } else {
         return false;

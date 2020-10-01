@@ -168,7 +168,7 @@ ApplicationWindow {
     FileDialog {
         id: fileDialog
         folder: shortcuts.home
-        nameFilters: [ qsTr("Image files") + " (*.iso *.raw *.xz)", qsTr("All files (*)")]
+        nameFilters: releases.fileNameFilters
         onAccepted: {
             releases.selected.setLocalFile(fileUrl)
             dlDialog.visible = true

@@ -73,6 +73,7 @@ class ReleaseImageType;
  * @property selected the currently selected release
  * @property selectedIndex the index of the currently selected release
  * @property architectures the list of the available architectures
+ * @property fileNameFilters image type filters for file dialog
  */
 class ReleaseManager : public QSortFilterProxyModel, public DownloadReceiver {
     Q_OBJECT
@@ -88,6 +89,7 @@ class ReleaseManager : public QSortFilterProxyModel, public DownloadReceiver {
     Q_PROPERTY(ReleaseVariant* variant READ variant NOTIFY variantChanged)
 
     Q_PROPERTY(QStringList architectures READ architectures CONSTANT)
+    Q_PROPERTY(QStringList fileNameFilters READ fileNameFilters CONSTANT)
 public:
     explicit ReleaseManager(QObject *parent = 0);
     bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override;
@@ -102,9 +104,10 @@ public:
     QString filterText() const;
     void setFilterText(const QString &o);
 
-    bool updateUrl(const QString &name, const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size);
+    bool updateUrl(const QString &name, const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size);
 
     QStringList architectures() const;
+    QStringList fileNameFilters() const;
     int filterArchitecture() const;
     void setFilterArchitecture(int o);
 
@@ -208,7 +211,7 @@ class Release : public QObject {
 public:
     Release(ReleaseManager *parent, int index, const QString &name, const QString &displayName, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots);
     Q_INVOKABLE void setLocalFile(const QString &path);
-    bool updateUrl(const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size);
+    bool updateUrl(const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size);
     ReleaseManager *manager();
 
     int index() const;
@@ -287,7 +290,7 @@ public:
     Release *release();
     const Release *release() const;
 
-    bool updateUrl(const QString &status, const QDateTime &releaseDate, const QString &architecture, const QString &imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size);
+    bool updateUrl(const QString &status, const QDateTime &releaseDate, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size);
 
     QString number() const;
     QString name() const;
@@ -328,7 +331,7 @@ private:
  * @property shaHash SHA256 hash of the image
  * @property md5 MD5 of the image
  * @property image the path to the image on the drive
- * @property imageType the tye of the image on the drive
+ * @property imageType the type of the image on the drive
  * @property size the size of the image in bytes
  * @property progress the progress object of the image - reports the progress of download
  * @property status status of the variant - if it's downloading, being written, etc.
@@ -344,7 +347,7 @@ class ReleaseVariant : public QObject, public DownloadReceiver {
     Q_PROPERTY(QString url READ url NOTIFY urlChanged)
     Q_PROPERTY(QString shaHash READ shaHash NOTIFY shaHashChanged)
     Q_PROPERTY(QString image READ image NOTIFY imageChanged)
-    Q_PROPERTY(ReleaseImageType* imageType READ imageType CONSTANT)
+    Q_PROPERTY(ReleaseImageType *imageType READ imageType CONSTANT)
     Q_PROPERTY(qreal size READ size NOTIFY sizeChanged) // stored as a 64b int, UI doesn't need the precision and QML doesn't support long ints
     Q_PROPERTY(qreal realSize READ realSize NOTIFY realSizeChanged) // size after decompression
     Q_PROPERTY(Progress* progress READ progress CONSTANT)
@@ -510,47 +513,45 @@ private:
  *
  * @property abbreviation short names for the type, like iso
  * @property name a common name what the short stands for, like "ISO DVD"
- * @property description a better description what the short stands for, like "ISO format image"
+ * @property supportedForWriting whether this image type can be written to media
+ * @property canWriteWithRootfs whether this image type can be written with rootfs
  */
 class ReleaseImageType : public QObject {
     Q_OBJECT
     Q_PROPERTY(QStringList abbreviation READ abbreviation CONSTANT)
     Q_PROPERTY(QString name READ name CONSTANT)
-    Q_PROPERTY(QString description READ description CONSTANT)
     Q_PROPERTY(bool supportedForWriting READ supportedForWriting CONSTANT)
     Q_PROPERTY(bool canWriteWithRootfs READ canWriteWithRootfs CONSTANT)
 public:
     enum Id {
-        ISO = 0,
-        IMG_XZ,
+        ISO,
+        TAR,
+        TAR_GZ,
         TAR_XZ,
+        IMG,
+        IMG_GZ,
+        IMG_XZ,
         RECOVERY_TAR,
-        _IMAGETYPECOUNT,
+        UNKNOWN,
+        COUNT,
     };
     Q_ENUMS(Id);
-    static ReleaseImageType *fromId(Id id);
-    static ReleaseImageType *fromAbbreviation(const QString &abbr);
-    static ReleaseImageType *fromFilename(const QString &filename);
-    static bool isKnown(const QString &abbr);
-    static QList<ReleaseImageType *> listAll();
-    static QStringList listAllNames();
 
+    static QList<ReleaseImageType *> all();
+    static ReleaseImageType *fromFilename(const QString &filename);
+
+    Id id() const;
     QStringList abbreviation() const;
     QString name() const;
     QString description() const;
     bool supportedForWriting() const;
     bool canWriteWithRootfs() const;
     bool canMD5checkAfterWrite() const;
-    int index() const;
 
 private:
-    ReleaseImageType(const QStringList &abbreviation, const char *name, const char *description);
+    ReleaseImageType(const ReleaseImageType::Id id_arg);
 
-    static ReleaseImageType m_all[];
-
-    const QStringList m_abbreviation {};
-    const char *m_name {};
-    const char *m_description {};
+    ReleaseImageType::Id m_id;
 };
 
 #endif // RELEASEMANAGER_H
