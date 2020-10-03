@@ -104,6 +104,8 @@ Item {
                 font.pointSize: $$(9)
                 text: release.summary
                 wrapMode: Text.Wrap
+                elide: Text.ElideRight
+                maximumLineCount: 3
                 color: "#a1a1a1"
             }
         }

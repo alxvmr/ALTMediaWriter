@@ -429,10 +429,19 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
             }
             
             const QString display_name = ymlToQString(release_yml[("name" + lang).c_str()]);
-            QString summary = ymlToQString(release_yml[("descr" + lang).c_str()]);
-            // Remove HTML character entities that don't render in Qt
-            summary.replace("&colon;", ":");
-            summary.replace("&nbsp;", " ");
+            const QString summary =
+            [release_yml, lang]() {
+                QString out = ymlToQString(release_yml[("descr" + lang).c_str()]);
+                // Remove HTML character entities that don't render in Qt
+                out.replace("&colon;", ":");
+                out.replace("&nbsp;", " ");
+
+                // Remove newlines because text will have wordwrap
+                out.replace("\n", " ");
+
+                return out;
+            }();
+
             QString description = ymlToQString(release_yml[("descr_full" + lang).c_str()]);
             // Remove HTML character entities that don't render in Qt
             description.replace("&colon;", ":");
