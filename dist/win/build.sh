@@ -1,13 +1,6 @@
 #!/bin/bash
 
-# Usage
-# Install MSYS2 first, follow instructions on the website for
-# complete installation
-# Run this script from the mingw32 shell found in MSYS folder
-# ./build.sh - builds and deploys
-# ./build.sh install - install necessary packages
-# ./build.sh build - compiles the executable and copies necessary dll's
-# ./build.sh deploy - creates an installer
+# See BUILDING.md for instructions
 
 # Check that we're running script from it's directory
 if [ ! -f build.sh ]
@@ -17,14 +10,14 @@ then
 fi
 
 # Determine which step(or all) is executed by checking first arg
-opt_install=false
+opt_dependencies=false
 opt_build=false
 opt_deploy=false
 
 if [ $# -gt 0 ]
 then
     case "$1" in
-        install) opt_install=true
+        dependencies) opt_dependencies=true
             ;;
         build) opt_build=true
             ;;
@@ -39,7 +32,7 @@ fi
 # 
 # Install
 # 
-if [ $opt_install = true ]
+if [ $opt_dependencies = true ]
 then
 	PACKAGES="base-devel mingw-w64-i686-toolchain mingw-w64-i686-qt5 mingw-w64-i686-xz  mingw-w64-i686-nsis mingw-w64-i686-mesa git dos2unix mingw-w64-i686-yaml-cpp"
 
@@ -60,7 +53,7 @@ then
     # if [ command -v cloc ] 
     if [ ! "$(command -v qmake)" ] || [ ! "$(command -v mingw32-make)" ]
     then
-        echo "You need to run \"./build.sh install\" to install dependencies before building"
+        echo "You need to run \"./build.sh dependencies\" to install required dependencies before building"
         exit 1
     fi
 
@@ -98,7 +91,7 @@ then
 		dll_file="/mingw32/bin/${dll}.dll"
 		if [ ! -f $dll_file ]
 		then
-			echo "Error: couldn't find $dll_file, ensure you have all installed required packages"
+			echo "Error: couldn't find $dll_file, ensure you have installed all required dependencies"
 			exit 1
 		fi
 
