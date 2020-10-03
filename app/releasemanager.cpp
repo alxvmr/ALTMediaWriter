@@ -277,7 +277,7 @@ void ReleaseManager::loadReleaseImages(const QString &fileContents) {
         }
 
         // NOTE: yml file doesn't define "board" for pc32/pc64
-        QString board = "none";
+        QString board = "PC";
         if (e["board"]) {
             board = ymlToQString(e["board"]);
         }
