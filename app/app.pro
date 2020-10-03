@@ -6,7 +6,14 @@ TARGET = $$MEDIAWRITER_NAME
 
 QT += qml quick widgets network
 
-LIBS += -lisomd5 -lyaml-cpp
+LIBS += -lisomd5
+linux {
+    LIBS += -lyaml-cpp
+}
+windows {
+    # NOTE: "-lyaml-cpp" ignores static linking option and links to dynamic "yaml.cpp.dll.a", so have to manually link to static file
+    LIBS += -l:libyaml-cpp.a
+}
 
 CONFIG += c++11
 
