@@ -23,8 +23,13 @@ then
             ;;
         deploy) opt_deploy=true
             ;;
+        build_and_deploy)
+            opt_build=true
+            opt_deploy=true
+            ;;
     esac
 else
+    opt_dependencies=true
 	opt_build=true
 	opt_deploy=true
 fi
@@ -34,7 +39,7 @@ fi
 # 
 if [ $opt_dependencies = true ]
 then
-	PACKAGES="base-devel mingw-w64-i686-toolchain mingw-w64-i686-qt5 mingw-w64-i686-xz  mingw-w64-i686-nsis mingw-w64-i686-mesa git dos2unix mingw-w64-i686-yaml-cpp"
+	PACKAGES="base-devel mingw-w64-i686-toolchain git mingw-w64-i686-qt5-static mingw-w64-i686-xz mingw-w64-i686-nsis mingw-w64-i686-mesa dos2unix mingw-w64-i686-yaml-cpp"
 
 	pacman -S --needed --noconfirm $PACKAGES
 fi
@@ -43,6 +48,7 @@ fi
 SCRIPTDIR=$(pwd -P)
 ROOTPATH=$(realpath "$SCRIPTDIR/../../")
 BUILDPATH="$ROOTPATH/build"
+DEPLOYPATH="$ROOTPATH/deploy"
 
 # 
 # Build
@@ -50,53 +56,20 @@ BUILDPATH="$ROOTPATH/build"
 
 if [ $opt_build = true ]
 then
-    # if [ command -v cloc ] 
-    if [ ! "$(command -v qmake)" ] || [ ! "$(command -v mingw32-make)" ]
+    cd "$ROOTPATH"
+	
+    echo "Building"
+
+    # Remake build dir
+    if [ -d $BUILDPATH ]
     then
-        echo "You need to run \"./build.sh dependencies\" to install required dependencies before building"
-        exit 1
+        rm -r $BUILDPATH
     fi
+    mkdir $BUILDPATH
 
-	echo "Building"
-
-    # Clean everything so that version gets embedded correctly in makefiles
-    find "$ROOTPATH" -name Makefile -delete
-    find "$ROOTPATH" -name mediawriter.exe -delete
-
-	cd "$ROOTPATH"
-	qmake
-    make clean
-	make -j 8
-
-	# Clear previous build results
-	if [ -d $BUILDPATH ]
-	then
-		rm -r $BUILDPATH
-	fi
-
-	mkdir $BUILDPATH
-
-	echo "Copying executables to build folder"
-	cp $ROOTPATH/app/mediawriter.exe $BUILDPATH 
-	cp $ROOTPATH/app/helper.exe $BUILDPATH 
-	
-	echo "Copying DLL's to build folder"
-
-	windeployqt --compiler-runtime --qmldir app "$BUILDPATH/mediawriter.exe"
-	
-	DLLS="libssl-1_1 libcrypto-1_1 libbz2-1 libdouble-conversion libfreetype-6 libglib-2.0-0 libgraphite2 libharfbuzz-0 libiconv-2 libicudt65 libicuin65 libicuio65 libicutest65 libicutu65 libicuuc65 libpcre-1 libpcre2-16-0 libpcre16-0 libpng16-16 libzstd zlib1 libintl-8 opengl32 libglapi yaml-cpp"
-
-	for dll in $DLLS
-	do
-		dll_file="/mingw32/bin/${dll}.dll"
-		if [ ! -f $dll_file ]
-		then
-			echo "Error: couldn't find $dll_file, ensure you have installed all required dependencies"
-			exit 1
-		fi
-
-		cp $dll_file $BUILDPATH
-	done
+	cd "$BUILDPATH"
+	/mingw32/qt5-static/bin/qmake ..
+	make -j12
 fi
 
 # 
@@ -105,8 +78,23 @@ fi
 
 if [ $opt_deploy = true ]
 then
+    cd "$ROOTPATH"
+    
+    # Remake deploy dir
+    if [ -d $DEPLOYPATH ]
+    then
+        rm -r $DEPLOYPATH
+    fi
+    mkdir $DEPLOYPATH
+
+    echo "Copying files to deploy folder"
+
+    echo "Copying executables"
+    cp $BUILDPATH/app/release/mediawriter.exe $DEPLOYPATH 
+    cp $BUILDPATH/helper/win/release/helper.exe $DEPLOYPATH 
+
 	echo "Copying License"
-	unix2dos < "$ROOTPATH/LICENSE" > "$BUILDPATH/LICENSE.txt"
+	unix2dos < "$ROOTPATH/LICENSE" > "$DEPLOYPATH/LICENSE.txt"
 
 	echo "Composing installer"
 
@@ -116,7 +104,7 @@ then
 	VERSION_MAJOR=$(cut -d. -f1 <<< "$VERSION_STRIPPED")
 	VERSION_MINOR=$(cut -d. -f2 <<< "$VERSION_STRIPPED")
 	VERSION_BUILD=$(cut -d. -f3 <<< "$VERSION_STRIPPED")
-	INSTALLED_SIZE=$(du -k -d0 "$BUILDPATH" | cut -f1)
+	INSTALLED_SIZE=$(du -k -d0 "$DEPLOYPATH" | cut -f1)
 
 	# Bake versions into tmp .nsi script
 	cp "$SCRIPTDIR/mediawriter.nsi" "$SCRIPTDIR/mediawriter.tmp.nsi"

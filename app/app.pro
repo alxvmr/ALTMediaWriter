@@ -10,8 +10,6 @@ LIBS += -lisomd5 -lyaml-cpp
 
 CONFIG += c++11
 
-VERSION=4.1.3
-
 HEADERS += \
     drivemanager.h \
     releasemanager.h \

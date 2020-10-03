@@ -1,16 +1,15 @@
 TEMPLATE = app
 
+include($$top_srcdir/deployment.pri)
+
 QT += core network
 
-LIBS += -lisomd5 -lliblzma
+LIBS += -lisomd5 -llzma
 
 CONFIG += c++11
 CONFIG += console
 
 TARGET = helper
-DESTDIR = ../../app
-
-include($$top_srcdir/deployment.pri)
 
 target.path = $$LIBEXECDIR
 INSTALLS += target
