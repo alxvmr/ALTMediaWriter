@@ -74,7 +74,7 @@ QString ymlToQString(const YAML::Node &yml_value) {
     out.replace("&nbsp;", " ");
     // Remove newlines because text will have wordwrap
     out.replace("\n", " ");
-    
+
     return out;
 }
 
@@ -437,10 +437,10 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
                 lang = "_ru";
             }
             
-            const QString display_name = ymlToQString(release_yml[("name" + lang).c_str()]);
-            const QString summary = ymlToQString(release_yml[("descr" + lang).c_str()]);
+            const QString display_name = ymlToQString(release_yml["name" + lang]);
+            const QString summary = ymlToQString(release_yml["descr" + lang]);
 
-            QString description = ymlToQString(release_yml[("descr_full" + lang).c_str()]);
+            QString description = ymlToQString(release_yml["descr_full" + lang]);
 
             // NOTE: currently no screenshots
             const QStringList screenshots;
