@@ -65,8 +65,17 @@ QList<QString> getReleaseImagesFiles() {
     return releaseImagesFiles;
 }
 
-QString ymlToQString(YAML::Node ymlStr) {
-    return QString::fromStdString(ymlStr.as<std::string>());
+QString ymlToQString(const YAML::Node &yml_value) {
+    const std::string value_std = yml_value.as<std::string>();
+    QString out = QString::fromStdString(value_std);
+
+    // Remove HTML character entities that don't render in Qt
+    out.replace("&colon;", ":");
+    out.replace("&nbsp;", " ");
+    // Remove newlines because text will have wordwrap
+    out.replace("\n", " ");
+    
+    return out;
 }
 
 ReleaseManager::ReleaseManager(QObject *parent)
@@ -429,23 +438,10 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
             }
             
             const QString display_name = ymlToQString(release_yml[("name" + lang).c_str()]);
-            const QString summary =
-            [release_yml, lang]() {
-                QString out = ymlToQString(release_yml[("descr" + lang).c_str()]);
-                // Remove HTML character entities that don't render in Qt
-                out.replace("&colon;", ":");
-                out.replace("&nbsp;", " ");
-
-                // Remove newlines because text will have wordwrap
-                out.replace("\n", " ");
-
-                return out;
-            }();
+            const QString summary = ymlToQString(release_yml[("descr" + lang).c_str()]);
 
             QString description = ymlToQString(release_yml[("descr_full" + lang).c_str()]);
-            // Remove HTML character entities that don't render in Qt
-            description.replace("&colon;", ":");
-            description.replace("&nbsp;", " ");
+
             // NOTE: currently no screenshots
             const QStringList screenshots;
             
@@ -1286,4 +1282,3 @@ bool ReleaseImageType::canMD5checkAfterWrite() const {
         return false;
     }
 }
-
