@@ -49,19 +49,6 @@ FocusScope {
         }
     }
 
-    // this has to be here for softwarecontext (clipping is a bit broken)
-    Rectangle {
-        anchors {
-            top: parent.top
-            left: parent.left
-            right: parent.right
-            bottom: searchBox.bottom
-            rightMargin: fullList.viewport ? fullList.width - fullList.viewport.width : 0
-        }
-        z: 1
-        color: palette.window
-    }
-
     Rectangle {
         enabled: !releases.frontPage
         opacity: !releases.frontPage ? 1.0 : 0.0
