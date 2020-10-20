@@ -26,7 +26,7 @@ import "../simple"
 Item {
     id: root
     width: parent.width
-    height: 120
+    height: 84
     activeFocusOnTab: true
 
     readonly property bool isTop: (index == 0)
@@ -99,7 +99,7 @@ Item {
                 text: release.summary
                 wrapMode: Text.Wrap
                 elide: Text.ElideRight
-                maximumLineCount: 3
+                maximumLineCount: 2
                 color: "#a1a1a1"
             }
         }
