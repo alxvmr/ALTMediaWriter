@@ -43,9 +43,9 @@ Item {
     readonly property real animationDuration: 1000
 
     Rectangle {
-        width: parent.width - 2
+        width: parent.width
+        // increment height so that borders between delegates aren't doubled
         height: parent.height + 1
-        x: 1
         color: root.color
         border {
             color: Qt.darker(palette.window, 1.2)

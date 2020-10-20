@@ -27,9 +27,9 @@ import "../complex"
 
 FocusScope {
     id: imageList
-
-    property alias currentIndex: osListView.currentIndex
-    property real fadeDuration: 200
+    
+    readonly property int searchBarHeight: 36
+    property alias currentIndex: listView.currentIndex
     property int lastIndex: -1
 
     property bool focused: contentList.currentIndex === 0
@@ -49,298 +49,140 @@ FocusScope {
         }
     }
 
-    Rectangle {
-        enabled: !releases.frontPage
-        opacity: !releases.frontPage ? 1.0 : 0.0
-        visible: opacity > 0.0
-        id: searchBox
-        border {
-            color: searchInput.activeFocus ? "#4a90d9" : Qt.darker(palette.button, 1.3)
-            width: 1
-        }
-        radius: $(5)
-        color: palette.background
-        anchors {
-            top: parent.top
-            left: parent.left
-            right: archSelect.left
-            topMargin: $(12)
-            leftMargin: mainWindow.margin
-            rightMargin: $(4)
-        }
-        height: $(36)
-        z: 2
+    Component {
+        id: searchBar
 
         Item {
-            id: magnifyingGlass
-            anchors {
-                left: parent.left
-                leftMargin: (parent.height - height) / 2
-                verticalCenter: parent.verticalCenter
+            width: listView.width
+            height: searchBarHeight
+            z: 1
+            enabled: !releases.frontPage
+            visible: enabled
+            opacity: enabled ? 1.0 : 0.0
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: 300
+                }
             }
-            height: childrenRect.height + $(3)
-            width: childrenRect.width + $(2)
+
+            // Blank rectangle to hide scrolling listview behind header
+            Rectangle {
+                anchors.fill: parent
+                color: palette.window
+            }
 
             Rectangle {
-                height: $(11)
-                antialiasing: true
-                width: height
-                radius: height / 2
-                color: palette.text
-                Rectangle {
-                    height: $(7)
-                    antialiasing: true
-                    width: height
-                    radius: height / 2
-                    color: palette.background
-                    anchors.centerIn: parent
+                anchors {
+                    top: parent.top
+                    bottom: parent.bottom
+                    left: parent.left
+                    right: archSelect.left
+                    rightMargin: $(4)
                 }
-                Rectangle {
-                    height: $(2)
-                    width: $(6)
-                    radius: $(2)
-                    x: $(8)
-                    y: $(11)
-                    rotation: 45
+                border {
+                    color: searchInput.activeFocus ? "#4a90d9" : Qt.darker(palette.button, 1.3)
+                    width: 1
+                }
+                radius: $(5)
+                color: palette.background
+                z: 1
+
+                Item {
+                    id: magnifyingGlass
+                    anchors {
+                        left: parent.left
+                        leftMargin: (parent.height - height) / 2
+                        verticalCenter: parent.verticalCenter
+                    }
+                    height: childrenRect.height + $(3)
+                    width: childrenRect.width + $(2)
+
+                    Rectangle {
+                        height: $(11)
+                        antialiasing: true
+                        width: height
+                        radius: height / 2
+                        color: palette.text
+                        Rectangle {
+                            height: $(7)
+                            antialiasing: true
+                            width: height
+                            radius: height / 2
+                            color: palette.background
+                            anchors.centerIn: parent
+                        }
+                        Rectangle {
+                            height: $(2)
+                            width: $(6)
+                            radius: $(2)
+                            x: $(8)
+                            y: $(11)
+                            rotation: 45
+                            color: palette.text
+                        }
+                    }
+                }
+
+                TextInput {
+                    id: searchInput
+                    anchors {
+                        left: magnifyingGlass.right
+                        top: parent.top
+                        bottom: parent.bottom
+                        right: parent.right
+                        margins: $(8)
+                    }
+                    activeFocusOnTab: true
+                    Text {
+                        anchors.fill: parent
+                        color: "light gray"
+                        font.pointSize: $$(9)
+                        text: qsTr("Find an operating system image")
+                        visible: !parent.activeFocus && parent.text.length == 0
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    verticalAlignment: TextInput.AlignVCenter
+                    text: releases.filterText
+                    onTextChanged: releases.filterText = text
+                    clip: true
                     color: palette.text
                 }
             }
-        }
-        TextInput {
-            id: searchInput
-            activeFocusOnTab: searchBox.visible
-            anchors {
-                left: magnifyingGlass.right
-                top: parent.top
-                bottom: parent.bottom
-                right: parent.right
-                margins: $(8)
-            }
-            Text {
-                anchors.fill: parent
-                color: "light gray"
-                font.pointSize: $$(9)
-                text: qsTr("Find an operating system image")
-                visible: !parent.activeFocus && parent.text.length == 0
-                verticalAlignment: Text.AlignVCenter
-            }
-            verticalAlignment: TextInput.AlignVCenter
-            text: releases.filterText
-            onTextChanged: releases.filterText = text
-            clip: true
-            color: palette.text
-        }
-    }
 
-    AdwaitaComboBox {
-        enabled: !releases.frontPage
-        opacity: !releases.frontPage ? 1.0 : 0.0
-        Behavior on opacity {
-            NumberAnimation {
-                duration: imageList.fadeDuration
-            }
-        }
-
-        id: archSelect
-        activeFocusOnTab: visible
-        visible: opacity > 0.0
-        anchors {
-            right: parent.right
-            top: parent.top
-            rightMargin: mainWindow.margin + $(1)
-            topMargin: $(12)
-        }
-        height: $(36)
-        width: $(148)
-        model: releases.architectures
-        onCurrentIndexChanged:  {
-            releases.filterArchitecture = currentIndex
-        }
-    }
-
-    Rectangle {
-        id: whiteBackground
-        z: -1
-        clip: true
-        radius: $(6)
-        color: "transparent"
-        y: releases.frontPage || moveUp.running ? parent.height / 2 - height / 2 : $(54)
-        Behavior on y {
-            id: moveUp
-            enabled: false
-
-            NumberAnimation {
-                onStopped: moveUp.enabled = false
-            }
-        }
-        height: releases.frontPage ? $(120) * 3 + $(36) : parent.height
-        anchors {
-            left: parent.left
-            right: parent.right
-            rightMargin: mainWindow.margin
-            leftMargin: anchors.rightMargin
-        }
-    }
-
-    Row {
-        anchors.top: whiteBackground.bottom
-        anchors.right: whiteBackground.right
-        anchors.topMargin: $(3)
-        anchors.rightMargin: $(5)
-        opacity: releases.beingUpdated ? 0.8 : 0.0
-        visible: opacity > 0.01
-        spacing: $(3)
-        Behavior on opacity { NumberAnimation { } }
-
-        BusyIndicator {
-            anchors.verticalCenter: parent.verticalCenter
-            height: checkingForUpdatesText.height * 0.8
-            width: height
-        }
-        Text {
-            id: checkingForUpdatesText
-            text: qsTr("Checking for new releases")
-            font.pointSize: $$(9)
-            color: "#7a7a7a"
-        }
-    }
-
-    ScrollView {
-        id: fullList
-        anchors.fill: parent
-        ListView {
-            id: osListView
-            clip: true
-            focus: true
-            anchors {
-                fill: parent
-                leftMargin: mainWindow.margin
-                rightMargin: anchors.leftMargin - (fullList.width - fullList.viewport.width)
-                topMargin: whiteBackground.y
-            }
-
-            model: releases
-
-            delegate: DelegateImage {
-                width: parent.width
-                focus: true
-            }
-
-            remove: Transition {
-                NumberAnimation { properties: "x"; to: width; duration: 300 }
-            }
-            removeDisplaced: Transition {
-                NumberAnimation { properties: "x,y"; duration: 300 }
-            }
-            add: Transition {
-                NumberAnimation { properties: releases.frontPage ? "y" : "x"; from: releases.frontPage ? 0 : -width; duration: 300 }
-            }
-            addDisplaced: Transition {
-                NumberAnimation { properties: "x,y"; duration: 300 }
-            }
-
-            footer: Item {
-                id: footerRoot
-                height: !releases.frontPage ? aboutColumn.height + $(72) : $(36)
-                width: osListView.width
-                z: 0
-                Column {
-                    id: aboutColumn
-                    width: parent.width
-                    visible: !releases.frontPage
-                    spacing: 0
-                    Item {
-                        width: parent.width
-                        height: $(64)
-
-                        Text {
-                            text: qsTr("About ALT Media Writer")
-                            font.pointSize: $$(9)
-                            color: palette.windowText
-                            anchors {
-                                bottom: parent.bottom
-                                left: parent.left
-                                leftMargin: $(18)
-                                bottomMargin: $(12)
-                            }
-                        }
-                    }
-                    Rectangle {
-                        width: parent.width
-                        radius: $(5)
-                        color: palette.background
-                        border {
-                            color: Qt.darker(palette.background, 1.3)
-                            width: 1
-                        }
-                        height: childrenRect.height + $(24)
-                        Behavior on height { NumberAnimation {} }
-                        Column {
-                            id: aboutLayout
-                            spacing: $(3)
-                            y: $(12)
-                            x: $(32)
-                            width: parent.width
-                            move: Transition { NumberAnimation { properties: "y" } }
-
-                            Text {
-                                width: parent.width
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                text: qsTr("Version %1").arg(mediawriterVersion)
-                                textFormat: Text.RichText
-                                font.pointSize: $$(9)
-                                color: palette.text
-                            }
-                            Text {
-                                width: parent.width
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                visible: releases.beingUpdated
-                                text: qsTr("ALT Media Writer is now checking for new releases")
-                                font.pointSize: $$(9)
-                                BusyIndicator {
-                                    anchors.right: parent.left
-                                    anchors.rightMargin: $(3)
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    height: parent.height - $(3)
-                                    width: height
-                                }
-                                color: palette.text
-                            }
-                            Text {
-                                width: parent.width
-                                wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                                text: qsTr("Please report bugs or your suggestions on %1").arg("<a href=\"https://github.com/altlinux/MediaWriter/issues\">https://github.com/altlinux/MediaWriter/</a>")
-                                textFormat: Text.RichText
-                                font.pointSize: $$(9)
-                                onLinkActivated: Qt.openUrlExternally(link)
-                                color: Qt.darker("light gray")
-                                MouseArea {
-                                    anchors.fill: parent
-                                    acceptedButtons: Qt.NoButton
-                                    cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
-                                }
-                            }
-                        }
-                    }
+            AdwaitaComboBox {
+                id: archSelect
+                anchors {
+                    right: parent.right
+                }
+                width: $(148)
+                activeFocusOnTab: visible
+                model: releases.architectures
+                onCurrentIndexChanged:  {
+                    releases.filterArchitecture = currentIndex
                 }
             }
+        
+        }
+    }
 
+    Component {
+        id: listExpander
+
+        Column {
             Rectangle {
-                id: threeDotWrapper
+                id: frontFooter
+                
                 clip: true
-                visible: releases.frontPage
-                enabled: visible
                 activeFocusOnTab: true
-                radius: $(3)
+                radius: 3
                 color: palette.window
-                width: osListView.width - $(2)
-                height: $(32)
-                anchors.horizontalCenter: parent.horizontalCenter
-                y: $(120) * 3 + 1
+                width: listView.width
+                height: 32
                 z: -1
+
                 Rectangle {
                     anchors.fill: parent
-                    anchors.topMargin: $(-10)
+                    anchors.topMargin: -10
                     color: threeDotMouse.containsPress ? Qt.darker(palette.window, 1.2) : threeDotMouse.containsMouse ? palette.window : palette.background
                     Behavior on color { ColorAnimation { duration: 120 } }
                     radius: $(5)
@@ -375,7 +217,7 @@ FocusScope {
                 }
 
                 FocusRectangle {
-                    visible: threeDotWrapper.activeFocus
+                    visible: frontFooter.activeFocus
                     anchors.fill: parent
                     anchors.margins: $(2)
                 }
@@ -404,8 +246,8 @@ FocusScope {
                         }
                     }
                     function action() {
-                        moveUp.enabled = true
                         releases.frontPage = false
+                        listView.state = "full"
                     }
                     onClicked: {
                         action()
@@ -413,6 +255,157 @@ FocusScope {
                 }
             }
         }
+    }
+
+    Component {
+        id: aboutFooter
+
+        Item {
+            height: aboutColumn.height + $(72)
+            width: listView.width
+
+            Column {
+                id: aboutColumn
+                width: parent.width
+                spacing: 0
+                Item {
+                    width: parent.width
+                    height: $(64)
+
+                    Text {
+                        text: qsTr("About ALT Media Writer")
+                        font.pointSize: $$(9)
+                        color: palette.windowText
+                        anchors {
+                            bottom: parent.bottom
+                            left: parent.left
+                            leftMargin: $(18)
+                            bottomMargin: $(12)
+                        }
+                    }
+                }
+                Rectangle {
+                    width: parent.width
+                    radius: $(5)
+                    color: palette.background
+                    border {
+                        color: Qt.darker(palette.background, 1.3)
+                        width: 1
+                    }
+                    height: childrenRect.height + $(24)
+                    Behavior on height { NumberAnimation {} }
+                    Column {
+                        id: aboutLayout
+                        spacing: $(3)
+                        y: $(12)
+                        x: $(32)
+                        width: parent.width
+                        move: Transition { NumberAnimation { properties: "y" } }
+
+                        Text {
+                            width: parent.width
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            text: qsTr("Version %1").arg(mediawriterVersion)
+                            textFormat: Text.RichText
+                            font.pointSize: $$(9)
+                            color: palette.text
+                        }
+                        Text {
+                            width: parent.width
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            visible: releases.beingUpdated
+                            text: qsTr("ALT Media Writer is now checking for new releases")
+                            font.pointSize: $$(9)
+                            BusyIndicator {
+                                anchors.right: parent.left
+                                anchors.rightMargin: $(3)
+                                anchors.verticalCenter: parent.verticalCenter
+                                height: parent.height - $(3)
+                                width: height
+                            }
+                            color: palette.text
+                        }
+                        Text {
+                            width: parent.width
+                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                            text: qsTr("Please report bugs or your suggestions on %1").arg("<a href=\"https://github.com/altlinux/MediaWriter/issues\">https://github.com/altlinux/MediaWriter/</a>")
+                            textFormat: Text.RichText
+                            font.pointSize: $$(9)
+                            onLinkActivated: Qt.openUrlExternally(link)
+                            color: Qt.darker("light gray")
+                            MouseArea {
+                                anchors.fill: parent
+                                acceptedButtons: Qt.NoButton
+                                cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+            
+    ScrollView {
+        id: scrollView
+        anchors.fill: parent
+
+        ListView {
+            id: listView
+            clip: true
+            focus: true
+            anchors {
+                topMargin: mainWindow.margin - searchBarHeight
+                leftMargin: mainWindow.margin
+                rightMargin: mainWindow.margin
+            }
+
+            model: releases
+            footer: listExpander
+            headerPositioning: ListView.OverlayHeader
+            // NOTE: searchBar has to be assigned from the start and hidden because adding it dynamically when entering "full" state is not handled well by the scrollview
+            header: searchBar
+
+            // When exiting front page, move the list to the top of the screen
+            states: State {
+                name: "full"
+
+                PropertyChanges {
+                    target: listView
+
+                    // Move the list up so it occupies all available vertical space
+                    anchors.topMargin: 12
+                    // Replace footer
+                    footer: aboutFooter
+                }
+            }
+            transitions: Transition {
+                to: "full"
+                PropertyAnimation {
+                    properties: "topMargin"
+                    target: listView
+                    duration: 200
+                }
+            }
+
+            delegate: DelegateImage {
+                width: parent.width
+                focus: true
+            }
+
+            remove: Transition {
+                NumberAnimation { properties: "x"; to: width; duration: 300 }
+            }
+            removeDisplaced: Transition {
+                NumberAnimation { properties: "x,y"; duration: 300 }
+            }
+            add: Transition {
+                NumberAnimation { properties: releases.frontPage ? "y" : "x"; from: releases.frontPage ? 0 : -width; duration: 300 }
+            }
+            addDisplaced: Transition {
+                NumberAnimation { properties: "x,y"; duration: 300 }
+            }
+        }
+
         style: ScrollViewStyle {
             incrementControl: Item {}
             decrementControl: Item {}
@@ -436,6 +429,32 @@ FocusScope {
             transientScrollBars: false
             handleOverlap: $(-2)
             minimumHandleLength: $(10)
+        }
+    }
+
+    Row {
+        anchors {
+            bottom: parent.bottom
+            bottomMargin: mainWindow.margin / 2
+            right: parent.right
+            rightMargin: mainWindow.margin + 5
+        }
+        opacity: releases.beingUpdated ? 0.8 : 0.0
+        visible: releases.frontPage && (opacity > 0.01)
+        z: 1
+        spacing: $(3)
+        Behavior on opacity { NumberAnimation { } }
+
+        BusyIndicator {
+            anchors.verticalCenter: parent.verticalCenter
+            height: checkingForUpdatesText.height * 0.8
+            width: height
+        }
+        Text {
+            id: checkingForUpdatesText
+            text: qsTr("Checking for new releases")
+            font.pointSize: $$(9)
+            color: "#7a7a7a"
         }
     }
 }
