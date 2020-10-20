@@ -55,7 +55,7 @@ FocusScope {
         Item {
             width: listView.width
             height: searchBarHeight
-            z: 1
+            z: 2
             enabled: !releases.frontPage
             visible: enabled
             opacity: enabled ? 1.0 : 0.0
