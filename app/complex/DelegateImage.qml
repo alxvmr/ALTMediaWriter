@@ -155,10 +155,9 @@ Item {
             if (release.isLocal) {
                 releases.selectedIndex = index
                 fileDialog.visible = true
-            }
-            else {
+            } else {
                 imageList.currentIndex = index
-                imageList.stepForward(release.index)
+                imageList.stepForward(index)
             }
         }
         onClicked: {

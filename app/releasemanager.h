@@ -192,7 +192,6 @@ private:
  */
 class Release : public QObject {
     Q_OBJECT
-    Q_PROPERTY(int index READ index CONSTANT)
     Q_PROPERTY(QString displayName READ displayName CONSTANT)
     Q_PROPERTY(QString summary READ summary CONSTANT)
     Q_PROPERTY(QString description READ description CONSTANT)
@@ -209,12 +208,11 @@ class Release : public QObject {
     Q_PROPERTY(ReleaseVersion* version READ selectedVersion NOTIFY selectedVersionChanged)
     Q_PROPERTY(int versionIndex READ selectedVersionIndex WRITE setSelectedVersionIndex NOTIFY selectedVersionChanged)
 public:
-    Release(ReleaseManager *parent, int index, const QString &name, const QString &displayName, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots);
+    Release(ReleaseManager *parent, const QString &name, const QString &displayName, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots);
     Q_INVOKABLE void setLocalFile(const QString &path);
     bool updateUrl(const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size);
     ReleaseManager *manager();
 
-    int index() const;
     QString name() const;
     QString displayName() const;
     QString summary() const;
@@ -238,7 +236,6 @@ signals:
     void selectedVersionChanged();
     void prereleaseChanged();
 private:
-    int m_index { 0 };
     QString m_name {};
     QString m_displayName {};
     QString m_summary {};

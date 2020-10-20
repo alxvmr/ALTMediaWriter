@@ -456,13 +456,13 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
             // NOTE: icon_path is consumed by QML, so it needs to begin with "qrc:/" not ":/"
             const QString icon_path = "qrc" + icon_path_test;
 
-            const auto release = new Release(manager(), m_releases.count(), name, display_name, summary, description, icon_path, screenshots);
+            const auto release = new Release(manager(), name, display_name, summary, description, icon_path, screenshots);
             m_releases.append(release);
 
             // Insert custom release at 3rd position
             // TODO: tried to move this out of frontpage and custom images failed to load, getting stuck on "Preparing", likely caused by this position being hardcoded somewhere (probably in qml's), couldn't find where
             if (m_releases.count() == 2) {
-                const auto customRelease = new Release (manager(), m_releases.count(), "custom", tr("Custom image"), QT_TRANSLATE_NOOP("Release", "Pick a file from your drive(s)"), { QT_TRANSLATE_NOOP("Release", "<p>Here you can choose a OS image from your hard drive to be written to your flash disk</p><p>Currently it is only supported to write raw disk images (.iso or .bin)</p>") }, "qrc:/logo/custom", {});
+                const auto customRelease = new Release (manager(), "custom", tr("Custom image"), QT_TRANSLATE_NOOP("Release", "Pick a file from your drive(s)"), { QT_TRANSLATE_NOOP("Release", "<p>Here you can choose a OS image from your hard drive to be written to your flash disk</p><p>Currently it is only supported to write raw disk images (.iso or .bin)</p>") }, "qrc:/logo/custom", {});
                 m_releases.append(customRelease);
 
                 const auto customVersion = new ReleaseVersion(customRelease, 0);
@@ -486,12 +486,8 @@ Release *ReleaseListModel::get(int index) {
 }
 
 
-int Release::index() const {
-    return m_index;
-}
-
-Release::Release(ReleaseManager *parent, int index, const QString &name, const QString &display_name, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots)
-    : QObject(parent), m_index(index), m_name(name), m_displayName(display_name), m_summary(summary), m_description(description), m_icon(icon), m_screenshots(screenshots)
+Release::Release(ReleaseManager *parent, const QString &name, const QString &display_name, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots)
+    : QObject(parent), m_name(name), m_displayName(display_name), m_summary(summary), m_description(description), m_icon(icon), m_screenshots(screenshots)
 {
     connect(this, SIGNAL(selectedVersionChanged()), parent, SLOT(variantChangedFilter()));
 }
