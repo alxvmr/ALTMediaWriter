@@ -30,6 +30,7 @@
 #include <QAbstractEventDispatcher>
 
 #define GETALT_IMAGES_LOCATION "http://getalt.org/_data/images/"
+#define FRONTPAGE_ROW_COUNT 3
 
 QString releaseImagesCacheDir() {
     QString appdataPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
@@ -124,12 +125,10 @@ ReleaseManager::ReleaseManager(QObject *parent)
 
 bool ReleaseManager::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const {
     Q_UNUSED(source_parent)
-    if (m_frontPage)
-        if (source_row < 3)
-            return true;
-        else
-            return false;
-    else {
+    if (m_frontPage) {
+        const bool on_front_page = (source_row < FRONTPAGE_ROW_COUNT);
+        return on_front_page;
+    } else {
         auto r = get(source_row);
         bool containsArch = false;
         for (auto version : r->versionList()) {
@@ -457,22 +456,40 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
             const QString icon_path = "qrc" + icon_path_test;
 
             const auto release = new Release(manager(), name, display_name, summary, description, icon_path, screenshots);
-            m_releases.append(release);
 
-            // Insert custom release at 3rd position
-            // TODO: tried to move this out of frontpage and custom images failed to load, getting stuck on "Preparing", likely caused by this position being hardcoded somewhere (probably in qml's), couldn't find where
-            if (m_releases.count() == 2) {
-                const auto customRelease = new Release (manager(), "custom", tr("Custom image"), QT_TRANSLATE_NOOP("Release", "Pick a file from your drive(s)"), { QT_TRANSLATE_NOOP("Release", "<p>Here you can choose a OS image from your hard drive to be written to your flash disk</p><p>Currently it is only supported to write raw disk images (.iso or .bin)</p>") }, "qrc:/logo/custom", {});
-                m_releases.append(customRelease);
+            // Reorder releases because default order in
+            // sections files is not good. Try to put
+            // workstation first and server second, so that they
+            // are both on the frontpage.
+            // NOTE: this will break if names change in sections files, in that case the order will be the default one
+            const int index =
+            [this, release]() {
+                const QString release_name = release->name();
+                const bool is_workstation = (release_name == "alt-workstation");
+                const bool is_server = (release_name == "alt-server");
 
-                const auto customVersion = new ReleaseVersion(customRelease, 0);
-                customRelease->addVersion(customVersion);
-
-                const auto customVariant = new ReleaseVariant(customVersion, QString(), QString(), QString(), 0, ReleaseArchitecture::fromId(ReleaseArchitecture::UNKNOWN), ReleaseImageType::all()[ReleaseImageType::ISO], "UNKNOWN BOARD");
-                customVersion->addVariant(customVariant);
-            }
+                if (is_workstation) {
+                    return 0;
+                } else if (is_server) {
+                    return 1;
+                } else {
+                    return m_releases.size();
+                }
+            }();
+            m_releases.insert(index, release);
         }
     }
+
+    // Create custom release, version and variant
+    // Insert custom release at the end of the front page
+    const auto customRelease = new Release (manager(), "custom", tr("Custom image"), QT_TRANSLATE_NOOP("Release", "Pick a file from your drive(s)"), { QT_TRANSLATE_NOOP("Release", "<p>Here you can choose a OS image from your hard drive to be written to your flash disk</p><p>Currently it is only supported to write raw disk images (.iso or .bin)</p>") }, "qrc:/logo/custom", {});
+    m_releases.insert(FRONTPAGE_ROW_COUNT - 1, customRelease);
+
+    const auto customVersion = new ReleaseVersion(customRelease, 0);
+    customRelease->addVersion(customVersion);
+
+    const auto customVariant = new ReleaseVariant(customVersion, QString(), QString(), QString(), 0, ReleaseArchitecture::fromId(ReleaseArchitecture::UNKNOWN), ReleaseImageType::all()[ReleaseImageType::ISO], "UNKNOWN BOARD");
+    customVersion->addVariant(customVariant);
 }
 
 ReleaseManager *ReleaseListModel::manager() {
