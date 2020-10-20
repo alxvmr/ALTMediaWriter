@@ -29,13 +29,7 @@ Item {
     height: 120
     activeFocusOnTab: true
 
-    readonly property bool isTop: !releases.get(index-1)
-    readonly property bool isBottom:
-        typeof release !== 'undefined' &&
-        !releases.frontPage &&
-        (!releases.get(index+1) ||
-         typeof releases.get(index+1) == 'undefined'
-        )
+    readonly property bool isTop: (index == 0)
 
     property color color: delegateMouse.containsPress ? Qt.darker(palette.button, 1.2) : delegateMouse.containsMouse ? palette.button : palette.background
     Behavior on color { ColorAnimation { duration: 120 } }
@@ -141,32 +135,6 @@ Item {
                     left: parent.left
                     right: parent.right
                     top: parent.top
-                }
-            }
-        }
-        Rectangle {
-            id: bottomRounding
-            visible: root.isBottom
-            height: 5
-            color: palette.window
-            clip: true
-            anchors {
-                left: parent.left
-                right: parent.right
-                bottom: parent.bottom
-            }
-            Rectangle {
-                height: 10
-                radius: 5
-                color: root.color
-                border {
-                    color: Qt.darker(palette.window, 1.2)
-                    width: 1
-                }
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                    bottom: parent.bottom
                 }
             }
         }
