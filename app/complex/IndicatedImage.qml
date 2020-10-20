@@ -45,8 +45,8 @@ Item {
     BusyIndicator {
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
-        width: $(implicitWidth)
-        height: $(implicitHeight)
+        width: implicitWidth
+        height: implicitHeight
         opacity: image.status == Image.Ready ? 0 : 1
         Behavior on opacity {
             NumberAnimation {

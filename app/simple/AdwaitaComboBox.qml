@@ -26,7 +26,7 @@ import QtQuick.Window 2.0
 AdwaitaRectangle {
     id: control
     z: 3
-    implicitWidth: $(128)
+    implicitWidth: 128
     property alias model: options.model
     property string textRole: ""
     property alias currentIndex: options.currentIndex
@@ -64,17 +64,17 @@ AdwaitaRectangle {
     Arrow {
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
-        anchors.rightMargin: $(12)
-        scale: $(1.25)
+        anchors.rightMargin: 12
+        scale: 1.25
         rotation: 90
     }
 
     Text {
-        x: $(9)
+        x: 9
         anchors.verticalCenter: parent.verticalCenter
         text: count > 0 && options.currentItem ? options.currentItem.text : placeholderText
         color: enabled ? palette.text : disabledPalette.text
-        font.pointSize: $$(9)
+        font.pointSize: 9
     }
 
     Keys.onUpPressed: {
@@ -144,10 +144,10 @@ AdwaitaRectangle {
             Text {
                 color: ListView.isCurrentItem ? palette.highlightedText : palette.text
                 id: label
-                x: $(9)
+                x: 9
                 anchors.verticalCenter: parent.verticalCenter
                 text: textRole ? model[textRole] : modelData
-                font.pointSize: $$(9)
+                font.pointSize: 9
             }
             Keys.onSpacePressed: itemMouse.action()
             MouseArea {

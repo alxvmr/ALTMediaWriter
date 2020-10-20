@@ -34,8 +34,8 @@ Rectangle {
         width: 1
     }
 
-    height: $(70)
-    property real margin: open ? 0 : $(-70)
+    height: 70
+    property real margin: open ? 0 : -70
     anchors.topMargin: margin
     Behavior on margin {
         NumberAnimation {
@@ -59,9 +59,9 @@ Rectangle {
     RowLayout {
         anchors {
             fill: parent
-            margins: $(18)
+            margins: 18
         }
-        spacing: $(12)
+        spacing: 12
         Text {
             id: label
 
@@ -70,7 +70,7 @@ Rectangle {
             verticalAlignment: Text.AlignVCenter
             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
 
-            font.pointSize: $$(9)
+            font.pointSize: 9
             color: "white"
             textFormat: Text.RichText
         }
@@ -91,13 +91,13 @@ Rectangle {
             id: buttonCancel
             flat: true
             color: "transparent"
-            implicitWidth: $(20)
-            implicitHeight: $(20)
+            implicitWidth: 20
+            implicitHeight: 20
             Cross {
                 color: palette.windowText
                 anchors.centerIn: parent
-                width: $(8)
-                height: $(8)
+                width: 8
+                height: 8
             }
 
             onClicked: {

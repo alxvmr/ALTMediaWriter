@@ -39,11 +39,11 @@ RadioButton {
         }
         label: Text {
             id: text
-            font.pointSize: $$(9)
+            font.pointSize: 9
             text: control.text
             color: palette.windowText
         }
-        spacing: $(6)
+        spacing: 6
     }
 }
 

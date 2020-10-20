@@ -23,30 +23,30 @@ import QtQuick.Controls 1.2
 import "../simple"
 
 AdwaitaButton {
-    implicitWidth: arrow.width + text.width + $(28)
+    implicitWidth: arrow.width + text.width + 28
     Item {
         id: arrow
         anchors.left: parent.left
-        anchors.leftMargin: $(12)
+        anchors.leftMargin: 12
         anchors.verticalCenter: parent.verticalCenter
         rotation: -45
         transformOrigin: Item.Center
-        width: $(10)
-        height: $(10)
+        width: 10
+        height: 10
         Rectangle {
-            x: $(1.5)
-            y: $(1.5)
-            width: $(2)
-            height: $(9)
-            radius: $(2)
+            x: 1.5
+            y: 1.5
+            width: 2
+            height: 9
+            radius: 2
             color: mixColors(palette.button, palette.text, 0.5)
         }
         Rectangle {
-            y: $(1.5)
-            x: $(1.5)
-            width: $(9)
-            height: $(2)
-            radius: $(2)
+            y: 1.5
+            x: 1.5
+            width: 9
+            height: 2
+            radius: 2
             color: mixColors(palette.button, palette.text, 0.5)
         }
     }
@@ -54,10 +54,10 @@ AdwaitaButton {
         id: text
         text: qsTr("Back")
         color: palette.text
-        font.pointSize: $$(9)
+        font.pointSize: 9
         anchors {
             left: arrow.left
-            leftMargin: $(16)
+            leftMargin: 16
             verticalCenter: parent.verticalCenter
         }
     }

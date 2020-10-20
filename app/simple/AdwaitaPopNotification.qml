@@ -36,8 +36,8 @@ FocusScope {
             hideTimer.start()
     }
 
-    height: contents.height + $(12)
-    width: contents.width + $(12)
+    height: contents.height + 12
+    width: contents.width + 12
 
     default property alias children: contents.data
 
@@ -64,47 +64,47 @@ FocusScope {
         z: -2
         anchors {
             fill: frame
-            topMargin: -$(1)
-            bottomMargin: -$(2)
-            leftMargin: -$(2)
-            rightMargin: -$(2)
+            topMargin: -1
+            bottomMargin: -2
+            leftMargin: -2
+            rightMargin: -2
         }
 
-        radius: frame.radius + $(2)
+        radius: frame.radius + 2
         color: "#10000000"
     }
 
     Rectangle {
         id: frame
         anchors.fill: contents
-        anchors.margins: - $(12)
+        anchors.margins: - 12
         color: "#729FCF"
         antialiasing: true
         border {
             width: 1
             color: "#b1b1b1"
         }
-        radius: $(6)
+        radius: 6
         Rectangle {
             z: -1
-            y: -$(6.5) - 1
+            y: -6.5 - 1
             antialiasing: true
             border.color: "#b1b1b1"
             border.width: 1
             color: "#729FCF"
             anchors.left: parent.left
-            anchors.leftMargin: parent.radius + $(10)
-            width: $(14)
-            height: $(14)
+            anchors.leftMargin: parent.radius + 10
+            width: 14
+            height: 14
             rotation: 45
         }
         Rectangle {
             color: "#729FCF"
-            y: -$(6.5) + 1
+            y: -6.5 + 1
             anchors.left: parent.left
-            anchors.leftMargin: parent.radius + $(10)
-            width: $(14)
-            height: $(14)
+            anchors.leftMargin: parent.radius + 10
+            width: 14
+            height: 14
             rotation: 45
         }
     }

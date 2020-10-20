@@ -40,17 +40,17 @@ Item {
         id: background
         anchors {
             fill: layout
-            bottomMargin: $(-18)
+            bottomMargin: -18
             topMargin: anchors.bottomMargin - background.radius
             leftMargin: anchors.bottomMargin
-            rightMargin: anchors.bottomMargin + $(4)
+            rightMargin: anchors.bottomMargin + 4
         }
         border {
             color: "#3a3a3a"
             width: 1
         }
         color: "#bb000000"
-        radius: $(6)
+        radius: 6
         MouseArea {
             id: mouse
             anchors.fill: parent
@@ -60,22 +60,22 @@ Item {
 
     RowLayout {
         id: layout
-        spacing: $(6)
+        spacing: 6
 
         anchors.horizontalCenter: parent.horizontalCenter
         width: parent.width * 0.666
-        y: root.open ? $(18) : -(height + $(24))
+        y: root.open ? 18 : -(height + 24)
         Behavior on y { NumberAnimation { duration: 120; easing.type: Easing.InOutQuad } }
 
         Column {
             Text {
-                font.pointSize: $$(9)
+                font.pointSize: 9
                 font.bold: true
                 color: "white"
                 id: title
             }
             Text {
-                font.pointSize: $$(9)
+                font.pointSize: 9
                 color: "white"
                 id: description
             }
@@ -95,14 +95,14 @@ Item {
             id: crossButton
             flat: true
             color: "transparent"
-            implicitWidth: $(21)
-            implicitHeight: $(21)
+            implicitWidth: 21
+            implicitHeight: 21
             onClicked: root.open = false
             Cross {
                 color: palette.windowText
                 anchors.centerIn: parent
-                width: $(8)
-                height: $(8)
+                width: 8
+                height: 8
             }
         }
     }

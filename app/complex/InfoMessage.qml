@@ -5,22 +5,22 @@ RowLayout {
     id: root
     property alias text: infoMessageText.text
     property bool error: false
-    spacing: $(8)
+    spacing: 8
     Rectangle {
         visible: !root.error
         Layout.fillWidth: false
         Layout.alignment: Qt.AlignVCenter
-        width: $(17)
-        height: $(17)
+        width: 17
+        height: 17
         radius: width / 2
         color: "#628fcf"
         border {
-            width: $(1)
+            width: 1
             color: "#a1a1a1"
         }
         Rectangle {
-            width: $(1)
-            height: $(6)
+            width: 1
+            height: 6
             anchors {
                 bottom: parent.bottom
                 bottomMargin: (parent.height - height) / 3
@@ -29,8 +29,8 @@ RowLayout {
             color: "#cce3e3e3"
         }
         Rectangle {
-            width: $(1)
-            height: $(1)
+            width: 1
+            height: 1
             anchors {
                 top: parent.top
                 topMargin: (parent.height - height) / 4
@@ -43,12 +43,12 @@ RowLayout {
         visible: root.error
         Layout.fillWidth: false
         Layout.alignment: Qt.AlignVCenter
-        width: $(18)
-        height: $(18)
+        width: 18
+        height: 18
         radius: width / 2
         color: "red"
         border {
-            width: $(1)
+            width: 1
             color: "#a1a1a1"
         }
         Rectangle {
@@ -65,7 +65,7 @@ RowLayout {
         verticalAlignment: Text.AlignVCenter
         wrapMode: Text.Wrap
         textFormat: Text.RichText
-        font.pointSize: $$(9)
+        font.pointSize: 9
         color: palette.windowText
         onLinkActivated: Qt.openUrlExternally(link)
         MouseArea {

@@ -21,8 +21,8 @@ import QtQuick 2.0
 
 Item {
     id: root
-    width: $(64)
-    height: $(64)
+    width: 64
+    height: 64
 
     property real shorterSide: Math.floor(width < height ? width : height)
     property color color: "red"

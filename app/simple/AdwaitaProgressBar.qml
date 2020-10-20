@@ -29,14 +29,14 @@ Rectangle {
     property real minimumValue: 0.0
     property real value: 0
 
-    width: $(100)
-    height: $(6)
+    width: 100
+    height: 6
 
     border {
         color: Qt.darker(palette.button, 1.7)
         width: 1
     }
-    radius: $(3)
+    radius: 3
     clip: true
     gradient: Gradient {
         GradientStop { position: 0.0; color: Qt.lighter(root.backgroundColor, 1.05) }
@@ -47,13 +47,13 @@ Rectangle {
         clip: true
         y: 0.5
         x: 0.5
-        height: $(6) - 1
+        height: 6 - 1
         width: (root.value - root.minimumValue) / (root.maximumValue - root.minimumValue) * (parent.width - 1);
         border {
             color: Qt.darker(palette.button)
             width: 1
         }
-        radius: $(3)
+        radius: 3
         gradient: Gradient {
             GradientStop { position: 0.0; color: Qt.lighter(root.progressColor, 1.05) }
             GradientStop { position: 0.9; color: root.progressColor }

@@ -46,7 +46,7 @@ IndicatedImage {
 
     FocusRectangle {
         anchors.fill: parent
-        anchors.margins: $(-3)
+        anchors.margins: -3
         visible: parent.activeFocus
     }
 

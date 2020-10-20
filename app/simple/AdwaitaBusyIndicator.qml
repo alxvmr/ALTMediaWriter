@@ -23,8 +23,8 @@ import QtQuick.Controls.Styles 1.2
 
 BusyIndicator {
     id: root
-    width: $(148)
-    height: $(6)
+    width: 148
+    height: 6
     property color progressColor: "#54aada"
     property color backgroundColor: Qt.darker(palette.button, 1.2)
 
@@ -46,7 +46,7 @@ BusyIndicator {
             color: Qt.darker(palette.button, 1.7)
             width: 1
         }
-        radius: $(3)
+        radius: 3
         clip: false
         gradient: Gradient {
             GradientStop { position: 0.0; color: Qt.lighter(root.backgroundColor, 1.05) }
@@ -54,10 +54,10 @@ BusyIndicator {
         }
         Rectangle {
             id: flyingBar
-            width: $(32)
+            width: 32
             height: root.height - 2
             y: 1
-            radius: $(3)
+            radius: 3
             border {
                 color: Qt.darker(palette.button, 1.7)
                 width: 1

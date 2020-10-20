@@ -21,8 +21,8 @@ import QtQuick 2.3
 
 Item {
     id: root
-    implicitHeight: $(36)
-    implicitWidth: $(36)
+    implicitHeight: 36
+    implicitWidth: 36
 
     property bool flat: false
     property alias radius: rect.radius
@@ -31,7 +31,7 @@ Item {
     Rectangle {
         id: rect
         anchors.fill: parent
-        radius: $(3)
+        radius: 3
 
         readonly property int animationDuration: 150
 
@@ -51,8 +51,8 @@ Item {
         Rectangle {
             id: overlay
             visible: control.enabled && ((!root.flat && !Qt.colorEqual(root.color, "transparent"))|| control.pressed || control.checked || control.hovered)
-            radius: parent.radius - $(1)
-            anchors.margins: $(0.5)
+            radius: parent.radius - 1
+            anchors.margins: 0.5
             anchors.fill: parent
             gradient: Gradient {
                 GradientStop {
@@ -74,7 +74,7 @@ Item {
             id: focusRect
             visible: control.activeFocus
             anchors.fill: parent
-            anchors.margins: $(2)
+            anchors.margins: 2
         }
     }
 

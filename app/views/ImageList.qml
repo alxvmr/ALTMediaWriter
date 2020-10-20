@@ -77,13 +77,13 @@ FocusScope {
                     bottom: parent.bottom
                     left: parent.left
                     right: archSelect.left
-                    rightMargin: $(4)
+                    rightMargin: 4
                 }
                 border {
                     color: searchInput.activeFocus ? "#4a90d9" : Qt.darker(palette.button, 1.3)
                     width: 1
                 }
-                radius: $(5)
+                radius: 5
                 color: palette.background
                 z: 1
 
@@ -94,17 +94,17 @@ FocusScope {
                         leftMargin: (parent.height - height) / 2
                         verticalCenter: parent.verticalCenter
                     }
-                    height: childrenRect.height + $(3)
-                    width: childrenRect.width + $(2)
+                    height: childrenRect.height + 3
+                    width: childrenRect.width + 2
 
                     Rectangle {
-                        height: $(11)
+                        height: 11
                         antialiasing: true
                         width: height
                         radius: height / 2
                         color: palette.text
                         Rectangle {
-                            height: $(7)
+                            height: 7
                             antialiasing: true
                             width: height
                             radius: height / 2
@@ -112,11 +112,11 @@ FocusScope {
                             anchors.centerIn: parent
                         }
                         Rectangle {
-                            height: $(2)
-                            width: $(6)
-                            radius: $(2)
-                            x: $(8)
-                            y: $(11)
+                            height: 2
+                            width: 6
+                            radius: 2
+                            x: 8
+                            y: 11
                             rotation: 45
                             color: palette.text
                         }
@@ -130,13 +130,13 @@ FocusScope {
                         top: parent.top
                         bottom: parent.bottom
                         right: parent.right
-                        margins: $(8)
+                        margins: 8
                     }
                     activeFocusOnTab: true
                     Text {
                         anchors.fill: parent
                         color: "light gray"
-                        font.pointSize: $$(9)
+                        font.pointSize: 9
                         text: qsTr("Find an operating system image")
                         visible: !parent.activeFocus && parent.text.length == 0
                         verticalAlignment: Text.AlignVCenter
@@ -154,7 +154,7 @@ FocusScope {
                 anchors {
                     right: parent.right
                 }
-                width: $(148)
+                width: 148
                 activeFocusOnTab: visible
                 model: releases.architectures
                 onCurrentIndexChanged:  {
@@ -185,7 +185,7 @@ FocusScope {
                     anchors.topMargin: -10
                     color: threeDotMouse.containsPress ? Qt.darker(palette.window, 1.2) : threeDotMouse.containsMouse ? palette.window : palette.background
                     Behavior on color { ColorAnimation { duration: 120 } }
-                    radius: $(5)
+                    radius: 5
                     border {
                         color: Qt.darker(palette.background, 1.3)
                         width: 1
@@ -198,17 +198,17 @@ FocusScope {
                     opacity: hidden ? 0.0 : 1.0
                     Behavior on opacity { NumberAnimation { duration: 60 } }
                     anchors.centerIn: parent
-                    spacing: $(3)
+                    spacing: 3
                     Repeater {
                         model: 3
-                        Rectangle { height: $(4); width: $(4); radius: $(1); color: mixColors(palette.windowText, palette.window, 0.75); antialiasing: true }
+                        Rectangle { height: 4; width: 4; radius: 1; color: mixColors(palette.windowText, palette.window, 0.75); antialiasing: true }
                     }
                 }
 
                 Text {
                     id: threeDotText
                     y: threeDotDots.hidden ? parent.height / 2 - height / 2 : -height
-                    font.pointSize: $$(9)
+                    font.pointSize: 9
                     anchors.horizontalCenter: threeDotDots.horizontalCenter
                     Behavior on y { NumberAnimation { duration: 60 } }
                     clip: true
@@ -219,7 +219,7 @@ FocusScope {
                 FocusRectangle {
                     visible: frontFooter.activeFocus
                     anchors.fill: parent
-                    anchors.margins: $(2)
+                    anchors.margins: 2
                 }
 
                 Timer {
@@ -261,7 +261,7 @@ FocusScope {
         id: aboutFooter
 
         Item {
-            height: aboutColumn.height + $(72)
+            height: aboutColumn.height + 72
             width: listView.width
 
             Column {
@@ -270,35 +270,35 @@ FocusScope {
                 spacing: 0
                 Item {
                     width: parent.width
-                    height: $(64)
+                    height: 64
 
                     Text {
                         text: qsTr("About ALT Media Writer")
-                        font.pointSize: $$(9)
+                        font.pointSize: 9
                         color: palette.windowText
                         anchors {
                             bottom: parent.bottom
                             left: parent.left
-                            leftMargin: $(18)
-                            bottomMargin: $(12)
+                            leftMargin: 18
+                            bottomMargin: 12
                         }
                     }
                 }
                 Rectangle {
                     width: parent.width
-                    radius: $(5)
+                    radius: 5
                     color: palette.background
                     border {
                         color: Qt.darker(palette.background, 1.3)
                         width: 1
                     }
-                    height: childrenRect.height + $(24)
+                    height: childrenRect.height + 24
                     Behavior on height { NumberAnimation {} }
                     Column {
                         id: aboutLayout
-                        spacing: $(3)
-                        y: $(12)
-                        x: $(32)
+                        spacing: 3
+                        y: 12
+                        x: 32
                         width: parent.width
                         move: Transition { NumberAnimation { properties: "y" } }
 
@@ -307,7 +307,7 @@ FocusScope {
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                             text: qsTr("Version %1").arg(mediawriterVersion)
                             textFormat: Text.RichText
-                            font.pointSize: $$(9)
+                            font.pointSize: 9
                             color: palette.text
                         }
                         Text {
@@ -315,12 +315,12 @@ FocusScope {
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                             visible: releases.beingUpdated
                             text: qsTr("ALT Media Writer is now checking for new releases")
-                            font.pointSize: $$(9)
+                            font.pointSize: 9
                             BusyIndicator {
                                 anchors.right: parent.left
-                                anchors.rightMargin: $(3)
+                                anchors.rightMargin: 3
                                 anchors.verticalCenter: parent.verticalCenter
-                                height: parent.height - $(3)
+                                height: parent.height - 3
                                 width: height
                             }
                             color: palette.text
@@ -330,7 +330,7 @@ FocusScope {
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                             text: qsTr("Please report bugs or your suggestions on %1").arg("<a href=\"https://github.com/altlinux/MediaWriter/issues\">https://github.com/altlinux/MediaWriter/</a>")
                             textFormat: Text.RichText
-                            font.pointSize: $$(9)
+                            font.pointSize: 9
                             onLinkActivated: Qt.openUrlExternally(link)
                             color: Qt.darker("light gray")
                             MouseArea {
@@ -410,25 +410,25 @@ FocusScope {
             incrementControl: Item {}
             decrementControl: Item {}
             corner: Item {
-                implicitWidth: $(11)
-                implicitHeight: $(11)
+                implicitWidth: 11
+                implicitHeight: 11
             }
             scrollBarBackground: Rectangle {
                 color: Qt.darker(palette.window, 1.2)
-                implicitWidth: $(11)
-                implicitHeight: $(11)
+                implicitWidth: 11
+                implicitHeight: 11
             }
             handle: Rectangle {
                 color: mixColors(palette.window, palette.windowText, 0.5)
-                x: $(3)
-                y: $(3)
-                implicitWidth: $(6)
-                implicitHeight: $(7)
-                radius: $(4)
+                x: 3
+                y: 3
+                implicitWidth: 6
+                implicitHeight: 7
+                radius: 4
             }
             transientScrollBars: false
-            handleOverlap: $(-2)
-            minimumHandleLength: $(10)
+            handleOverlap: -2
+            minimumHandleLength: 10
         }
     }
 
@@ -442,7 +442,7 @@ FocusScope {
         opacity: releases.beingUpdated ? 0.8 : 0.0
         visible: releases.frontPage && (opacity > 0.01)
         z: 1
-        spacing: $(3)
+        spacing: 3
         Behavior on opacity { NumberAnimation { } }
 
         BusyIndicator {
@@ -453,7 +453,7 @@ FocusScope {
         Text {
             id: checkingForUpdatesText
             text: qsTr("Checking for new releases")
-            font.pointSize: $$(9)
+            font.pointSize: 9
             color: "#7a7a7a"
         }
     }

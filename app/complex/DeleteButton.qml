@@ -81,7 +81,7 @@ RowLayout {
         Layout.fillHeight: true
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignRight
-        font.pointSize: $$(9)
+        font.pointSize: 9
         textFormat: Text.RichText
         color: palette.windowText
         onLinkActivated: Qt.openUrlExternally("file://" + link)
@@ -106,7 +106,7 @@ RowLayout {
         BusyIndicator {
             id: eraseIndicator
             anchors.fill: parent
-            anchors.margins: $(9)
+            anchors.margins: 9
             opacity: 0.0
             visible: opacity > 0.0
             Behavior on opacity { NumberAnimation { duration: 120 } }
@@ -114,7 +114,7 @@ RowLayout {
         CheckMark {
             id: eraseCheckmark
             anchors.fill: parent
-            anchors.margins: $(9)
+            anchors.margins: 9
             opacity: 0.0
             visible: opacity > 0.0
             Behavior on opacity { NumberAnimation { duration: 120 } }
@@ -122,7 +122,7 @@ RowLayout {
         Cross {
             id: eraseCross
             anchors.fill: parent
-            anchors.margins: $(9)
+            anchors.margins: 9
             opacity: 0.0
             visible: opacity > 0.0
             Behavior on opacity { NumberAnimation { duration: 120 } }

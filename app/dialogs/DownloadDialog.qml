@@ -33,10 +33,10 @@ Dialog {
     id: dialog
     title: qsTr("Write %1").arg(releases.selected.displayName)
 
-    height: layout.height + $(36)
+    height: layout.height + 36
     standardButtons: StandardButton.NoButton
 
-    width: $(640)
+    width: 640
 
     function reset() {
         writeArrow.color = palette.text
@@ -278,21 +278,21 @@ Dialog {
             activeFocusOnTab: false
 
             contentItem: Item {
-                width: contentScrollView.width - $(18)
-                height: layout.height + $(18)
+                width: contentScrollView.width - 18
+                height: layout.height + 18
                 ColumnLayout {
                     id: layout
-                    spacing: $(18)
+                    spacing: 18
                     anchors {
                         top: parent.top
                         left: parent.left
                         right: parent.right
-                        topMargin: $(18)
-                        leftMargin: $(18)
+                        topMargin: 18
+                        leftMargin: 18
                     }
                     ColumnLayout {
                         id: infoColumn
-                        spacing: $(4)
+                        spacing: 4
                         Layout.fillWidth: true
 
                         InfoMessage {
@@ -341,7 +341,7 @@ Dialog {
 
                     ColumnLayout {
                         width: parent.width
-                        spacing: $(5)
+                        spacing: 5
 
                         Behavior on y {
                             NumberAnimation {
@@ -353,7 +353,7 @@ Dialog {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
                             horizontalAlignment: Text.AlignHCenter
-                            font.pointSize: $$(9)
+                            font.pointSize: 9
                             property double leftSize: releases.variant.progress.to - releases.variant.progress.value
                             property string leftStr:  leftSize <= 0                    ? "" :
                                                      (leftSize < 1024)                 ? qsTr("(%1 B left)").arg(leftSize) :
@@ -398,19 +398,19 @@ Dialog {
 
                     RowLayout {
                         Layout.alignment : Qt.AlignHCenter
-                        spacing: $(32)
+                        spacing: 32
                         Image {
                             source: releases.selected.icon
-                            Layout.preferredWidth: $(64)
-                            Layout.preferredHeight: $(64)
-                            sourceSize.width: $(64)
-                            sourceSize.height: $(64)
+                            Layout.preferredWidth: 64
+                            Layout.preferredHeight: 64
+                            sourceSize.width: 64
+                            sourceSize.height: 64
                             fillMode: Image.PreserveAspectFit
                         }
                         Arrow {
                             id: writeArrow
                             Layout.alignment : Qt.AlignVCenter
-                            scale: $(1.4)
+                            scale: 1.4
                             SequentialAnimation {
                                 running: releases.variant.status == Variant.WRITING
                                 loops: -1
@@ -462,15 +462,15 @@ Dialog {
                     ColumnLayout {
                         z: -1
                         Layout.maximumWidth: parent.width
-                        spacing: $(3)
+                        spacing: 3
                         Item {
-                            height: $(3)
+                            height: 3
                             width: 1
                         }
                         Text {
                             // Show this if image type is not supported and can't be rootfs'ed
                             visible: releases.variant && !releases.variant.imageType.supportedForWriting && !releases.variant.imageType.canWriteWithRootfs
-                            font.pointSize: $$(10)
+                            font.pointSize: 10
                             Layout.fillWidth: true
                             width: Layout.width
                             wrapMode: Text.WordWrap
@@ -480,7 +480,7 @@ Dialog {
                         Text {
                             // Show this if image type is not supported BUT can be rootfs'ed
                             visible: releases.variant && !releases.variant.imageType.supportedForWriting && releases.variant.imageType.canWriteWithRootfs
-                            font.pointSize: $$(10)
+                            font.pointSize: 10
                             Layout.fillWidth: true
                             width: Layout.width
                             wrapMode: Text.WordWrap
@@ -491,7 +491,7 @@ Dialog {
                             height: rightButton.height
                             Layout.minimumWidth: parent.width
                             Layout.maximumWidth: parent.width
-                            spacing: $(6)
+                            spacing: 6
 
                             Item {
                                 Layout.fillWidth: true

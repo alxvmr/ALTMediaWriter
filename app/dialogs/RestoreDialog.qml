@@ -42,9 +42,9 @@ Dialog {
 
     contentItem : Rectangle {
         focus: true
-        implicitWidth: $(480)
-        implicitHeight: textItem.height + buttonItem.height + $(48)
-        height: textItem.height + buttonItem.height + $(48)
+        implicitWidth: 480
+        implicitHeight: textItem.height + buttonItem.height + 48
+        height: textItem.height + buttonItem.height + 48
         color: palette.window
 
         Keys.onEscapePressed: {
@@ -55,13 +55,13 @@ Dialog {
         Item {
             id: wrapper
             anchors.fill: parent
-            anchors.margins: $(18)
+            anchors.margins: 18
             Row {
                 id: textItem
-                spacing: $(36)
+                spacing: 36
                 x: !drives.lastRestoreable || drives.lastRestoreable.restoreStatus == Drive.CONTAINS_LIVE ? 0 :
-                                              drives.lastRestoreable.restoreStatus == Drive.RESTORING     ? - (parent.width + $(36)) :
-                                                                                                            - (2 * parent.width + $(72))
+                                              drives.lastRestoreable.restoreStatus == Drive.RESTORING     ? - (parent.width + 36) :
+                                                                                                            - (2 * parent.width + 72)
                 height: warningText.height
                 Behavior on x {
                     NumberAnimation {
@@ -84,21 +84,21 @@ Dialog {
                                             </p>")
                     textFormat: Text.RichText
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    font.pointSize: $$(9)
+                    font.pointSize: 9
                     color: palette.windowText
                 }
                 ColumnLayout {
                     id: progress
                     width: wrapper.width
                     anchors.verticalCenter: parent.verticalCenter
-                    spacing: $(12)
+                    spacing: 12
                     Item {
                         width: 1; height: 1
                     }
 
                     AdwaitaBusyIndicator {
                         id: progressIndicator
-                        width: $(256)
+                        width: 256
                         Layout.alignment: Qt.AlignHCenter
                     }
 
@@ -106,7 +106,7 @@ Dialog {
                         Layout.alignment: Qt.AlignHCenter
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                         text: qsTr("<p align=\"justify\">Please wait while ALT Media Writer restores your portable drive.</p>")
-                        font.pointSize: $$(9)
+                        font.pointSize: 9
                         color: palette.windowText
                     }
                 }
@@ -121,7 +121,7 @@ Dialog {
                         Layout.alignment: Qt.AlignHCenter
                         horizontalAlignment: Text.AlignHCenter
                         text: qsTr("Your drive was successfully restored!")
-                        font.pointSize: $$(9)
+                        font.pointSize: 9
                         color: palette.windowText
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                     }
@@ -137,7 +137,7 @@ Dialog {
                         Layout.alignment: Qt.AlignHCenter
                         horizontalAlignment: Text.AlignHCenter
                         text: qsTr("Unfortunately, an error occurred during the process.<br>Please try restoring the drive using your system tools.")
-                        font.pointSize: $$(9)
+                        font.pointSize: 9
                         color: palette.windowText
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                     }
@@ -148,7 +148,7 @@ Dialog {
                 id: buttonItem
                 anchors.bottom: parent.bottom
                 anchors.right: parent.right
-                spacing: $(12)
+                spacing: 12
                 AdwaitaButton {
                     text: qsTr("Cancel")
                     visible: drives.lastRestoreable &&

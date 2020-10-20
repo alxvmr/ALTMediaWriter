@@ -26,7 +26,7 @@ import "../simple"
 Item {
     id: root
     width: parent.width
-    height: $(120)
+    height: 120
     activeFocusOnTab: true
 
     readonly property bool isTop: !releases.get(index-1)
@@ -57,8 +57,8 @@ Item {
                 top: parent.top
                 left: parent.left
                 bottom: parent.bottom
-                leftMargin: $(32)
-                topMargin: $(16)
+                leftMargin: 32
+                topMargin: 16
                 bottomMargin: anchors.topMargin
             }
             width: height
@@ -71,26 +71,26 @@ Item {
         }
         ColumnLayout {
             id: textRect
-            spacing: $(4)
+            spacing: 4
             anchors {
                 verticalCenter: parent.verticalCenter
                 left: iconRect.right
                 right: arrow.left
-                leftMargin: $(28)
-                rightMargin: $(14)
+                leftMargin: 28
+                rightMargin: 14
             }
             RowLayout {
                 spacing: 0
                 Text {
                     verticalAlignment: Text.AlignBottom
-                    font.pointSize: $$(9)
+                    font.pointSize: 9
                     text: release.displayName
                     color: palette.text
                 }
                 Text {
                     text: " " + release.version.name
                     visible: !release.isLocal
-                    font.pointSize: $$(9)
+                    font.pointSize: 9
                     color: palette.text
                 }
                 Item {
@@ -101,7 +101,7 @@ Item {
             Text {
                 Layout.fillWidth: true
                 verticalAlignment: Text.AlignTop
-                font.pointSize: $$(9)
+                font.pointSize: 9
                 text: release.summary
                 wrapMode: Text.Wrap
                 elide: Text.ElideRight
@@ -115,13 +115,13 @@ Item {
             anchors {
                 verticalCenter: parent.verticalCenter
                 right: parent.right
-                rightMargin: $(20)
+                rightMargin: 20
             }
         }
         Rectangle {
             id: topRounding
             visible: root.isTop
-            height: $(5)
+            height: 5
             color: palette.window
             clip: true
             anchors {
@@ -130,8 +130,8 @@ Item {
                 top: parent.top
             }
             Rectangle {
-                height: $(10)
-                radius: $(5)
+                height: 10
+                radius: 5
                 color: root.color
                 border {
                     color: Qt.darker(palette.window, 1.2)
@@ -147,7 +147,7 @@ Item {
         Rectangle {
             id: bottomRounding
             visible: root.isBottom
-            height: $(5)
+            height: 5
             color: palette.window
             clip: true
             anchors {
@@ -156,8 +156,8 @@ Item {
                 bottom: parent.bottom
             }
             Rectangle {
-                height: $(10)
-                radius: $(5)
+                height: 10
+                radius: 5
                 color: root.color
                 border {
                     color: Qt.darker(palette.window, 1.2)
@@ -173,7 +173,7 @@ Item {
         FocusRectangle {
             visible: root.activeFocus
             anchors.fill: parent
-            anchors.margins: $(3)
+            anchors.margins: 3
         }
     }
 

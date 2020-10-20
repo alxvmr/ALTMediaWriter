@@ -20,8 +20,8 @@
 import QtQuick 2.3
 
 Item {
-    width: $(64)
-    height: $(64)
+    width: 64
+    height: 64
     property real shorterSide: width < height ? width : height
     property color color: Qt.tint("light green", "green")
     Rectangle {
