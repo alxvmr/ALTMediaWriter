@@ -75,7 +75,7 @@ class ReleaseImageType;
  * @property architectures the list of the available architectures
  * @property fileNameFilters image type filters for file dialog
  */
-class ReleaseManager : public QSortFilterProxyModel, public DownloadReceiver {
+class ReleaseManager : public QSortFilterProxyModel {
     Q_OBJECT
     Q_PROPERTY(bool frontPage READ frontPage WRITE setFrontPage NOTIFY frontPageChanged)
     Q_PROPERTY(bool beingUpdated READ beingUpdated NOTIFY beingUpdatedChanged)
@@ -117,10 +117,6 @@ public:
 
     ReleaseVariant *variant();
 
-    // DownloadReceiver interface
-    void onStringDownloaded(const QString &text) override;
-    virtual void onDownloadError(const QString &message) override;
-
 public slots:
     void fetchReleases();
     void variantChangedFilter();
@@ -139,10 +135,10 @@ private:
     QString m_filterText {};
     int m_filterArchitecture { 0 };
     int m_selectedIndex { 0 };
-    bool m_beingUpdated { false };
-    int currentDownloadingReleaseIndex = 0;
+    bool m_beingUpdated = true;
 
-    void loadReleaseImages(const QString &fileContents);
+    void loadReleaseFile(const QString &fileContents);
+    void setBeingUpdated(const bool value);
 };
 
 
@@ -418,7 +414,6 @@ public:
     // DownloadReceiver interface
     void onFileDownloaded(const QString &path, const QString &shaHash) override;
     virtual void onDownloadError(const QString &message) override;
-    void onStringDownloaded(const QString &text) override;
 
     static int staticOnMediaCheckAdvanced(void *data, long long offset, long long total);
     int onMediaCheckAdvanced(long long offset, long long total);

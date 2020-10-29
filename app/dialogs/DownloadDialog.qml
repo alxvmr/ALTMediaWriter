@@ -350,6 +350,17 @@ Dialog {
                         }
 
                         Text {
+                            visible: downloadManager.resumingDownload
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            horizontalAlignment: Text.AlignHCenter
+                            font.pointSize: 9
+                            text: "Download was interrupted. Resuming."
+                            color: palette.windowText
+                        }
+
+                        Text {
+                            visible: !downloadManager.resumingDownload
                             Layout.fillWidth: true
                             Layout.fillHeight: true
                             horizontalAlignment: Text.AlignHCenter

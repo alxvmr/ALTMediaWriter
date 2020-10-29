@@ -82,7 +82,6 @@ class DownloadManager;
 class DownloadReceiver {
 public:
     virtual void onFileDownloaded(const QString &path, const QString &shaHash) { Q_UNUSED(path); Q_UNUSED(shaHash) }
-    virtual void onStringDownloaded(const QString &text) { Q_UNUSED(text) }
     virtual void onDownloadError(const QString &message) = 0;
 };
 
@@ -111,10 +110,7 @@ private slots:
     void catchUp();
 
     void onReadyRead();
-    void onError(QNetworkReply::NetworkError code);
-    void onSslErrors(const QList<QSslError> errors);
     void onFinished();
-    void onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
     void onTimedOut();
 
 private:
@@ -122,7 +118,6 @@ private:
     qint64 m_bytesDownloaded { 0 };
     QNetworkReply *m_reply { nullptr };
     DownloadReceiver *m_receiver { nullptr };
-    QString m_path { };
     Progress *m_progress { nullptr };
     QTimer m_timer { };
     bool m_catchingUp { false };
@@ -130,6 +125,8 @@ private:
     QFile *m_file { nullptr };
     QByteArray m_buf { };
     QCryptographicHash m_hash { QCryptographicHash::Sha256 };
+
+    void resume();
 };
 
 /**
@@ -141,33 +138,37 @@ private:
  *
  * For files hosted on Fedora servers, it also tries to get a list of mirrors to download the file from.
  */
-class DownloadManager : public QObject, public DownloadReceiver {
+class DownloadManager : public QObject {
     Q_OBJECT
+
+    Q_PROPERTY(bool resumingDownload READ resumingDownload NOTIFY resumingDownloadChanged)
+
 public:
     static DownloadManager *instance();
     static QString dir();
     static QString userAgent();
 
+    QNetworkAccessManager m_manager;
+
     QString downloadFile(DownloadReceiver *receiver, const QUrl &url, const QString &folder = dir(), Progress *progress = nullptr);
-    void fetchPageAsync(DownloadReceiver *receiver, const QString &url);
-    QString fetchPage(const QString &url);
 
     QNetworkReply *tryAnotherMirror();
 
     Q_INVOKABLE void cancel();
 
-    // DownloadReceiver interface
-    virtual void onStringDownloaded(const QString &text) override;
-    virtual void onDownloadError(const QString &message) override;
+    bool resumingDownload() const;
+    void setResumingDownload(const bool value);
+
+signals:
+    void resumingDownloadChanged();
 
 private:
     DownloadManager();
-    static DownloadManager *_self;
 
     Download *m_current { nullptr };
-    QStringList m_mirrorCache { };
+    QString current_image_url;
 
-    QNetworkAccessManager m_manager;
+    bool m_resumingDownload = false;
 };
 
 #endif // DOWNLOADMANAGER_H

@@ -32,6 +32,8 @@
 #define GETALT_IMAGES_LOCATION "http://getalt.org/_data/images/"
 #define FRONTPAGE_ROW_COUNT 3
 
+QNetworkReply *makeNetworkRequest(const QString &url, const int time_out_millis);
+
 QString releaseImagesCacheDir() {
     QString appdataPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
 
@@ -80,7 +82,7 @@ QString ymlToQString(const YAML::Node &yml_value) {
 }
 
 ReleaseManager::ReleaseManager(QObject *parent)
-    : QSortFilterProxyModel(parent), m_sourceModel(new ReleaseListModel(this))
+: QSortFilterProxyModel(parent), m_sourceModel(new ReleaseListModel(this))
 {
     mDebug() << this->metaObject()->className() << "construction";
     setSourceModel(m_sourceModel);
@@ -105,7 +107,7 @@ ReleaseManager::ReleaseManager(QObject *parent)
         } else {
             cache.close();
         }
-        loadReleaseImages(fileToString(cachePath));
+        loadReleaseFile(fileToString(cachePath));
     }
 
     if (!loadedCachedReleases) {
@@ -113,13 +115,14 @@ ReleaseManager::ReleaseManager(QObject *parent)
         for (auto release : releaseImagesList) {
             const QString built_in_relese_images_path = ":/images/" + release;
             const QString release_images_string = fileToString(built_in_relese_images_path);
-            loadReleaseImages(release_images_string);
+            loadReleaseFile(release_images_string);
         }
     }
 
     connect(this, SIGNAL(selectedChanged()), this, SLOT(variantChangedFilter()));
 
     // Download releases from getalt.org
+
     QTimer::singleShot(0, this, SLOT(fetchReleases()));
 }
 
@@ -150,14 +153,80 @@ Release *ReleaseManager::get(int index) const {
 }
 
 void ReleaseManager::fetchReleases() {
-    m_beingUpdated = true;
+    setBeingUpdated(true);
+
+    // Create requests to download all release files and
+    // collect the replies
+    QHash<QString, QNetworkReply *> replies;
+    const QList<QString> releaseFiles = getReleaseImagesFiles();
+    for (const auto file : releaseFiles) {
+        const QString url = GETALT_IMAGES_LOCATION + file;
+
+        qInfo() << "Release url:" << url;
+
+        QNetworkReply *reply = makeNetworkRequest(url, 5000);
+
+        replies[file] = reply;
+    }
+
+    // This will run when all the replies are finished (or
+    // technically, the last one)
+    const auto onReplyFinished =
+    [this, replies]() {
+        // Only proceed if this is the last reply
+        for (auto reply : replies) {
+            if (!reply->isFinished()) {
+                return;
+            }
+        }
+
+        // Check that all replies suceeded
+        // If not, retry
+        for (auto reply : replies.values()) {
+            const bool success = (reply->error() == QNetworkReply::NoError && reply->bytesAvailable() > 0);
+            if (!success) {
+                mWarning() << "Was not able to fetch new releases:" << reply->errorString() << "Retrying in 10 seconds.";
+                QTimer::singleShot(10000, this, SLOT(fetchReleases()));
+
+                return;
+            }
+        }
+
+        mDebug() << this->metaObject()->className() << "Downloaded all release files";
+
+        // Finally, save release files if all is good
+        for (auto file : replies.keys()) {
+            QNetworkReply *reply = replies[file];
+
+            const QByteArray contents_bytes = reply->readAll();
+            const QString contents(contents_bytes);
+
+            mDebug() << "Contents of release file " << file << ":";
+            qInfo() << contents;
+
+            // Save to cache
+            const QString cachePath = releaseImagesCacheDir() + file;
+            std::ofstream cacheFile(cachePath.toStdString());
+            cacheFile << contents.toStdString();
+
+            loadReleaseFile(contents);
+
+            reply->deleteLater();
+        }
+
+        setBeingUpdated(false);
+    };
+
+    for (const auto reply : replies) {
+        connect(
+            reply, &QNetworkReply::finished,
+            onReplyFinished);
+    }
+}
+
+void ReleaseManager::setBeingUpdated(const bool value) {
+    m_beingUpdated = value;
     emit beingUpdatedChanged();
-
-    // Start by downloading the first file, the other files will chain download one after another
-    currentDownloadingReleaseIndex = 0;
-
-    const QList<QString> releaseImagesList = getReleaseImagesFiles();
-    DownloadManager::instance()->fetchPageAsync(this, GETALT_IMAGES_LOCATION + releaseImagesList.first());
 }
 
 void ReleaseManager::variantChangedFilter() {
@@ -196,11 +265,11 @@ void ReleaseManager::setFilterText(const QString &o) {
 
 bool ReleaseManager::updateUrl(const QString &name, const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size) {
     if (!ReleaseArchitecture::isKnown(architecture)) {
-        mWarning() << "Architecture" << architecture << "is not known!";
+        mDebug() << "Architecture" << architecture << "is not known!";
         return false;
     }
     if (imageType->id() == ReleaseImageType::UNKNOWN) {
-        mWarning() << "Image type for " << url << "is not known!";
+        mDebug() << "Image type for " << url << "is not known!";
         return false;
     }
     for (int i = 0; i < m_sourceModel->rowCount(); i++) {
@@ -264,7 +333,7 @@ ReleaseVariant *ReleaseManager::variant() {
     return nullptr;
 }
 
-void ReleaseManager::loadReleaseImages(const QString &fileContents) {
+void ReleaseManager::loadReleaseFile(const QString &fileContents) {
     YAML::Node file = YAML::Load(fileContents.toStdString());
 
     for (auto e : file["entries"]) {
@@ -312,36 +381,6 @@ void ReleaseManager::loadReleaseImages(const QString &fileContents) {
         if (!name.isEmpty() && !url.isEmpty() && !arch.isEmpty())
             updateUrl(name, version, status, releaseDate, arch, imageType, board, url, sha256, md5, size);
     }
-}
-
-void ReleaseManager::onStringDownloaded(const QString &text) {
-    const QList<QString> releaseImagesList = getReleaseImagesFiles();
-
-    mDebug() << this->metaObject()->className() << "Downloaded releases file" << releaseImagesList[currentDownloadingReleaseIndex];
-
-    // Cache downloaded releases file
-    QString cachePath = releaseImagesCacheDir() + releaseImagesList[currentDownloadingReleaseIndex];
-    std::ofstream cacheFile(cachePath.toStdString());
-    cacheFile << text.toStdString();
-
-    loadReleaseImages(text);
-
-    currentDownloadingReleaseIndex++;
-    if (currentDownloadingReleaseIndex < releaseImagesList.size()) {
-        DownloadManager::instance()->fetchPageAsync(this, GETALT_IMAGES_LOCATION + releaseImagesList[currentDownloadingReleaseIndex]);
-    } else if (currentDownloadingReleaseIndex == releaseImagesList.size()) {
-        // Downloaded the last releases file
-        // Reset index and turn off beingUpdate flag
-        currentDownloadingReleaseIndex = 0;
-        m_beingUpdated = false;
-        emit beingUpdatedChanged();
-    }
-}
-
-void ReleaseManager::onDownloadError(const QString &message) {
-    mWarning() << "Was not able to fetch new releases:" << message << "Retrying in 10 seconds.";
-
-    QTimer::singleShot(10000, this, SLOT(fetchReleases()));
 }
 
 QStringList ReleaseManager::architectures() const {
@@ -418,7 +457,7 @@ QVariant ReleaseListModel::data(const QModelIndex &index, int role) const {
 }
 
 ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
-    : QAbstractListModel(parent) {
+: QAbstractListModel(parent) {
     // Load releases from sections files
     const QDir sections_dir(":/sections");
     const QList<QString> sectionsFiles = sections_dir.entryList();
@@ -504,7 +543,7 @@ Release *ReleaseListModel::get(int index) {
 
 
 Release::Release(ReleaseManager *parent, const QString &name, const QString &display_name, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots)
-    : QObject(parent), m_name(name), m_displayName(display_name), m_summary(summary), m_description(description), m_icon(icon), m_screenshots(screenshots)
+: QObject(parent), m_name(name), m_displayName(display_name), m_summary(summary), m_description(description), m_icon(icon), m_screenshots(screenshots)
 {
     connect(this, SIGNAL(selectedVersionChanged()), parent, SLOT(variantChangedFilter()));
 }
@@ -660,7 +699,7 @@ void Release::setSelectedVersionIndex(int o) {
 
 
 ReleaseVersion::ReleaseVersion(Release *parent, const QString &number, ReleaseVersion::Status status, QDateTime releaseDate)
-    : QObject(parent), m_number(number), m_status(status), m_releaseDate(releaseDate)
+: QObject(parent), m_number(number), m_status(status), m_releaseDate(releaseDate)
 {
     if (status != FINAL)
         emit parent->prereleaseChanged();
@@ -668,7 +707,7 @@ ReleaseVersion::ReleaseVersion(Release *parent, const QString &number, ReleaseVe
 }
 
 ReleaseVersion::ReleaseVersion(Release *parent, const QString &file, int64_t size)
-    : QObject(parent), m_variants({ new ReleaseVariant(this, file, size) })
+: QObject(parent), m_variants({ new ReleaseVariant(this, file, size) })
 {
     connect(this, SIGNAL(selectedVariantChanged()), parent->manager(), SLOT(variantChangedFilter()));
 }
@@ -722,13 +761,13 @@ QString ReleaseVersion::number() const {
 
 QString ReleaseVersion::name() const {
     switch (m_status) {
-    case ALPHA:
+        case ALPHA:
         return tr("%1 Alpha").arg(m_number);
-    case BETA:
+        case BETA:
         return tr("%1 Beta").arg(m_number);
-    case RELEASE_CANDIDATE:
+        case RELEASE_CANDIDATE:
         return tr("%1 Release Candidate").arg(m_number);
-    default:
+        default:
         return QString("%1").arg(m_number);
     }
 }
@@ -775,13 +814,13 @@ QList<ReleaseVariant *> ReleaseVersion::variantList() const {
 
 
 ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, QString url, QString shaHash, QString md5, int64_t size, ReleaseArchitecture *arch, ReleaseImageType *imageType, QString board)
-    : QObject(parent), m_arch(arch), m_image_type(imageType), m_board(board), m_url(url), m_shaHash(shaHash), m_md5(md5), m_size(size)
+: QObject(parent), m_arch(arch), m_image_type(imageType), m_board(board), m_url(url), m_shaHash(shaHash), m_md5(md5), m_size(size)
 {
     connect(this, &ReleaseVariant::sizeChanged, this, &ReleaseVariant::realSizeChanged);
 }
 
 ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, const QString &file, int64_t size)
-    : QObject(parent), m_image(file), m_arch(ReleaseArchitecture::fromId(ReleaseArchitecture::X86_64)), m_image_type(ReleaseImageType::fromFilename(file)), m_board("UNKNOWN BOARD"), m_shaHash(""), m_md5(""), m_size(size)
+: QObject(parent), m_image(file), m_arch(ReleaseArchitecture::fromId(ReleaseArchitecture::X86_64)), m_image_type(ReleaseImageType::fromFilename(file)), m_board("UNKNOWN BOARD"), m_shaHash(""), m_md5(""), m_size(size)
 {
     connect(this, &ReleaseVariant::sizeChanged, this, &ReleaseVariant::realSizeChanged);
     m_status = READY;
@@ -902,54 +941,6 @@ QString ReleaseVariant::statusString() const {
     return m_statusStrings[status()];
 }
 
-void ReleaseVariant::onStringDownloaded(const QString &text) {
-    mDebug() << this->metaObject()->className() << "Downloaded MD5SUM";
-
-    const QList<QString> releaseImagesList = getReleaseImagesFiles();
-
-    // MD5SUM is of the form "sum image \n sum image \n ..."
-    // Search for the sum by finding image matching m_url
-    QStringList elements = text.split(QRegExp("\\s+"));
-    QString prev = "";
-    for (int i = 0; i < elements.size(); ++i) {
-        if (elements[i].size() > 0 && m_url.contains(elements[i]) && prev.size() > 0) {
-            // Update internal md5
-            m_md5 = prev;
-
-            // Update md5 in cached releases file
-            // Have to look in all files because don't know which one contains this variant
-            for (auto release : releaseImagesList) {
-                QString cachePath = releaseImagesCacheDir() + release;
-
-                // Check that file exists
-                QFile cache(cachePath);
-                if (cache.open(QFile::ReadOnly)) {
-                    cache.close();
-                } else {
-                    continue;
-                }
-
-                // Open yaml file and edit it
-                YAML::Node file = YAML::Load(fileToString(cachePath).toStdString());
-                for (auto e : file["entries"]) {
-                    if (e["link"] && ymlToQString(e["link"]) == m_url) {
-                        e["md5"] = m_md5.toStdString();
-                    }
-                }
-
-                // Write yaml file back out to cache
-                std::ofstream fout(cachePath.toStdString()); 
-                fout << file;
-            }
-
-            break;
-        }
-
-        prev = elements[i];
-    }
-
-}
-
 void ReleaseVariant::onFileDownloaded(const QString &path, const QString &hash) {
     m_temporaryImage = QString();
 
@@ -1030,18 +1021,79 @@ int ReleaseVariant::onMediaCheckAdvanced(long long offset, long long total) {
 void ReleaseVariant::download() {
     if (url().isEmpty() && !image().isEmpty()) {
         setStatus(READY);
+
+        return;
     }
-    else {
-        resetStatus();
-        setStatus(DOWNLOADING);
-        if (m_size)
-            m_progress->setTo(m_size);
 
-        // Download MD5SUM
-        int cutoffIndex = m_url.lastIndexOf("/");
-        QString md5sumUrl = m_url.left(cutoffIndex) + "/MD5SUM";
-        DownloadManager::instance()->fetchPageAsync(this, md5sumUrl);
+    resetStatus();
+    setStatus(DOWNLOADING);
+    if (m_size)
+        m_progress->setTo(m_size);
 
+    // Download md5 for this variant
+    // NOTE: if downloading md5 fails, give up and proceed to downloading the image. This is because MD5SUM might not be present so don't want to get stuck in download attempts for no reason.
+    const int cutoffIndex = m_url.lastIndexOf("/");
+    const QString md5sumUrl = m_url.left(cutoffIndex) + "/MD5SUM";
+    QNetworkReply *reply = makeNetworkRequest(md5sumUrl, 5000);
+
+    const auto onMd5sumDownloadFinished = 
+    [this, reply]() {
+        mDebug() << this->metaObject()->className() << "Downloaded MD5SUM";
+        
+        //
+        // Save md5
+        //
+
+        // Get downloaded md5sum string out of reply
+        const QByteArray md5sumBytes = reply->readAll();
+        const QString md5sumContents(md5sumBytes);
+        reply->deleteLater();
+
+        // MD5SUM is of the form "sum image \n sum image \n ..."
+        // Search for the sum by finding image matching m_url
+        QStringList elements = md5sumContents.split(QRegExp("\\s+"));
+        QString prev = "";
+        for (int i = 0; i < elements.size(); ++i) {
+            if (elements[i].size() > 0 && m_url.contains(elements[i]) && prev.size() > 0) {
+                // Update internal md5
+                m_md5 = prev;
+
+                // Update md5 in cached releases file
+                // Have to look in all files because don't know which one contains this variant
+                const QList<QString> releaseImagesList = getReleaseImagesFiles();
+                for (auto release : releaseImagesList) {
+                    QString cachePath = releaseImagesCacheDir() + release;
+
+                    // Check that file exists
+                    QFile cache(cachePath);
+                    if (cache.open(QFile::ReadOnly)) {
+                        cache.close();
+                    } else {
+                        continue;
+                    }
+
+                    // Open yaml file and edit it
+                    YAML::Node file = YAML::Load(fileToString(cachePath).toStdString());
+                    for (auto e : file["entries"]) {
+                        if (e["link"] && ymlToQString(e["link"]) == m_url) {
+                            e["md5"] = m_md5.toStdString();
+                        }
+                    }
+
+                    // Write yaml file back out to cache
+                    std::ofstream fout(cachePath.toStdString()); 
+                    fout << file;
+                }
+
+                break;
+            }
+
+            prev = elements[i];
+        }
+
+        //
+        // Download image
+        //
         QString ret = DownloadManager::instance()->downloadFile(this, url(), DownloadManager::dir(), progress());
         if (!ret.endsWith(".part")) {
             m_temporaryImage = QString();
@@ -1055,11 +1107,14 @@ void ReleaseVariant::download() {
                 m_size = QFile(m_image).size();
                 emit sizeChanged();
             }
-        }
-        else {
+        } else {
             m_temporaryImage = ret;
         }
-    }
+    };
+
+    connect(
+        reply, &QNetworkReply::finished,
+        onMd5sumDownloadFinished);
 }
 
 void ReleaseVariant::resetStatus() {
@@ -1120,7 +1175,7 @@ ReleaseArchitecture ReleaseArchitecture::m_all[] = {
 };
 
 ReleaseArchitecture::ReleaseArchitecture(const QStringList &abbreviation, const char *description)
-    : m_abbreviation(abbreviation), m_description(description)
+: m_abbreviation(abbreviation), m_description(description)
 {
 
 }
@@ -1294,4 +1349,28 @@ bool ReleaseImageType::canMD5checkAfterWrite() const {
     } else {
         return false;
     }
+}
+
+QNetworkReply *makeNetworkRequest(const QString &url, const int time_out_millis = 0) {
+    QNetworkRequest request(url);
+    request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+    if (!options.noUserAgent) {
+        request.setHeader(QNetworkRequest::UserAgentHeader, DownloadManager::userAgent());
+    }
+
+    QNetworkReply *reply = DownloadManager::instance()->m_manager.get(request);
+
+    // TODO: this is a function of reply in a newer Qt version
+    // Abort download if it takes more than 5s
+    if (time_out_millis > 0) {
+        auto time_out_timer = new QTimer(reply);
+        QObject::connect(
+            time_out_timer, &QTimer::timeout,
+            [reply]() {
+                reply->abort();
+            });
+        time_out_timer->start(time_out_millis);
+    }
+
+    return reply;
 }
