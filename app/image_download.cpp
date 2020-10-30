@@ -79,7 +79,6 @@ ImageDownload::ImageDownload(const QUrl &url_arg, Progress *progress_arg)
     reply = network_access_manager->get(request);
     // NOTE: 64MB buffer in case the user is on a very fast network
     reply->setReadBufferSize(64L * 1024L * 1024L);
-    reply->setParent(this);
 
     connect(reply, &QNetworkReply::readyRead, this, &ImageDownload::onReadyRead);
     connect(reply, &QNetworkReply::finished, this, &ImageDownload::onFinished);
@@ -88,6 +87,12 @@ ImageDownload::ImageDownload(const QUrl &url_arg, Progress *progress_arg)
 
     if (reply->bytesAvailable() > 0) {
         onReadyRead();
+    }
+}
+
+ImageDownload::~ImageDownload() {
+    if (reply != nullptr) {
+        reply->deleteLater();
     }
 }
 
@@ -151,6 +156,8 @@ void ImageDownload::onFinished() {
         file->close();
         emit finished();
     }
+
+    reply->deleteLater();
 }
 
 void ImageDownload::onTimeout() {

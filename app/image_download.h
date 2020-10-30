@@ -33,8 +33,8 @@
  * is used. While the image file is partially downloaded, it
  * is suffixed with ".part". This suffix is removed when the
  * image download completes. If there's a partially
- * downloaded image present, the download is resumed. Use
- * deleteLater() to delete an instance when it's done.
+ * downloaded image present, the download is resumed. To
+ * cancel a download, delete the instance.
  */
 
 class QNetworkReply;
@@ -46,6 +46,7 @@ class ImageDownload final : public QObject {
 
 public:
     ImageDownload(const QUrl &url_arg, Progress *progress_arg);
+    ~ImageDownload();
 
 signals:
     // Emitted when the download finishes succesfully
