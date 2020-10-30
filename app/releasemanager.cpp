@@ -951,33 +951,26 @@ void ReleaseVariant::onDownloadFinished() {
     setStatus(DOWNLOAD_VERIFYING);
     m_progress->setValue(0.0/0.0, 1.0);
 
-    // if (!shaHash().isEmpty() && shaHash() != hash) {
-    //     mWarning() << "Computed SHA256 hash of" << path << " - " << hash << "does not match expected" << shaHash();
-    //     setErrorString(tr("The downloaded image is corrupted"));
-    //     setStatus(FAILED_DOWNLOAD);
-    //     return;
-    // }
-    mDebug() << this->metaObject()->className() << "SHA256 check passed";
-
     qApp->eventDispatcher()->processEvents(QEventLoop::AllEvents);
 
-    int checkResult = mediaCheckFile(QDir::toNativeSeparators(path).toLocal8Bit(), md5().toLocal8Bit().data(), &ReleaseVariant::staticOnMediaCheckAdvanced, this);
+    const QString computed_md5 =
+    [path]() {
+        QFile file(path);
+        if (file.open(QIODevice::ReadOnly)) {
+            QCryptographicHash hash(QCryptographicHash::Md5);
+            hash.addData(&file);
+            file.close();
+            const QByteArray sum_bytes = hash.result().toHex();
 
-    if (checkResult == ISOMD5SUM_CHECK_FAILED) {
-        mWarning() << "Internal MD5 media check of" << path << "failed with status" << checkResult;
-        mWarning() << "sum should be:" << libcheckisomd5_last_mediasum;
-        mWarning() << "computed sum:" << libcheckisomd5_last_computedsum;
-        QFile::remove(path);
-        setErrorString(tr("The downloaded image is corrupted"));
-        setStatus(FAILED_DOWNLOAD);
-        return;
-    }
-    else if (checkResult == ISOMD5SUM_FILE_NOT_FOUND) {
-        setErrorString(tr("The downloaded file is not readable."));
-        setStatus(FAILED_DOWNLOAD);
-        return;
-    }
-    else {
+            return QString(sum_bytes);
+        } else {
+            return QString();
+        }
+    }();
+
+    const bool md5_match = (computed_md5 == m_md5);
+
+    if (md5_match) {
         mDebug() << this->metaObject()->className() << "MD5 check passed";
         QString finalFilename(path);
         finalFilename = finalFilename.replace(QRegExp("[.]part$"), "");
@@ -1001,6 +994,13 @@ void ReleaseVariant::onDownloadFinished() {
             m_size = QFile(m_image).size();
             emit sizeChanged();
         }
+    } else {
+        mWarning() << "Internal MD5 media check of" << path << "failed";
+        mWarning() << "sum should be:" << m_md5;
+        mWarning() << "computed sum:" << computed_md5;
+        QFile::remove(path);
+        setErrorString(tr("The downloaded image is corrupted"));
+        setStatus(FAILED_DOWNLOAD);
     }
 
     delete_image_download();
