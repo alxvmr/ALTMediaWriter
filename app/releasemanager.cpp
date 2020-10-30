@@ -939,17 +939,65 @@ QString ReleaseVariant::statusString() const {
     return m_statusStrings[status()];
 }
 
-void ReleaseVariant::onDownloadFinished() {
-    m_temporaryImage = QString();
+void ReleaseVariant::onMd5sumDownloadFinished() {
+    mDebug() << this->metaObject()->className() << "Downloaded MD5SUM";
+    
+    //
+    // Save md5
+    //
 
+    // Get downloaded md5sum string out of reply
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    const QByteArray md5sumBytes = reply->readAll();
+    const QString md5sumContents(md5sumBytes);
+    reply->deleteLater();
+
+    // MD5SUM is of the form "sum image \n sum image \n ..."
+    // Search for the sum by finding image matching m_url
+    QStringList elements = md5sumContents.split(QRegExp("\\s+"));
+    QString prev = "";
+    for (int i = 0; i < elements.size(); ++i) {
+        if (elements[i].size() > 0 && m_url.contains(elements[i]) && prev.size() > 0) {
+            // Update internal md5
+            m_md5 = prev;
+
+            // Update md5 in cached releases file
+            // Have to look in all files because don't know which one contains this variant
+            const QList<QString> releaseImagesList = getReleaseImagesFiles();
+            for (auto release : releaseImagesList) {
+                QString cachePath = releaseImagesCacheDir() + release;
+
+                // Check that file exists
+                QFile cache(cachePath);
+                if (cache.open(QFile::ReadOnly)) {
+                    cache.close();
+                } else {
+                    continue;
+                }
+
+                // Open yaml file and edit it
+                YAML::Node file = YAML::Load(fileToString(cachePath).toStdString());
+                for (auto e : file["entries"]) {
+                    if (e["link"] && ymlToQString(e["link"]) == m_url) {
+                        e["md5"] = m_md5.toStdString();
+                    }
+                }
+
+                // Write yaml file back out to cache
+                std::ofstream fout(cachePath.toStdString()); 
+                fout << file;
+            }
+
+            break;
+        }
+
+        prev = elements[i];
+    }
+
+    // Check md5
     const QString download_dir_path = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
     const QDir download_dir(download_dir_path);
     const QString path = download_dir.filePath(QUrl(m_url).fileName()) + ".part";
-
-    if (m_progress)
-        m_progress->setValue(size());
-    setStatus(DOWNLOAD_VERIFYING);
-    m_progress->setValue(0.0/0.0, 1.0);
 
     qApp->eventDispatcher()->processEvents(QEventLoop::AllEvents);
 
@@ -969,7 +1017,6 @@ void ReleaseVariant::onDownloadFinished() {
     }();
 
     const bool md5_match = (computed_md5 == m_md5);
-
     if (md5_match) {
         mDebug() << this->metaObject()->className() << "MD5 check passed";
         QString finalFilename(path);
@@ -1002,15 +1049,34 @@ void ReleaseVariant::onDownloadFinished() {
         setErrorString(tr("The downloaded image is corrupted"));
         setStatus(FAILED_DOWNLOAD);
     }
+}
 
+void ReleaseVariant::onDownloadFinished() {
     delete_image_download();
+    m_temporaryImage = QString();
+
+    if (m_progress) {
+        m_progress->setValue(size());
+    }
+    setStatus(DOWNLOAD_VERIFYING);
+
+    // Download md5 for checking
+    // NOTE: if downloading md5 fails, give up and proceed to downloading the image. This is because MD5SUM might not be present so don't want to get stuck in download attempts for no reason.
+    const int cutoffIndex = m_url.lastIndexOf("/");
+    const QString md5sumUrl = m_url.left(cutoffIndex) + "/MD5SUM";
+    QNetworkReply *reply = makeNetworkRequest(md5sumUrl, 5000);
+    
+    connect(
+        reply, &QNetworkReply::finished,
+        this, &ReleaseVariant::onMd5sumDownloadFinished);
+    mDebug() << "Downloading MD5SUM";
 }
 
 void ReleaseVariant::onDownloadNetworkError() {
+    delete_image_download();
+    
     setErrorString(tr("Connection was interrupted, attempting to resume"));
     mDebug() << "Resuming download in 2s";
-
-    delete_image_download();
 
     QTimer::singleShot(2000, this,
         [this]() {
@@ -1026,10 +1092,10 @@ void ReleaseVariant::onDownloadNetworkError() {
 }
 
 void ReleaseVariant::onDownloadDiskError(const QString &message) {
+    delete_image_download();
+    
     setErrorString(message);
     setStatus(FAILED_DOWNLOAD);
-
-    delete_image_download();
 }
 
 int ReleaseVariant::staticOnMediaCheckAdvanced(void *data, long long offset, long long total) {
@@ -1056,100 +1122,32 @@ void ReleaseVariant::download() {
         m_progress->setTo(m_size);
     }
 
-    // Download md5 for this variant
-    // NOTE: if downloading md5 fails, give up and proceed to downloading the image. This is because MD5SUM might not be present so don't want to get stuck in download attempts for no reason.
-    const int cutoffIndex = m_url.lastIndexOf("/");
-    const QString md5sumUrl = m_url.left(cutoffIndex) + "/MD5SUM";
-    QNetworkReply *reply = makeNetworkRequest(md5sumUrl, 5000);
+    //
+    // Download image
+    //
+    const QString download_dir_path = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
+    const QDir download_dir(download_dir_path);
+    const QString filePath = download_dir.filePath(QUrl(m_url).fileName());
+    const bool already_downloaded = QFile::exists(filePath);
 
-    mDebug() << "Downloading MD5SUM";
-    
-    const auto onMd5sumDownloadFinished = 
-    [this, reply]() {
-        mDebug() << this->metaObject()->className() << "Downloaded MD5SUM";
-        
-        //
-        // Save md5
-        //
+    if (already_downloaded) {
+        m_temporaryImage = QString();
+        m_image = filePath;
+        emit imageChanged();
 
-        // Get downloaded md5sum string out of reply
-        const QByteArray md5sumBytes = reply->readAll();
-        const QString md5sumContents(md5sumBytes);
-        reply->deleteLater();
+        mDebug() << this->metaObject()->className() << m_image << "is already downloaded";
+        setStatus(READY);
 
-        // MD5SUM is of the form "sum image \n sum image \n ..."
-        // Search for the sum by finding image matching m_url
-        QStringList elements = md5sumContents.split(QRegExp("\\s+"));
-        QString prev = "";
-        for (int i = 0; i < elements.size(); ++i) {
-            if (elements[i].size() > 0 && m_url.contains(elements[i]) && prev.size() > 0) {
-                // Update internal md5
-                m_md5 = prev;
-
-                // Update md5 in cached releases file
-                // Have to look in all files because don't know which one contains this variant
-                const QList<QString> releaseImagesList = getReleaseImagesFiles();
-                for (auto release : releaseImagesList) {
-                    QString cachePath = releaseImagesCacheDir() + release;
-
-                    // Check that file exists
-                    QFile cache(cachePath);
-                    if (cache.open(QFile::ReadOnly)) {
-                        cache.close();
-                    } else {
-                        continue;
-                    }
-
-                    // Open yaml file and edit it
-                    YAML::Node file = YAML::Load(fileToString(cachePath).toStdString());
-                    for (auto e : file["entries"]) {
-                        if (e["link"] && ymlToQString(e["link"]) == m_url) {
-                            e["md5"] = m_md5.toStdString();
-                        }
-                    }
-
-                    // Write yaml file back out to cache
-                    std::ofstream fout(cachePath.toStdString()); 
-                    fout << file;
-                }
-
-                break;
-            }
-
-            prev = elements[i];
+        const QFile image_file(m_image);
+        if (m_size != image_file.size()) {
+            m_size = image_file.size();
+            emit sizeChanged();
         }
+    } else {
+        m_temporaryImage = filePath + ".part";
 
-        //
-        // Download image
-        //
-        const QString download_dir_path = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
-        const QDir download_dir(download_dir_path);
-        const QString filePath = download_dir.filePath(QUrl(m_url).fileName());
-        const bool already_downloaded = QFile::exists(filePath);
-
-        if (already_downloaded) {
-            m_temporaryImage = QString();
-            m_image = filePath;
-            emit imageChanged();
-
-            mDebug() << this->metaObject()->className() << m_image << "is already downloaded";
-            setStatus(READY);
-
-            const QFile image_file(m_image);
-            if (m_size != image_file.size()) {
-                m_size = image_file.size();
-                emit sizeChanged();
-            }
-        } else {
-            m_temporaryImage = filePath + ".part";
-
-            start_image_download();
-        }
-    };
-
-    connect(
-        reply, &QNetworkReply::finished,
-        onMd5sumDownloadFinished);
+        start_image_download();
+    }
 }
 
 void ReleaseVariant::cancelDownload() {

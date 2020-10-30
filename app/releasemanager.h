@@ -433,6 +433,7 @@ public slots:
     void onDownloadNetworkError();
     void onDownloadDiskError(const QString &message);
     void onDownloadFinished();
+    void onMd5sumDownloadFinished();
 
 private:
     QString m_temporaryImage {};
