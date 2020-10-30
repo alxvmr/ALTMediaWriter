@@ -1151,9 +1151,11 @@ void ReleaseVariant::download() {
 }
 
 void ReleaseVariant::cancelDownload() {
-    mDebug() << this->metaObject()->className() << "Cancelling download";
+    if (current_download != nullptr) {
+        mDebug() << this->metaObject()->className() << "Cancelling download";
 
-    delete_image_download();
+        delete_image_download();
+    }
 }
 
 void ReleaseVariant::resetStatus() {

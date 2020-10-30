@@ -42,6 +42,16 @@ Dialog {
         writeArrow.color = palette.text
     }
 
+    onVisibleChanged: {
+        if (!visible) {
+            if (drives.selected)
+                drives.selected.cancel()
+            releases.variant.cancelDownload()
+            releases.variant.resetStatus()
+        }
+        reset()
+    }
+
     Connections {
         target: releases
         onSelectedChanged: {
@@ -492,14 +502,7 @@ Dialog {
                                 text: qsTr("Cancel")
                                 enabled: true
                                 onClicked: {
-                                    if (drives.selected)
-                                        drives.selected.cancel()
-                                    releases.variant.resetStatus()
-                                    releases.variant.cancelDownload()
                                     dialog.close()
-                                    if (drives.selected)
-                                        drives.selected.cancel()
-                                    reset()
                                 }
                             }
                             AdwaitaButton {
