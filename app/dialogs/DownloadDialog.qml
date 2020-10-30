@@ -42,16 +42,6 @@ Dialog {
         writeArrow.color = palette.text
     }
 
-    onVisibleChanged: {
-        if (!visible) {
-            if (drives.selected)
-                drives.selected.cancel()
-            releases.variant.cancelDownload()
-            releases.variant.resetStatus()
-        }
-        reset()
-    }
-
     Connections {
         target: releases
         onSelectedChanged: {
@@ -190,10 +180,6 @@ Dialog {
                     onClicked: {
                         dialog.close()
                     }
-                }
-                PropertyChanges {
-                    target: deleteButton
-                    state: releases.selected.isLocal ? "hidden" : "ready"
                 }
             },
             State {
@@ -499,20 +485,6 @@ Dialog {
                                 Layout.fillHeight: true
                             }
 
-                            DeleteButton {
-                                id: deleteButton
-                                Layout.fillWidth: true
-                                Layout.fillHeight: true
-                                Layout.maximumWidth: parent.width - leftButton.width - rightButton.width - parent.spacing * 2
-                                state: "hidden"
-                                errorText: qsTr("It was not possible to delete the file")
-                                onStarted: {
-                                    if (releases.variant.erase())
-                                        state = "success"
-                                    else
-                                        state = "error"
-                                }
-                            }
                             AdwaitaButton {
                                 id: leftButton
                                 Layout.alignment: Qt.AlignRight
@@ -523,7 +495,11 @@ Dialog {
                                     if (drives.selected)
                                         drives.selected.cancel()
                                     releases.variant.resetStatus()
+                                    releases.variant.cancelDownload()
                                     dialog.close()
+                                    if (drives.selected)
+                                        drives.selected.cancel()
+                                    reset()
                                 }
                             }
                             AdwaitaButton {

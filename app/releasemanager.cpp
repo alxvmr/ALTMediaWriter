@@ -1062,6 +1062,8 @@ void ReleaseVariant::download() {
     const QString md5sumUrl = m_url.left(cutoffIndex) + "/MD5SUM";
     QNetworkReply *reply = makeNetworkRequest(md5sumUrl, 5000);
 
+    mDebug() << "Downloading MD5SUM";
+    
     const auto onMd5sumDownloadFinished = 
     [this, reply]() {
         mDebug() << this->metaObject()->className() << "Downloaded MD5SUM";
