@@ -30,6 +30,8 @@ class DriveProvider;
 class Drive;
 class UdisksDrive;
 
+QString getHelperPath();
+
 /**
  * @brief The DriveManager class
  *

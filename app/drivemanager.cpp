@@ -35,6 +35,55 @@
 
 #include <QtQml>
 
+// NOTE: when installed, helper will be in the same directory as the mediawriter executable, so this is just for running from a build directory where they are in separate dirs.
+QString getHelperPath() {
+    const QString platform =
+    []() {
+        #ifdef __linux__
+        return "linux";
+        #endif // __linux__
+
+        #ifdef __APPLE__
+        return "mac";
+        #endif // __APPLE__
+
+        #ifdef _WIN32
+        return "win";
+        #endif // _WIN32
+    }();
+    const QString executable =
+    []() {
+        #ifdef __linux__
+        return "helper";
+        #endif // __linux__
+
+        #ifdef __APPLE__
+        return "helper";
+        #endif // __APPLE__
+
+        #ifdef _WIN32
+        return "helper.exe";
+        #endif // _WIN32
+    }();
+    const QString appPath = qApp->applicationDirPath();
+    const QList<QString> possiblePaths = {
+        appPath + "/" + executable,
+        #ifdef __linux__
+        LIBEXECDIR + "/" + executable,
+        #endif // __linux__
+        appPath + "/../helper/" + platform + "/" + executable,
+        appPath + "/../helper/" + platform + "/release/" + executable,
+    };
+
+    for (const auto path: possiblePaths) {
+        if (QFile::exists(path)) {
+            return path;
+        }
+    }
+
+    return QString();
+}
+
 DriveManager *DriveManager::_self = nullptr;
 
 DriveManager::DriveManager(QObject *parent)

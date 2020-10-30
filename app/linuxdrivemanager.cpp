@@ -197,22 +197,17 @@ bool LinuxDrive::write(ReleaseVariant *data) {
     if (!m_process)
         m_process = new QProcess(this);
 
-    QStringList args;
-    if (QFile::exists(qApp->applicationDirPath() + "/../helper/linux/helper")) {
-        m_process->setProgram(qApp->applicationDirPath() + "/../helper/linux/helper");
-    }
-    else if (QFile::exists(qApp->applicationDirPath() + "/helper")) {
-        m_process->setProgram(qApp->applicationDirPath() + "/helper");
-    }
-    else if (QFile::exists(QString("%1/%2").arg(LIBEXECDIR).arg("helper"))) {
-        m_process->setProgram(QString("%1/%2").arg(LIBEXECDIR).arg("helper"));
-    }
-    else {
+    const QString helperPath = getHelperPath();
+    if (!helperPath.isEmpty()) {
+        m_process->setProgram(helperPath);
+    } else {
         data->setErrorString(tr("Could not find the helper binary. Check your installation."));
         data->setStatus(ReleaseVariant::FAILED);
         setDelayedWrite(false);
         return false;
     }
+
+    QStringList args;
     args << "write";
     if (data->status() == ReleaseVariant::WRITING)
         args << data->image();
@@ -270,21 +265,16 @@ void LinuxDrive::restore() {
     m_restoreStatus = RESTORING;
     emit restoreStatusChanged();
 
-    QStringList args;
-    if (QFile::exists(qApp->applicationDirPath() + "/../helper/linux/helper")) {
-        m_process->setProgram(qApp->applicationDirPath() + "/../helper/linux/helper");
-    }
-    else if (QFile::exists(qApp->applicationDirPath() + "/helper")) {
-        m_process->setProgram(qApp->applicationDirPath() + "/helper");
-    }
-    else if (QFile::exists(QString("%1/%2").arg(LIBEXECDIR).arg("helper"))) {
-        m_process->setProgram(QString("%1/%2").arg(LIBEXECDIR).arg("helper"));
-    }
-    else {
+    const QString helperPath = getHelperPath();
+    if (!helperPath.isEmpty()) {
+        m_process->setProgram(helperPath);
+    } else {
         mWarning() << "Couldn't find the helper binary.";
         setRestoreStatus(RESTORE_ERROR);
-        return;
+        return false;
     }
+    
+    QStringList args;
     args << "restore";
     args << m_device;
     mDebug() << this->metaObject()->className() << "Helper command will be" << args;

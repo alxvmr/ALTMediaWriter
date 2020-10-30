@@ -261,13 +261,10 @@ bool WinDrive::write(ReleaseVariant *data) {
     if (data->status() != ReleaseVariant::DOWNLOADING)
         m_image->setStatus(ReleaseVariant::WRITING);
 
-    if (QFile::exists(qApp->applicationDirPath() + "/helper.exe")) {
-        m_child->setProgram(qApp->applicationDirPath() + "/helper.exe");
-    }
-    else if (QFile::exists(qApp->applicationDirPath() + "/../helper.exe")) {
-        m_child->setProgram(qApp->applicationDirPath() + "/../helper.exe");
-    }
-    else {
+    const QString helperPath = getHelperPath();
+    if (!helperPath.isEmpty()) {
+        m_child->setProgram(helperPath);
+    } else {
         data->setErrorString(tr("Could not find the helper binary. Check your installation."));
         setDelayedWrite(false);
         return false;
@@ -311,13 +308,10 @@ void WinDrive::restore() {
     m_restoreStatus = RESTORING;
     emit restoreStatusChanged();
 
-    if (QFile::exists(qApp->applicationDirPath() + "/helper.exe")) {
-        m_child->setProgram(qApp->applicationDirPath() + "/helper.exe");
-    }
-    else if (QFile::exists(qApp->applicationDirPath() + "/../helper.exe")) {
-        m_child->setProgram(qApp->applicationDirPath() + "/../helper.exe");
-    }
-    else {
+    const QString helperPath = getHelperPath();
+    if (!helperPath.isEmpty()) {
+        m_child->setProgram(helperPath);
+    } else {
         m_restoreStatus = RESTORE_ERROR;
         return;
     }
