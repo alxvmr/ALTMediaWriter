@@ -19,6 +19,7 @@
 
 #include "releasemanager.h"
 #include "drivemanager.h"
+#include "utilities.h"
 
 #include "isomd5/libcheckisomd5.h"
 #include <yaml-cpp/yaml.h>
@@ -200,9 +201,6 @@ void ReleaseManager::fetchReleases() {
 
             const QByteArray contents_bytes = reply->readAll();
             const QString contents(contents_bytes);
-
-            mDebug() << "Contents of release file " << file << ":";
-            qInfo() << contents;
 
             // Save to cache
             const QString cachePath = releaseImagesCacheDir() + file;
@@ -941,20 +939,24 @@ QString ReleaseVariant::statusString() const {
     return m_statusStrings[status()];
 }
 
-void ReleaseVariant::onFileDownloaded(const QString &path, const QString &hash) {
+void ReleaseVariant::onDownloadFinished() {
     m_temporaryImage = QString();
+
+    const QString download_dir_path = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
+    const QDir download_dir(download_dir_path);
+    const QString path = download_dir.filePath(QUrl(m_url).fileName()) + ".part";
 
     if (m_progress)
         m_progress->setValue(size());
     setStatus(DOWNLOAD_VERIFYING);
     m_progress->setValue(0.0/0.0, 1.0);
 
-    if (!shaHash().isEmpty() && shaHash() != hash) {
-        mWarning() << "Computed SHA256 hash of" << path << " - " << hash << "does not match expected" << shaHash();
-        setErrorString(tr("The downloaded image is corrupted"));
-        setStatus(FAILED_DOWNLOAD);
-        return;
-    }
+    // if (!shaHash().isEmpty() && shaHash() != hash) {
+    //     mWarning() << "Computed SHA256 hash of" << path << " - " << hash << "does not match expected" << shaHash();
+    //     setErrorString(tr("The downloaded image is corrupted"));
+    //     setStatus(FAILED_DOWNLOAD);
+    //     return;
+    // }
     mDebug() << this->metaObject()->className() << "SHA256 check passed";
 
     qApp->eventDispatcher()->processEvents(QEventLoop::AllEvents);
@@ -1000,11 +1002,37 @@ void ReleaseVariant::onFileDownloaded(const QString &path, const QString &hash) 
             emit sizeChanged();
         }
     }
+
+    current_download->deleteLater();
+    current_download = nullptr;
 }
 
-void ReleaseVariant::onDownloadError(const QString &message) {
+void ReleaseVariant::onDownloadNetworkError() {
+    setErrorString(tr("Connection was interrupted, attempting to resume"));
+    mDebug() << "Resuming download in 2s";
+
+    current_download->deleteLater();
+    current_download = nullptr;
+
+    QTimer::singleShot(2000, this,
+        [this]() {
+            start_image_download();
+
+            // Clear error string when download resumes successfully
+            connect(
+                current_download, &ImageDownload::readyRead,
+                [this]() {
+                    setErrorString(QString());
+                });
+        });
+}
+
+void ReleaseVariant::onDownloadDiskError(const QString &message) {
     setErrorString(message);
     setStatus(FAILED_DOWNLOAD);
+
+    current_download->deleteLater();
+    current_download = nullptr;
 }
 
 int ReleaseVariant::staticOnMediaCheckAdvanced(void *data, long long offset, long long total) {
@@ -1027,8 +1055,9 @@ void ReleaseVariant::download() {
 
     resetStatus();
     setStatus(DOWNLOADING);
-    if (m_size)
+    if (m_size) {
         m_progress->setTo(m_size);
+    }
 
     // Download md5 for this variant
     // NOTE: if downloading md5 fails, give up and proceed to downloading the image. This is because MD5SUM might not be present so don't want to get stuck in download attempts for no reason.
@@ -1094,27 +1123,43 @@ void ReleaseVariant::download() {
         //
         // Download image
         //
-        QString ret = DownloadManager::instance()->downloadFile(this, url(), DownloadManager::dir(), progress());
-        if (!ret.endsWith(".part")) {
+        const QString download_dir_path = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
+        const QDir download_dir(download_dir_path);
+        const QString filePath = download_dir.filePath(QUrl(m_url).fileName());
+        const bool already_downloaded = QFile::exists(filePath);
+
+        if (already_downloaded) {
             m_temporaryImage = QString();
-            m_image = ret;
+            m_image = filePath;
             emit imageChanged();
 
             mDebug() << this->metaObject()->className() << m_image << "is already downloaded";
             setStatus(READY);
 
-            if (QFile(m_image).size() != m_size) {
-                m_size = QFile(m_image).size();
+            const QFile image_file(m_image);
+            if (m_size != image_file.size()) {
+                m_size = image_file.size();
                 emit sizeChanged();
             }
         } else {
-            m_temporaryImage = ret;
+            m_temporaryImage = filePath + ".part";
+
+            start_image_download();
         }
     };
 
     connect(
         reply, &QNetworkReply::finished,
         onMd5sumDownloadFinished);
+}
+
+void ReleaseVariant::cancelDownload() {
+    if (current_download != nullptr) {
+        current_download->deleteLater();
+        current_download = nullptr;
+
+        mDebug() << this->metaObject()->className() << "Cancelling download";
+    }
 }
 
 void ReleaseVariant::resetStatus() {
@@ -1161,6 +1206,19 @@ void ReleaseVariant::setErrorString(const QString &o) {
     }
 }
 
+void ReleaseVariant::start_image_download() {
+    current_download = new ImageDownload(QUrl(m_url), m_progress);
+
+    connect(
+        current_download, &ImageDownload::finished,
+        this, &ReleaseVariant::onDownloadFinished);
+    connect(
+        current_download, &ImageDownload::diskError,
+        this, &ReleaseVariant::onDownloadDiskError);
+    connect(
+        current_download, &ImageDownload::networkError,
+        this, &ReleaseVariant::onDownloadNetworkError);
+}
 
 ReleaseArchitecture ReleaseArchitecture::m_all[] = {
     {{"x86-64"}, QT_TR_NOOP("AMD 64bit")},
@@ -1355,10 +1413,10 @@ QNetworkReply *makeNetworkRequest(const QString &url, const int time_out_millis 
     QNetworkRequest request(url);
     request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
     if (!options.noUserAgent) {
-        request.setHeader(QNetworkRequest::UserAgentHeader, DownloadManager::userAgent());
+        request.setHeader(QNetworkRequest::UserAgentHeader, userAgent());
     }
 
-    QNetworkReply *reply = DownloadManager::instance()->m_manager.get(request);
+    QNetworkReply *reply = network_access_manager->get(request);
 
     // TODO: this is a function of reply in a newer Qt version
     // Abort download if it takes more than 5s

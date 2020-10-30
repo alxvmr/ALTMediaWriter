@@ -46,8 +46,8 @@ Dialog {
         if (!visible) {
             if (drives.selected)
                 drives.selected.cancel()
+            releases.variant.cancelDownload()
             releases.variant.resetStatus()
-            downloadManager.cancel()
         }
         reset()
     }
@@ -348,19 +348,9 @@ Dialog {
                                 duration: 1000
                             }
                         }
-
+                        
                         Text {
-                            visible: downloadManager.resumingDownload
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            horizontalAlignment: Text.AlignHCenter
-                            font.pointSize: 9
-                            text: "Download was interrupted. Resuming."
-                            color: palette.windowText
-                        }
-
-                        Text {
-                            visible: !downloadManager.resumingDownload
+                            visible: true
                             Layout.fillWidth: true
                             Layout.fillHeight: true
                             horizontalAlignment: Text.AlignHCenter

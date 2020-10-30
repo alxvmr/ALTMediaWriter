@@ -19,6 +19,7 @@
 
 #include "windrivemanager.h"
 #include "notifications.h"
+#include "utilities.h"
 
 #include <QTimer>
 #include <QDebug>

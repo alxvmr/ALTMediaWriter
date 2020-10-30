@@ -35,6 +35,7 @@ class ReleaseVersion;
 class ReleaseVariant;
 class ReleaseArchitecture;
 class ReleaseImageType;
+class Progress;
 
 /*
  * Architecture - singleton (x86, x86_64, etc)
@@ -331,7 +332,7 @@ private:
  * @property statusString string representation of the @ref status
  * @property errorString a string better describing the current error @ref status of the variant
  */
-class ReleaseVariant : public QObject, public DownloadReceiver {
+class ReleaseVariant : public QObject {
     Q_OBJECT
     Q_PROPERTY(ReleaseArchitecture* arch READ arch CONSTANT)
     Q_PROPERTY(QString name READ name CONSTANT)
@@ -411,10 +412,6 @@ public:
     QString errorString() const;
     void setErrorString(const QString &o);
 
-    // DownloadReceiver interface
-    void onFileDownloaded(const QString &path, const QString &shaHash) override;
-    virtual void onDownloadError(const QString &message) override;
-
     static int staticOnMediaCheckAdvanced(void *data, long long offset, long long total);
     int onMediaCheckAdvanced(long long offset, long long total);
 
@@ -431,7 +428,11 @@ signals:
 
 public slots:
     void download();
+    void cancelDownload();
     void resetStatus();
+    void onDownloadNetworkError();
+    void onDownloadDiskError(const QString &message);
+    void onDownloadFinished();
 
 private:
     QString m_temporaryImage {};
@@ -446,8 +447,11 @@ private:
     int64_t m_realSize { 0 };
     Status m_status { PREPARING };
     QString m_error {};
+    ImageDownload *current_download = nullptr;
 
     Progress *m_progress { nullptr };
+
+    void start_image_download();
 };
 
 /**

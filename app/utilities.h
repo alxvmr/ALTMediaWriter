@@ -26,6 +26,9 @@
 class Progress;
 class Options;
 class MessageHandler;
+class QNetworkAccessManager;
+
+extern QNetworkAccessManager *network_access_manager;
 
 /**
  * @brief The Progress class
@@ -97,5 +100,7 @@ public:
 #define mFatal() qCFatal(MessageHandler::category)
 
 extern Options options;
+
+QString userAgent();
 
 #endif // UTILITIES_H

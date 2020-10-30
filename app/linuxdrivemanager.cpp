@@ -23,6 +23,7 @@
 #include <QDBusArgument>
 
 #include "notifications.h"
+#include "utilities.h"
 
 LinuxDriveProvider::LinuxDriveProvider(DriveManager *parent)
     : DriveProvider(parent)

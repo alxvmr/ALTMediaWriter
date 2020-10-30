@@ -97,7 +97,6 @@ int main(int argc, char **argv)
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("drives", DriveManager::instance());
     engine.rootContext()->setContextProperty("releases", new ReleaseManager());
-    engine.rootContext()->setContextProperty("downloadManager", DownloadManager::instance());
     engine.rootContext()->setContextProperty("mediawriterVersion", MEDIAWRITER_VERSION);
 #if (defined(__linux) || defined(_WIN32))
     engine.rootContext()->setContextProperty("platformSupportsDelayedWriting", true);

@@ -21,154 +21,70 @@
 #ifndef DOWNLOADMANAGER_H
 #define DOWNLOADMANAGER_H
 
-#include <QObject>
-#include <QApplication>
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QNetworkReply>
-#include <QFile>
-#include <QTimer>
-
+// TODO: remove
 #include "utilities.h"
 
-class DownloadReceiver;
-class Download;
-class DownloadManager;
-
-/*
- * How this (Downloader stuff) works:
- * not very well
- *
- * All of this should be rewritten at some point (and I admit it's possible it never will be - for
- *  reference, today is Nov 9 2016)
- *
- * There are three classes:
- * Download, DownloadManager and DownloadReceiver
- *
- * DownloadReceiver is just an abstract class you should inherit in a class that you want to receive
- *  notifications about finished downloads.
- * I should have probably done that using a signal. Nothing wrong with this so far though.
- *
- * DownloadManager is the entry point where you request a download and provide your
- *  DownloadReceiver implementation that will be notified about it having finished at some point in the future.
- * You're able to either request a string containing whatever it found at the URL
- *  or you can get a path to a file where all the data from the link will be stored.
- * Getting strings is pretty straightforward while downloading files is not easy at all.
- *
- * When downloading a file, the Manager asks the Fedora mirror service for a list of mirrors first.
- * At the same time, it creates a Download object (there can be only one at a time) and waits.
- * After getting the mirrosr, it inserts a new QNetworkReply inside the Download which starts
- *  crunching the incoming data. That means it stores it to a .part file while also computing a SHA256 hash.
- * If the mirror stops supplying data or the network breaks, it tries accessing another repo from the list.
- * If there is no list provided by the server, it tries to just download from the metadata URL directly.
- *
- * This all would work well if we didn't have to support download resuming.
- * If you have to resume a download, the newly-created Download object starts to compute the SHA256 hash
- *  while the Manager waits for the mirror list.
- * When the mirror list is delivered, a new QNetworkReply is created and inserted into the Download if
- *  (and only if) it's done computing the hash of the part already on the drive (hasCatchedUp() method).
- * Otherwise, it lets the Download finish with its business of computing the hash. It will ask for a new mirror
- *  when it's done. From this point, everything continues exactly as if it wasn't continuing.
- * For this reason I think there's a slight (really very small) possibility of getting stuck, forcing the user
- *  to reset the process.
- *
- */
+#include <QObject>
+#include <QUrl>
 
 /**
- * @brief The DownloadReceiver class
- *
- * A virtual class for getting the results of a download
+ * Downloads an image using QNetwork and writes downloaded
+ * image to disk in parallel. The default download
+ * directory is used. While the image file is partially
+ * downloaded, it is suffixed with ".part". This suffix is
+ * removed when the image download completes. If there's a
+ * partially downloaded image present, the download is
+ * resumed.
  */
-class DownloadReceiver {
-public:
-    virtual void onFileDownloaded(const QString &path, const QString &shaHash) { Q_UNUSED(path); Q_UNUSED(shaHash) }
-    virtual void onDownloadError(const QString &message) = 0;
-};
 
+class QNetworkReply;
+class QTimer;
+class QFile;
 
-/**
- * @brief The Download class
- *
- * The download handler itself
- *
- * It processes the incoming data, computes its checksum and tracks the amount of data downloaded/required
- */
-class Download : public QObject {
+class ImageDownload final : public QObject {
     Q_OBJECT
 
 public:
-    Download(DownloadManager *parent, DownloadReceiver *receiver, const QString &filePath, Progress *progress = nullptr);
-    DownloadManager *manager();
-
-    void handleNewReply(QNetworkReply *reply);
-    qint64 bytesDownloaded();
-
-    bool hasCatchedUp();
-
-private slots:
-    void start();
-    void catchUp();
-
-    void onReadyRead();
-    void onFinished();
-    void onTimedOut();
-
-private:
-    qint64 m_previousSize { 0 };
-    qint64 m_bytesDownloaded { 0 };
-    QNetworkReply *m_reply { nullptr };
-    DownloadReceiver *m_receiver { nullptr };
-    Progress *m_progress { nullptr };
-    QTimer m_timer { };
-    bool m_catchingUp { false };
-
-    QFile *m_file { nullptr };
-    QByteArray m_buf { };
-    QCryptographicHash m_hash { QCryptographicHash::Sha256 };
-
-    void resume();
-};
-
-/**
- * @brief The DownloadManager class
- *
- * The class to use as an entry point to downloading some data
- *
- * You can either get a string of the data cointained at an URL or save the data as a file on your hard drive.
- *
- * For files hosted on Fedora servers, it also tries to get a list of mirrors to download the file from.
- */
-class DownloadManager : public QObject {
-    Q_OBJECT
-
-    Q_PROPERTY(bool resumingDownload READ resumingDownload NOTIFY resumingDownloadChanged)
-
-public:
-    static DownloadManager *instance();
-    static QString dir();
-    static QString userAgent();
-
-    QNetworkAccessManager m_manager;
-
-    QString downloadFile(DownloadReceiver *receiver, const QUrl &url, const QString &folder = dir(), Progress *progress = nullptr);
-
-    QNetworkReply *tryAnotherMirror();
-
-    Q_INVOKABLE void cancel();
-
-    bool resumingDownload() const;
-    void setResumingDownload(const bool value);
+    ImageDownload(const QUrl &url_arg, Progress *progress_arg);
 
 signals:
-    void resumingDownloadChanged();
+    // Emitted when the download finishes succesfully
+    void finished();
+    /**
+     * Encountered a disk error. For example, this will be
+     * emitted if ran out of disk space.
+     */
+    void diskError(const QString &message);
+    /**
+     * Encountered a network error. Unlike disk errors, it
+     * is possible to recover from such errors, so it's ok
+     * to attempt to restart a download by starting a new
+     * download. For example, if internet goes down
+     * temporarily and then shortly goes back up, it would
+     * be possible to resume a download.
+     */
+    void networkError();
+
+    // Emitted when new data is downloaded. Useful to
+    // confirm that download is progressing fine.
+    void readyRead();
+
+private slots:
+    void onTimeout();
+    void onReadyRead();
+    void onFinished();
 
 private:
-    DownloadManager();
-
-    Download *m_current { nullptr };
-    QString current_image_url;
-
-    bool m_resumingDownload = false;
+    QUrl url;
+    QTimer *timeout_timer;
+    // Size of the previously downloaded file, if continuing
+    // a previous download
+    qint64 previousSize = 0;
+    // Size of the portion download in this session only
+    qint64 bytesDownloaded = 0;
+    QFile *file = nullptr;
+    QNetworkReply *reply = nullptr;
+    Progress *progress = nullptr;
 };
 
 #endif // DOWNLOADMANAGER_H
