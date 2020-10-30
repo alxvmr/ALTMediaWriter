@@ -1003,16 +1003,14 @@ void ReleaseVariant::onDownloadFinished() {
         }
     }
 
-    current_download->deleteLater();
-    current_download = nullptr;
+    delete_image_download();
 }
 
 void ReleaseVariant::onDownloadNetworkError() {
     setErrorString(tr("Connection was interrupted, attempting to resume"));
     mDebug() << "Resuming download in 2s";
 
-    current_download->deleteLater();
-    current_download = nullptr;
+    delete_image_download();
 
     QTimer::singleShot(2000, this,
         [this]() {
@@ -1031,8 +1029,7 @@ void ReleaseVariant::onDownloadDiskError(const QString &message) {
     setErrorString(message);
     setStatus(FAILED_DOWNLOAD);
 
-    current_download->deleteLater();
-    current_download = nullptr;
+    delete_image_download();
 }
 
 int ReleaseVariant::staticOnMediaCheckAdvanced(void *data, long long offset, long long total) {
@@ -1154,12 +1151,9 @@ void ReleaseVariant::download() {
 }
 
 void ReleaseVariant::cancelDownload() {
-    if (current_download != nullptr) {
-        current_download->deleteLater();
-        current_download = nullptr;
+    mDebug() << this->metaObject()->className() << "Cancelling download";
 
-        mDebug() << this->metaObject()->className() << "Cancelling download";
-    }
+    delete_image_download();
 }
 
 void ReleaseVariant::resetStatus() {
@@ -1218,6 +1212,13 @@ void ReleaseVariant::start_image_download() {
     connect(
         current_download, &ImageDownload::networkError,
         this, &ReleaseVariant::onDownloadNetworkError);
+}
+
+void ReleaseVariant::delete_image_download() {
+    if (current_download != nullptr) {
+        current_download->deleteLater();
+        current_download = nullptr;
+    }
 }
 
 ReleaseArchitecture ReleaseArchitecture::m_all[] = {

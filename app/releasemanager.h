@@ -452,6 +452,7 @@ private:
     Progress *m_progress { nullptr };
 
     void start_image_download();
+    void delete_image_download();
 };
 
 /**

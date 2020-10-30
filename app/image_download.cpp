@@ -83,7 +83,7 @@ ImageDownload::ImageDownload(const QUrl &url_arg, Progress *progress_arg)
     connect(reply, &QNetworkReply::readyRead, this, &ImageDownload::onReadyRead);
     connect(reply, &QNetworkReply::finished, this, &ImageDownload::onFinished);
 
-    timeout_timer->start(5000);
+    timeout_timer->start(15000);
 
     if (reply->bytesAvailable() > 0) {
         onReadyRead();
