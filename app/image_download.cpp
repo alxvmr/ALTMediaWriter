@@ -84,10 +84,6 @@ ImageDownload::ImageDownload(const QUrl &url_arg, Progress *progress_arg)
     connect(reply, &QNetworkReply::finished, this, &ImageDownload::onFinished);
 
     timeout_timer->start();
-
-    if (reply->bytesAvailable() > 0) {
-        onReadyRead();
-    }
 }
 
 ImageDownload::~ImageDownload() {
@@ -102,7 +98,7 @@ void ImageDownload::onReadyRead() {
     // Restart timer
     timeout_timer->start();
 
-    QByteArray buf = reply->read(1024*64);
+    QByteArray buf = reply->readAll();
     if (reply->error() == QNetworkReply::NoError && buf.size() > 0) {
 
         bytesDownloaded += buf.size();
@@ -132,9 +128,6 @@ void ImageDownload::onReadyRead() {
             deleteLater();
         }
     }
-    if (reply->bytesAvailable() > 0) {
-        QTimer::singleShot(0, this, SLOT(onReadyRead()));
-    }
 }
 
 void ImageDownload::onFinished() {
@@ -147,10 +140,6 @@ void ImageDownload::onFinished() {
 
         emit networkError();
     } else {
-        while (reply->bytesAvailable() > 0) {
-            onReadyRead();
-            qApp->eventDispatcher()->processEvents(QEventLoop::ExcludeSocketNotifiers);
-        }
         mDebug() << this->metaObject()->className() << "Finished successfully";
 
         file->close();
