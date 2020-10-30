@@ -26,7 +26,7 @@
 
 #include <QDateTime>
 
-#include "downloadmanager.h"
+#include "image_download.h"
 
 class ReleaseManager;
 class ReleaseListModel;

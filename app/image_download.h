@@ -18,8 +18,8 @@
  */
 
 
-#ifndef DOWNLOADMANAGER_H
-#define DOWNLOADMANAGER_H
+#ifndef IMAGE_DOWNLOAD_H
+#define IMAGE_DOWNLOAD_H
 
 // TODO: remove
 #include "utilities.h"
@@ -87,4 +87,4 @@ private:
     Progress *progress = nullptr;
 };
 
-#endif // DOWNLOADMANAGER_H
+#endif // IMAGE_DOWNLOAD_H
