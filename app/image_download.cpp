@@ -43,6 +43,7 @@ ImageDownload::ImageDownload(const QUrl &url_arg, Progress *progress_arg)
 
     timeout_timer = new QTimer(this);
     timeout_timer->setSingleShot(true);
+    timeout_timer->setInterval(5000);
 
     connect(
         timeout_timer, &QTimer::timeout,
@@ -83,7 +84,7 @@ ImageDownload::ImageDownload(const QUrl &url_arg, Progress *progress_arg)
     connect(reply, &QNetworkReply::readyRead, this, &ImageDownload::onReadyRead);
     connect(reply, &QNetworkReply::finished, this, &ImageDownload::onFinished);
 
-    timeout_timer->start(15000);
+    timeout_timer->start();
 
     if (reply->bytesAvailable() > 0) {
         onReadyRead();

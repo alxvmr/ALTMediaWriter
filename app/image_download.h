@@ -29,12 +29,12 @@
 
 /**
  * Downloads an image using QNetwork and writes downloaded
- * image to disk in parallel. The default download
- * directory is used. While the image file is partially
- * downloaded, it is suffixed with ".part". This suffix is
- * removed when the image download completes. If there's a
- * partially downloaded image present, the download is
- * resumed.
+ * image to disk in parallel. The default download directory
+ * is used. While the image file is partially downloaded, it
+ * is suffixed with ".part". This suffix is removed when the
+ * image download completes. If there's a partially
+ * downloaded image present, the download is resumed. Use
+ * deleteLater() to delete an instance when it's done.
  */
 
 class QNetworkReply;
