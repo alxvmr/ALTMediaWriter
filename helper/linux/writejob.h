@@ -42,7 +42,7 @@ class WriteJob : public QObject
 {
     Q_OBJECT
 public:
-    explicit WriteJob(const QString &what, const QString &where, const QString &md5);
+    explicit WriteJob(const QString &what, const QString &where);
 
     static int staticOnMediaCheckAdvanced(void *data, long long offset, long long total);
     int onMediaCheckAdvanced(long long offset, long long total);
@@ -51,14 +51,12 @@ public:
     bool write(int fd);
     bool writeCompressed(int fd);
     bool writePlain(int fd);
-    bool check(int fd);
 public slots:
     void work();
     void onFileChanged(const QString &path);
 private:
     QString what;
     QString where;
-    QString md5;
     QTextStream out { stdout };
     QTextStream err { stderr };
     QDBusUnixFileDescriptor fd { -1 };

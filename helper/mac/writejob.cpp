@@ -29,10 +29,8 @@
 
 #include <lzma.h>
 
-#include "isomd5/libcheckisomd5.h"
-
-WriteJob::WriteJob(const QString &what, const QString &where, const QString &md5)
-    : QObject(nullptr), what(what), where(where), md5(md5)
+WriteJob::WriteJob(const QString &what, const QString &where)
+    : QObject(nullptr), what(what), where(where)
 {
     connect(&watcher, &QFileSystemWatcher::fileChanged, this, &WriteJob::onFileChanged);
     if (what.endsWith(".part")) {
@@ -68,7 +66,6 @@ void WriteJob::work() {
             return;
         }
     }
-    check();
 }
 
 void WriteJob::onFileChanged(const QString &path) {
@@ -208,43 +205,4 @@ bool WriteJob::writeCompressed() {
             strm.avail_out = BLOCK_SIZE;
         }
     }
-}
-
-void WriteJob::check() {
-    if (!what.contains(".iso") && !what.contains(".img")) {
-        out << "NOT CHECKING BECAUSE NOT ISO\n";
-        out << "DONE\n";
-        out.flush();
-        err << "OK\n";
-        err.flush();
-        qApp->exit();
-        return;
-    }
-
-    QFile target("/dev/r"+where);
-    target.open(QIODevice::ReadOnly);
-    out << "CHECK\n";
-    out.flush();
-    switch (mediaCheckFD(target.handle(), md5.toLocal8Bit().data(), &WriteJob::staticOnMediaCheckAdvanced, this)) {
-    case ISOMD5SUM_CHECK_NOT_FOUND:
-    case ISOMD5SUM_CHECK_PASSED:
-        out << "DONE\n";
-        out.flush();
-        err << "OK\n";
-        err.flush();
-        qApp->exit(0);
-        break;
-    case ISOMD5SUM_CHECK_FAILED:
-        err << tr("Your drive is probably damaged.") << "\n";
-        err.flush();
-        qApp->exit(1);
-        break;
-    default:
-        err << tr("Unexpected error occurred during media check.") << "\n";
-        err.flush();
-        qApp->exit(1);
-        break;
-    }
-
-    qApp->exit();
 }

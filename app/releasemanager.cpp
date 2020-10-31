@@ -1394,14 +1394,6 @@ bool ReleaseImageType::canWriteWithRootfs() const {
 #endif
 }
 
-bool ReleaseImageType::canMD5checkAfterWrite() const {
-    if (m_id == ISO) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
 QNetworkReply *makeNetworkRequest(const QString &url, const int time_out_millis = 0) {
     QNetworkRequest request(url);
     request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);

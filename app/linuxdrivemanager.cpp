@@ -214,11 +214,7 @@ bool LinuxDrive::write(ReleaseVariant *data) {
     else
         args << data->temporaryPath();
     args << m_device;
-    if (data->imageType()->canMD5checkAfterWrite()) {
-        args << data->md5();
-    } else {
-        args << "";
-    }
+
     mDebug() << this->metaObject()->className() << "Helper command will be" << args;
     m_process->setArguments(args);
 
@@ -298,12 +294,7 @@ void LinuxDrive::onReadyRead() {
 
     while (m_process->bytesAvailable() > 0) {
         QString line = m_process->readLine().trimmed();
-        if (line == "CHECK") {
-            mDebug() << this->metaObject()->className() << "Helper finished writing, now it will check the written data";
-            m_progress->setValue(0);
-            m_image->setStatus(ReleaseVariant::WRITE_VERIFYING);
-        }
-        else if (line == "WRITE") {
+        if (line == "WRITE") {
             m_progress->setValue(0);
             m_image->setStatus(ReleaseVariant::WRITING);
         }

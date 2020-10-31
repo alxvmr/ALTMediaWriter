@@ -114,12 +114,6 @@ bool MacDrive::write(ReleaseVariant *data) {
         command.append(QString("'%1'").arg(data->temporaryPath()));
     }
     command.append(" ");
-    if (data->imageType()->canMD5checkAfterWrite()) {
-        command.append(QString("'%1'").arg(data->md5()));
-    } else {
-        command.append(QString("'%1'").arg(""));
-    }
-    command.append(" ");
     command.append(m_bsdDevice);
     command.append("\" with administrator privileges without altering line endings");
 

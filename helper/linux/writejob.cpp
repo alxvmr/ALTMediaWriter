@@ -38,8 +38,6 @@
 
 #include <lzma.h>
 
-#include "isomd5/libcheckisomd5.h"
-
 #include <QDebug>
 
 typedef QHash<QString, QVariant> Properties;
@@ -49,8 +47,8 @@ Q_DECLARE_METATYPE(Properties)
 Q_DECLARE_METATYPE(InterfacesAndProperties)
 Q_DECLARE_METATYPE(DBusIntrospection)
 
-WriteJob::WriteJob(const QString &what, const QString &where, const QString &md5)
-    : QObject(nullptr), what(what), where(where), md5(md5)
+WriteJob::WriteJob(const QString &what, const QString &where)
+    : QObject(nullptr), what(what), where(where)
 {
     qDBusRegisterMetaType<Properties>();
     qDBusRegisterMetaType<InterfacesAndProperties>();
@@ -253,42 +251,6 @@ try_again:
     return true;
 }
 
-bool WriteJob::check(int fd) {
-    if (!what.contains(".iso") && !what.contains(".img")) {
-        out << "NOT CHECKING BECAUSE NOT ISO\n";
-        out << "DONE\n";
-        out.flush();
-        err << "OK\n";
-        err.flush();
-        qApp->exit(0);
-        return false;
-    }
-
-    out << "CHECK\n";
-    out.flush();
-    switch (mediaCheckFD(fd, md5.toLocal8Bit().data(), &WriteJob::staticOnMediaCheckAdvanced, this)) {
-    case ISOMD5SUM_CHECK_NOT_FOUND:
-    case ISOMD5SUM_CHECK_PASSED:
-        out << "DONE\n";
-        out.flush();
-        err << "OK\n";
-        err.flush();
-        qApp->exit(0);
-        return false;
-    case ISOMD5SUM_CHECK_FAILED:
-        err << tr("Your drive is probably damaged.") << "\n";
-        err.flush();
-        qApp->exit(1);
-        return false;
-    default:
-        err << tr("Unexpected error occurred during media check.") << "\n";
-        err.flush();
-        qApp->exit(1);
-        return false;
-    }
-    return true;
-}
-
 void WriteJob::work() {
     // have to keep the QDBus wrapper, otherwise the file gets closed
     fd = getDescriptor();
@@ -301,8 +263,6 @@ void WriteJob::work() {
     else {
         if (!write(fd.fileDescriptor()))
             return;
-
-        check(fd.fileDescriptor());
     }
 }
 
@@ -327,8 +287,6 @@ void WriteJob::onFileChanged(const QString &path) {
         qApp->exit(4);
         return;
     }
-
-    check(fd.fileDescriptor());
 }
 
 std::tuple<std::unique_ptr<char[]>, char*, std::size_t> pageAlignedBuffer(std::size_t pages) {

@@ -277,11 +277,6 @@ bool WinDrive::write(ReleaseVariant *data) {
     else
         args << data->temporaryPath();
     args << QString("%1").arg(m_device);
-    if (data->imageType()->canMD5checkAfterWrite()) {
-        args << data->md5();
-    } else {
-        args << "";
-    }
     m_child->setArguments(args);
 
     mDebug() << this->metaObject()->className() << "Starting" << m_child->program() << args;
@@ -388,12 +383,7 @@ void WinDrive::onReadyRead() {
 
     while (m_child->bytesAvailable() > 0) {
         QString line = m_child->readLine().trimmed();
-        if (line == "CHECK") {
-            mDebug() << this->metaObject()->className() << "Written media check starting";
-            m_progress->setValue(0);
-            m_image->setStatus(ReleaseVariant::WRITE_VERIFYING);
-        }
-        else if (line == "WRITE") {
+        if (line == "WRITE") {
             m_progress->setValue(0);
             m_image->setStatus(ReleaseVariant::WRITING);
         }

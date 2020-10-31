@@ -541,7 +541,6 @@ public:
     QString description() const;
     bool supportedForWriting() const;
     bool canWriteWithRootfs() const;
-    bool canMD5checkAfterWrite() const;
 
 private:
     ReleaseImageType(const ReleaseImageType::Id id_arg);
