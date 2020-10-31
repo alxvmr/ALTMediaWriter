@@ -72,7 +72,8 @@ QString getHelperPath() {
         LIBEXECDIR + "/" + executable,
         #endif // __linux__
         appPath + "/../helper/" + platform + "/" + executable,
-        appPath + "/../helper/" + platform + "/release/" + executable,
+        appPath + "/../../helper/" + platform + "/release/" + executable,
+        appPath + "/../../helper/" + platform + "/debug/" + executable,
     };
 
     for (const auto path: possiblePaths) {
