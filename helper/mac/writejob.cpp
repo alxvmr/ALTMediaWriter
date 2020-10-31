@@ -41,17 +41,6 @@ WriteJob::WriteJob(const QString &what, const QString &where)
     }
 }
 
-int WriteJob::staticOnMediaCheckAdvanced(void *data, long long offset, long long total) {
-    return ((WriteJob*)data)->onMediaCheckAdvanced(offset, total);
-}
-
-int WriteJob::onMediaCheckAdvanced(long long offset, long long total) {
-    Q_UNUSED(total)
-    out << offset << "\n";
-    out.flush();
-    return 0;
-}
-
 void WriteJob::work() {
     out << "WRITE\n";
     out.flush();
@@ -66,6 +55,10 @@ void WriteJob::work() {
             return;
         }
     }
+
+    err << "DONE\n";
+    err.flush();
+    qApp->exit(0);
 }
 
 void WriteJob::onFileChanged(const QString &path) {

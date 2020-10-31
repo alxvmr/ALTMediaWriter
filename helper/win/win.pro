@@ -4,7 +4,7 @@ include($$top_srcdir/deployment.pri)
 
 QT += core network
 
-LIBS += -lisomd5 -llzma
+LIBS += -llzma
 
 CONFIG += c++11
 CONFIG += console

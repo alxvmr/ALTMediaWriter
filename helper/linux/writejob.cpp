@@ -57,17 +57,6 @@ WriteJob::WriteJob(const QString &what, const QString &where)
     QTimer::singleShot(0, this, SLOT(work()));
 }
 
-int WriteJob::staticOnMediaCheckAdvanced(void *data, long long offset, long long total) {
-    return ((WriteJob*)data)->onMediaCheckAdvanced(offset, total);
-}
-
-int WriteJob::onMediaCheckAdvanced(long long offset, long long total) {
-    Q_UNUSED(total);
-    out << offset << "\n";
-    out.flush();
-    return 0;
-}
-
 QDBusUnixFileDescriptor WriteJob::getDescriptor() {
     QDBusInterface device("org.freedesktop.UDisks2", where, "org.freedesktop.UDisks2.Block", QDBusConnection::systemBus(), this);
     QString drivePath = qvariant_cast<QDBusObjectPath>(device.property("Drive")).path();
@@ -264,6 +253,10 @@ void WriteJob::work() {
         if (!write(fd.fileDescriptor()))
             return;
     }
+
+    err << "DONE\n";
+    out.flush();
+    qApp->exit(0);
 }
 
 void WriteJob::onFileChanged(const QString &path) {

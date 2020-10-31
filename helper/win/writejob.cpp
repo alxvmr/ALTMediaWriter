@@ -48,17 +48,6 @@ WriteJob::WriteJob(const QString &what, const QString &where)
     }
 }
 
-int WriteJob::staticOnMediaCheckAdvanced(void *data, long long offset, long long total) {
-    return ((WriteJob*)data)->onMediaCheckAdvanced(offset, total);
-}
-
-int WriteJob::onMediaCheckAdvanced(long long offset, long long total) {
-    Q_UNUSED(total);
-    out << offset << "\n";
-    out.flush();
-    return 0;
-}
-
 HANDLE WriteJob::openDrive(int physicalDriveNumber) {
     HANDLE hVol;
     QString drivePath = QString("\\\\.\\PhysicalDrive%0").arg(physicalDriveNumber);
@@ -217,6 +206,8 @@ void WriteJob::work() {
             return;
     }
 
+    err << "DONE\n";
+    out.flush();
     qApp->exit(0);
 }
 
