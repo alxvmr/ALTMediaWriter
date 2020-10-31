@@ -33,8 +33,10 @@
  * is used. While the image file is partially downloaded, it
  * is suffixed with ".part". This suffix is removed when the
  * image download completes. If there's a partially
- * downloaded image present, the download is resumed. To
- * cancel a download, delete the instance.
+ * downloaded image present, the download is resumed.
+ *
+ * If the download is interrupted by an error or time out,
+ * periodic attempts to resume are made.
  */
 
 class QNetworkReply;
@@ -45,30 +47,30 @@ class ImageDownload final : public QObject {
     Q_OBJECT
 
 public:
+    enum Result {
+        Success,
+        DiskError,
+        Cancelled
+    };
+
     ImageDownload(const QUrl &url_arg, Progress *progress_arg);
-    ~ImageDownload();
+    Result result() const;
+    QString errorString() const;
+    void cancel();
 
 signals:
-    // Emitted when the download finishes succesfully
-    void finished();
-    /**
-     * Encountered a disk error. For example, this will be
-     * emitted if ran out of disk space.
-     */
-    void diskError(const QString &message);
-    /**
-     * Encountered a network error. Unlike disk errors, it
-     * is possible to recover from such errors, so it's ok
-     * to attempt to restart a download by starting a new
-     * download. For example, if internet goes down
-     * temporarily and then shortly goes back up, it would
-     * be possible to resume a download.
-     */
-    void networkError();
+    // Emitted when download sucessfuly starts or resumes after being
+    // interrupted.
+    void started();
 
-    // Emitted when new data is downloaded. Useful to
-    // confirm that download is progressing fine.
-    void readyRead();
+    // Emitted when the download is interrupted by an error or time out.
+    // Note that download is not finished at this point, attempts to
+    // resume are made periodically.
+    void interrupted();
+
+    // Emitted when the download finishes, use result() and
+    // errorString() to find out more about finish status.
+    void finished();
 
 private slots:
     void onTimeout();
@@ -86,6 +88,12 @@ private:
     QFile *file = nullptr;
     QNetworkReply *reply = nullptr;
     Progress *progress = nullptr;
+    bool cancelled = false;
+    bool newRequest = false;
+    Result m_result;
+    QString m_errorString;
+
+    void makeRequest();
 };
 
 #endif // IMAGE_DOWNLOAD_H

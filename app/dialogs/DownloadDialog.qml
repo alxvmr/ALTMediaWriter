@@ -76,6 +76,10 @@ Dialog {
             State {
                 name: "preparing"
                 when: releases.variant.status === Variant.PREPARING
+                PropertyChanges {
+                    target: progressBar;
+                    value: 0.0/0.0
+                }
             },
             State {
                 name: "downloading"
@@ -87,6 +91,14 @@ Dialog {
                 PropertyChanges {
                     target: progressBar;
                     value: releases.variant.progress.ratio
+                }
+            },
+            State {
+                name: "resuming"
+                when: releases.variant.status === Variant.RESUMING
+                PropertyChanges {
+                    target: progressBar;
+                    value: 0.0/0.0
                 }
             },
             State {

@@ -354,6 +354,7 @@ public:
     enum Status {
         PREPARING = 0,
         DOWNLOADING,
+        RESUMING,
         DOWNLOAD_VERIFYING,
         READY,
         WRITING_NOT_POSSIBLE,
@@ -368,6 +369,7 @@ public:
     const QStringList m_statusStrings {
         tr("Preparing"),
         tr("Downloading"),
+        tr("Resuming download"),
         tr("Checking the download"),
         tr("Ready to write"),
         tr("Image file was saved to your downloads folder. Writing is not possible"),
@@ -430,8 +432,6 @@ public slots:
     void download();
     void cancelDownload();
     void resetStatus();
-    void onDownloadNetworkError();
-    void onDownloadDiskError(const QString &message);
     void onDownloadFinished();
     void onMd5sumDownloadFinished();
 
@@ -451,9 +451,6 @@ private:
     ImageDownload *current_download = nullptr;
 
     Progress *m_progress { nullptr };
-
-    void start_image_download();
-    void delete_image_download();
 };
 
 /**

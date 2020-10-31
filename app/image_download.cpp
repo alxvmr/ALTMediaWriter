@@ -38,12 +38,12 @@ ImageDownload::ImageDownload(const QUrl &url_arg, Progress *progress_arg)
 {
     url = url_arg;
     progress = progress_arg;
-   
+
     QNetworkProxyFactory::setUseSystemConfiguration(true);
 
     timeout_timer = new QTimer(this);
     timeout_timer->setSingleShot(true);
-    timeout_timer->setInterval(5000);
+    timeout_timer->setInterval(10000);
 
     connect(
         timeout_timer, &QTimer::timeout,
@@ -59,7 +59,6 @@ ImageDownload::ImageDownload(const QUrl &url_arg, Progress *progress_arg)
 
     previousSize = file->size();
     bytesDownloaded = previousSize;
-    progress->setValue(previousSize);
 
     if (file->exists()) {
         mDebug() << this->metaObject()->className() << "Continuing previous download";
@@ -67,6 +66,12 @@ ImageDownload::ImageDownload(const QUrl &url_arg, Progress *progress_arg)
     } else {
         file->open(QIODevice::WriteOnly);
     }
+
+    makeRequest();
+}
+
+void ImageDownload::makeRequest() {
+    newRequest = true;
 
     QNetworkRequest request;
     request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
@@ -86,14 +91,30 @@ ImageDownload::ImageDownload(const QUrl &url_arg, Progress *progress_arg)
     timeout_timer->start();
 }
 
-ImageDownload::~ImageDownload() {
-    if (reply != nullptr) {
-        reply->deleteLater();
-    }
+ImageDownload::Result ImageDownload::result() const {
+    return m_result;
+}
+
+QString ImageDownload::errorString() const {
+    return m_errorString;
+}
+
+void ImageDownload::cancel() {
+    cancelled = true;
+    reply->abort();
+}
+
+void ImageDownload::onTimeout() {
+    mWarning() << reply->url() << "timed out.";
+    reply->abort();
 }
 
 void ImageDownload::onReadyRead() {
-    emit readyRead();
+    if (newRequest) {
+        mDebug() << "Request started successfully";
+        newRequest = false;
+        emit started();
+    }
 
     // Restart timer
     timeout_timer->start();
@@ -114,7 +135,7 @@ void ImageDownload::onReadyRead() {
         }
         else {
             QStorageInfo storage(file->fileName());
-            const QString error_message =
+            m_errorString =
             [storage]() {
                 if (storage.bytesAvailable() < 5L * 1024L * 1024L) {
                     return tr("You ran out of space in your Downloads folder.");
@@ -123,9 +144,8 @@ void ImageDownload::onReadyRead() {
                 }
             }();
 
-            emit diskError(error_message);
-
-            deleteLater();
+            m_result = ImageDownload::DiskError;
+            emit finished();
         }
     }
 }
@@ -133,23 +153,29 @@ void ImageDownload::onReadyRead() {
 void ImageDownload::onFinished() {
     timeout_timer->stop();
 
-    if (reply->error() != 0) {
-        mDebug() << this->metaObject()->className() << "A reply finished with error:" << reply->errorString();
-        mWarning() << "reply: " << reply;
-
-
-        emit networkError();
-    } else {
-        mDebug() << this->metaObject()->className() << "Finished successfully";
-
+    if (cancelled) {
         file->close();
+        m_result = ImageDownload::Cancelled;
         emit finished();
+    } else {
+        if (reply->error() == QNetworkReply::NoError) {
+            mDebug() << this->metaObject()->className() << "Finished successfully";
+
+            file->close();
+            m_result = ImageDownload::Success;
+            emit finished();
+        } else {
+            mDebug() << "Download was interrupted by an error:" << reply->errorString();
+            mDebug() << "Attempting to resume";
+
+            emit interrupted();
+
+            QTimer::singleShot(1000, this,
+            [this]() {
+                makeRequest();
+            });
+        }
     }
 
     reply->deleteLater();
-}
-
-void ImageDownload::onTimeout() {
-    mWarning() << reply->url() << "timed out.";
-    reply->abort();
 }

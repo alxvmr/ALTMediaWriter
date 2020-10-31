@@ -1052,50 +1052,43 @@ void ReleaseVariant::onMd5sumDownloadFinished() {
 }
 
 void ReleaseVariant::onDownloadFinished() {
-    delete_image_download();
-    m_temporaryImage = QString();
+    const ImageDownload::Result result = current_download->result();
 
-    if (m_progress) {
-        m_progress->setValue(size());
-    }
-    setStatus(DOWNLOAD_VERIFYING);
+    switch (result) {
+        case ImageDownload::Success: {
+            m_temporaryImage = QString();
 
-    // Download md5 for checking
-    // NOTE: if downloading md5 fails, give up and proceed to downloading the image. This is because MD5SUM might not be present so don't want to get stuck in download attempts for no reason.
-    const int cutoffIndex = m_url.lastIndexOf("/");
-    const QString md5sumUrl = m_url.left(cutoffIndex) + "/MD5SUM";
-    QNetworkReply *reply = makeNetworkRequest(md5sumUrl, 5000);
-    
-    connect(
-        reply, &QNetworkReply::finished,
-        this, &ReleaseVariant::onMd5sumDownloadFinished);
-    mDebug() << "Downloading MD5SUM";
-}
+            if (m_progress) {
+                m_progress->setValue(size());
+            }
+            setStatus(DOWNLOAD_VERIFYING);
 
-void ReleaseVariant::onDownloadNetworkError() {
-    delete_image_download();
-    
-    setErrorString(tr("Connection was interrupted, attempting to resume"));
-    mDebug() << "Resuming download in 2s";
-
-    QTimer::singleShot(2000, this,
-        [this]() {
-            start_image_download();
-
-            // Clear error string when download resumes successfully
+            // Download md5 for checking
+            // NOTE: if downloading md5 fails, give up and proceed to downloading the image. This is because MD5SUM might not be present so don't want to get stuck in download attempts for no reason.
+            const int cutoffIndex = m_url.lastIndexOf("/");
+            const QString md5sumUrl = m_url.left(cutoffIndex) + "/MD5SUM";
+            QNetworkReply *reply = makeNetworkRequest(md5sumUrl, 5000);
+            
             connect(
-                current_download, &ImageDownload::readyRead,
-                [this]() {
-                    setErrorString(QString());
-                });
-        });
-}
+                reply, &QNetworkReply::finished,
+                this, &ReleaseVariant::onMd5sumDownloadFinished);
+            mDebug() << "Downloading MD5SUM";
 
-void ReleaseVariant::onDownloadDiskError(const QString &message) {
-    delete_image_download();
-    
-    setErrorString(message);
-    setStatus(FAILED_DOWNLOAD);
+            break;
+        }
+        case ImageDownload::DiskError: {
+            setErrorString(current_download->errorString());
+            setStatus(FAILED_DOWNLOAD);
+
+            break;
+        }
+        case ImageDownload::Cancelled: {
+            break;
+        }
+    }
+
+    current_download->deleteLater();
+    current_download = nullptr;
 }
 
 int ReleaseVariant::staticOnMediaCheckAdvanced(void *data, long long offset, long long total) {
@@ -1117,20 +1110,15 @@ void ReleaseVariant::download() {
     }
 
     resetStatus();
-    setStatus(DOWNLOADING);
-    if (m_size) {
-        m_progress->setTo(m_size);
-    }
 
-    //
-    // Download image
-    //
+    // Check if already downloaded
     const QString download_dir_path = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
     const QDir download_dir(download_dir_path);
     const QString filePath = download_dir.filePath(QUrl(m_url).fileName());
     const bool already_downloaded = QFile::exists(filePath);
 
     if (already_downloaded) {
+        // Already downloaded so skip download step
         m_temporaryImage = QString();
         m_image = filePath;
         emit imageChanged();
@@ -1144,9 +1132,30 @@ void ReleaseVariant::download() {
             emit sizeChanged();
         }
     } else {
+        // Download image
         m_temporaryImage = filePath + ".part";
 
-        start_image_download();
+        if (m_size) {
+            m_progress->setTo(m_size);
+        }
+
+        current_download = new ImageDownload(QUrl(m_url), m_progress);
+
+        connect(
+            current_download, &ImageDownload::started,
+            [this]() {
+                setStatus(DOWNLOADING);
+                setErrorString(QString());
+            });
+        connect(
+            current_download, &ImageDownload::interrupted,
+            [this]() {
+                setErrorString(tr("Connection was interrupted, attempting to resume"));
+                setStatus(RESUMING);
+            });
+        connect(
+            current_download, &ImageDownload::finished,
+            this, &ReleaseVariant::onDownloadFinished);
     }
 }
 
@@ -1154,7 +1163,7 @@ void ReleaseVariant::cancelDownload() {
     if (current_download != nullptr) {
         mDebug() << this->metaObject()->className() << "Cancelling download";
 
-        delete_image_download();
+        current_download->cancel();
     }
 }
 
@@ -1164,8 +1173,10 @@ void ReleaseVariant::resetStatus() {
     }
     else {
         setStatus(PREPARING);
-        if (m_progress)
+        if (m_progress) {
             m_progress->setValue(0.0);
+            m_progress->setTo(0.0);
+        }
     }
     setErrorString(QString());
     emit statusChanged();
@@ -1199,27 +1210,6 @@ void ReleaseVariant::setErrorString(const QString &o) {
     if (m_error != o) {
         m_error = o;
         emit errorStringChanged();
-    }
-}
-
-void ReleaseVariant::start_image_download() {
-    current_download = new ImageDownload(QUrl(m_url), m_progress);
-
-    connect(
-        current_download, &ImageDownload::finished,
-        this, &ReleaseVariant::onDownloadFinished);
-    connect(
-        current_download, &ImageDownload::diskError,
-        this, &ReleaseVariant::onDownloadDiskError);
-    connect(
-        current_download, &ImageDownload::networkError,
-        this, &ReleaseVariant::onDownloadNetworkError);
-}
-
-void ReleaseVariant::delete_image_download() {
-    if (current_download != nullptr) {
-        current_download->deleteLater();
-        current_download = nullptr;
     }
 }
 
