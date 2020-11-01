@@ -18,7 +18,7 @@
  */
 
 #include "image_download.h"
-#include "utilities.h"
+#include "network.h"
 
 #include <QNetworkProxyFactory>
 #include <QNetworkReply>

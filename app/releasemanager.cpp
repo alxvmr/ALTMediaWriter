@@ -19,7 +19,7 @@
 
 #include "releasemanager.h"
 #include "drivemanager.h"
-#include "utilities.h"
+#include "network.h"
 #include "image_download.h"
 #include "progress.h"
 

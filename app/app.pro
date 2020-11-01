@@ -19,7 +19,7 @@ CONFIG += c++11
 HEADERS += \
     drivemanager.h \
     releasemanager.h \
-    utilities.h \
+    network.h \
     notifications.h \
     image_download.h \
     progress.h
@@ -27,7 +27,7 @@ HEADERS += \
 SOURCES += main.cpp \
     drivemanager.cpp \
     releasemanager.cpp \
-    utilities.cpp \
+    network.cpp \
     notifications.cpp \
     image_download.cpp \
     progress.cpp
