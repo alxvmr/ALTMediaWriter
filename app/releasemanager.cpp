@@ -84,7 +84,7 @@ QString ymlToQString(const YAML::Node &yml_value) {
 ReleaseManager::ReleaseManager(QObject *parent)
 : QSortFilterProxyModel(parent), m_sourceModel(new ReleaseListModel(this))
 {
-    mDebug() << this->metaObject()->className() << "construction";
+    qDebug() << this->metaObject()->className() << "construction";
     setSourceModel(m_sourceModel);
 
     qmlRegisterUncreatableType<Release>("MediaWriter", 1, 0, "Release", "");
@@ -185,14 +185,14 @@ void ReleaseManager::fetchReleases() {
         for (auto reply : replies.values()) {
             const bool success = (reply->error() == QNetworkReply::NoError && reply->bytesAvailable() > 0);
             if (!success) {
-                mWarning() << "Was not able to fetch new releases:" << reply->errorString() << "Retrying in 10 seconds.";
+                qWarning() << "Was not able to fetch new releases:" << reply->errorString() << "Retrying in 10 seconds.";
                 QTimer::singleShot(10000, this, SLOT(fetchReleases()));
 
                 return;
             }
         }
 
-        mDebug() << this->metaObject()->className() << "Downloaded all release files";
+        qDebug() << this->metaObject()->className() << "Downloaded all release files";
 
         // Finally, save release files if all is good
         for (auto file : replies.keys()) {
@@ -262,11 +262,11 @@ void ReleaseManager::setFilterText(const QString &o) {
 
 bool ReleaseManager::updateUrl(const QString &name, const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url, int64_t size) {
     if (!ReleaseArchitecture::isKnown(architecture)) {
-        mDebug() << "Architecture" << architecture << "is not known!";
+        qDebug() << "Architecture" << architecture << "is not known!";
         return false;
     }
     if (imageType->id() == ReleaseImageType::UNKNOWN) {
-        mDebug() << "Image type for " << url << "is not known!";
+        qDebug() << "Image type for " << url << "is not known!";
         return false;
     }
     for (int i = 0; i < m_sourceModel->rowCount(); i++) {
@@ -366,7 +366,7 @@ void ReleaseManager::loadReleaseFile(const QString &fileContents) {
 
         ReleaseImageType *imageType = ReleaseImageType::fromFilename(url);
 
-        mDebug() << this->metaObject()->className() << "Adding" << name << arch;
+        qDebug() << this->metaObject()->className() << "Adding" << name << arch;
 
         if (!name.isEmpty() && !url.isEmpty() && !arch.isEmpty())
             updateUrl(name, version, status, releaseDate, arch, imageType, board, url, size);
@@ -478,7 +478,7 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
             const QString icon_path_test = ":/logo/" + icon_name;
             const QFile icon_file(icon_path_test);
             if (!icon_file.exists()) {
-                mWarning() << "Failed to find icon file at " << icon_path_test << " needed for release " << name;
+                qWarning() << "Failed to find icon file at " << icon_path_test << " needed for release " << name;
             }
 
             // NOTE: icon_path is consumed by QML, so it needs to begin with "qrc:/" not ":/"
@@ -542,7 +542,7 @@ void Release::setLocalFile(const QString &path) {
     QFileInfo info(QUrl(path).toLocalFile());
 
     if (!info.exists()) {
-        mCritical() << path << "doesn't exist";
+        qCritical() << path << "doesn't exist";
         return;
     }
 
@@ -825,7 +825,7 @@ ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, const QString &file, int6
 bool ReleaseVariant::updateUrl(const QString &url, int64_t size) {
     bool changed = false;
     if (!url.isEmpty() && m_url.toUtf8().trimmed() != url.toUtf8().trimmed()) {
-        // mWarning() << "Url" << m_url << "changed to" << url;
+        // qWarning() << "Url" << m_url << "changed to" << url;
         m_url = url;
         emit urlChanged();
         changed = true;
@@ -932,7 +932,7 @@ void ReleaseVariant::onImageDownloadFinished() {
 
             emit imageChanged();
 
-            mDebug() << this->metaObject()->className() << "Image is ready";
+            qDebug() << this->metaObject()->className() << "Image is ready";
             setStatus(READY);
 
             if (QFile(m_image).size() != m_size) {
@@ -949,7 +949,7 @@ void ReleaseVariant::onImageDownloadFinished() {
             break;
         }
         case ImageDownload::Md5CheckFail: {
-            mWarning() << "MD5 check of" << m_url << "failed";
+            qWarning() << "MD5 check of" << m_url << "failed";
             setErrorString(tr("The downloaded image is corrupted"));
             setStatus(FAILED_DOWNLOAD);
 
@@ -982,7 +982,7 @@ void ReleaseVariant::download() {
         m_image = filePath;
         emit imageChanged();
 
-        mDebug() << this->metaObject()->className() << m_image << "is already downloaded";
+        qDebug() << this->metaObject()->className() << m_image << "is already downloaded";
         setStatus(READY);
 
         const QFile image_file(m_image);
@@ -1052,13 +1052,13 @@ void ReleaseVariant::resetStatus() {
 
 bool ReleaseVariant::erase() {
     if (QFile(m_image).remove()) {
-        mDebug() << this->metaObject()->className() << "Deleted" << m_image;
+        qDebug() << this->metaObject()->className() << "Deleted" << m_image;
         m_image = QString();
         emit imageChanged();
         return true;
     }
     else {
-        mWarning() << this->metaObject()->className() << "An attempt to delete" << m_image << "failed!";
+        qWarning() << this->metaObject()->className() << "An attempt to delete" << m_image << "failed!";
         return false;
     }
 }

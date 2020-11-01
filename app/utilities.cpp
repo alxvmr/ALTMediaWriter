@@ -87,7 +87,6 @@ void MessageHandler::install(const bool debug_arg, const bool log_arg) {
     qInstallMessageHandler(myMessageOutput);
 }
 
-QLoggingCategory MessageHandler::category { "org.fedoraproject.MediaWriter" };
 bool MessageHandler::debug;
 bool MessageHandler::log;
 

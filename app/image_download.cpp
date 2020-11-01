@@ -35,7 +35,7 @@ ImageDownload::ImageDownload(const QUrl &url_arg)
 , url(url_arg)
 , hash(QCryptographicHash::Md5)
 {
-    mDebug() << this->metaObject()->className() << "created for" << url;
+    qDebug() << this->metaObject()->className() << "created for" << url;
     
     QNetworkProxyFactory::setUseSystemConfiguration(true);
 
@@ -59,7 +59,7 @@ void ImageDownload::cancel() {
         return;
     }
 
-    mDebug() << this->metaObject()->className() << "Cancelling download";
+    qDebug() << this->metaObject()->className() << "Cancelling download";
 
     wasCancelled = true;
     emit cancelled();
@@ -71,7 +71,7 @@ void ImageDownload::onImageDownloadReadyRead() {
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
     
     if (startingImageDownload) {
-        mDebug() << "Request started successfully";
+        qDebug() << "Request started successfully";
         startingImageDownload = false;
 
         const QVariant remainingSize = reply->header(QNetworkRequest::ContentLengthHeader);
@@ -117,9 +117,9 @@ void ImageDownload::onImageDownloadFinished() {
     if (wasCancelled) {
         return;
     } else if (reply->error() == QNetworkReply::NoError) {
-        mDebug() << this->metaObject()->className() << "Finished successfully";
+        qDebug() << this->metaObject()->className() << "Finished successfully";
 
-        mDebug() << this->metaObject()->className() << "Downloading md5";
+        qDebug() << this->metaObject()->className() << "Downloading md5";
 
         const QString md5sumUrl = url.adjusted(QUrl::RemoveFilename).toString() + "/MD5SUM";
         QNetworkReply *md5Reply = makeNetworkRequest(md5sumUrl);
@@ -131,8 +131,8 @@ void ImageDownload::onImageDownloadFinished() {
             this, &ImageDownload::cancelled,
             md5Reply, &QNetworkReply::abort);
     } else {
-        mDebug() << "Download was interrupted by an error:" << reply->errorString();
-        mDebug() << "Attempting to resume";
+        qDebug() << "Download was interrupted by an error:" << reply->errorString();
+        qDebug() << "Attempting to resume";
 
         emit interrupted();
 
@@ -151,7 +151,7 @@ void ImageDownload::onMd5DownloadFinished() {
         return;
     } else {
         if (reply->error() == QNetworkReply::NoError) {
-            mDebug() << this->metaObject()->className() << "Downloaded MD5SUM successfully";
+            qDebug() << this->metaObject()->className() << "Downloaded MD5SUM successfully";
 
             md5 =
             [this, reply]() {
@@ -173,7 +173,7 @@ void ImageDownload::onMd5DownloadFinished() {
                 return QString();
             }();
         } else {
-            mDebug() << this->metaObject()->className() << "Failed to download MD5SUM";
+            qDebug() << this->metaObject()->className() << "Failed to download MD5SUM";
 
             md5 = QString();
         }
@@ -187,7 +187,7 @@ void ImageDownload::onMd5DownloadFinished() {
                 emit startedMd5Check();
                 QTimer::singleShot(0, this, &ImageDownload::computeMd5);
             } else {
-                mDebug() << this->metaObject()->className() << "Failed to open file for md5 check";
+                qDebug() << this->metaObject()->className() << "Failed to open file for md5 check";
 
                 finish(ImageDownload::Md5CheckFail);
             }
@@ -220,7 +220,7 @@ void ImageDownload::computeMd5() {
 }
 
 void ImageDownload::startImageDownload() {
-    mDebug() << this->metaObject()->className() << "startImageDownload()";
+    qDebug() << this->metaObject()->className() << "startImageDownload()";
 
     startingImageDownload = true;
 
@@ -255,7 +255,7 @@ void ImageDownload::checkMd5(const QString &computedMd5) {
             // 3) MD5SUM file does not contain needed sum
             // In all cases, DON'T treat this as a fail.
             // Instead, skip the check.
-            mDebug() << this->metaObject()->className() << "Failed to download md5 sum, so skipping md5 check";
+            qDebug() << this->metaObject()->className() << "Failed to download md5 sum, so skipping md5 check";
 
             return true;
         } else {
@@ -264,7 +264,7 @@ void ImageDownload::checkMd5(const QString &computedMd5) {
     }();
 
     if (checkPassed) {
-        mDebug() << this->metaObject()->className() << "Renaming to final filename";
+        qDebug() << this->metaObject()->className() << "Renaming to final filename";
 
         const QString filePath = getFilePath();
         const bool rename_success = file->rename(filePath);
@@ -275,9 +275,9 @@ void ImageDownload::checkMd5(const QString &computedMd5) {
             finish(ImageDownload::DiskError, tr("Unable to rename the temporary file."));
         }
     } else {
-        mDebug() << "MD5 mismatch";
-        mDebug() << "sum should be =" << md5;
-        mDebug() << "computed sum  =" << computedMd5;
+        qDebug() << "MD5 mismatch";
+        qDebug() << "sum should be =" << md5;
+        qDebug() << "computed sum  =" << computedMd5;
 
         finish(ImageDownload::Md5CheckFail);
     }
@@ -287,9 +287,9 @@ void ImageDownload::finish(const Result result_arg, const QString &errorString_a
     m_result = result_arg;
     m_errorString = errorString_arg;
 
-    mDebug() << "Image download finished";
+    qDebug() << "Image download finished";
     if (!m_errorString.isEmpty()) {
-        mDebug() << "Error string:" << m_errorString;
+        qDebug() << "Error string:" << m_errorString;
     }
 
     if (m_result == ImageDownload::Success) {

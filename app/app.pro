@@ -21,7 +21,6 @@ HEADERS += \
     releasemanager.h \
     utilities.h \
     notifications.h \
-    crashhandler.h \
     image_download.h \
     progress.h
 
@@ -30,7 +29,6 @@ SOURCES += main.cpp \
     releasemanager.cpp \
     utilities.cpp \
     notifications.cpp \
-    crashhandler.cpp \
     image_download.cpp \
     progress.cpp
 

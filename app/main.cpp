@@ -33,7 +33,7 @@
 #include <QX11Info>
 #endif
 
-#include "crashhandler.h"
+#include "utilities.h"
 #include "drivemanager.h"
 #include "releasemanager.h"
 
@@ -56,8 +56,6 @@ Q_IMPORT_PLUGIN(QmlSettingsPlugin);
 
 int main(int argc, char **argv)
 {
-    CrashHandler::install();
-
 #ifdef __linux
     if (QX11Info::isPlatformX11()) {
         if (qEnvironmentVariableIsEmpty("QSG_RENDER_LOOP"))
@@ -102,13 +100,13 @@ int main(int argc, char **argv)
         qputenv("QMLSCENE_DEVICE", "softwarecontext");
 #endif
 
-    mDebug() << "Application constructed";
+    qDebug() << "Application constructed";
 
     QTranslator translator;
     translator.load(QLocale(QLocale().language(), QLocale().country()), QString(), QString(), ":/translations");
     app.installTranslator(&translator);
 
-    mDebug() << "Injecting QML context properties";
+    qDebug() << "Injecting QML context properties";
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("drives", DriveManager::instance());
     engine.rootContext()->setContextProperty("releases", new ReleaseManager());
@@ -118,12 +116,12 @@ int main(int argc, char **argv)
 #else
     engine.rootContext()->setContextProperty("platformSupportsDelayedWriting", false);
 #endif
-    mDebug() << "Loading the QML source code";
+    qDebug() << "Loading the QML source code";
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 
-    mDebug() << "Starting the application";
+    qDebug() << "Starting the application";
     int status = app.exec();
-    mDebug() << "Quitting with status" << status;
+    qDebug() << "Quitting with status" << status;
 
     return status;
 }

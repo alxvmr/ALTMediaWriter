@@ -30,17 +30,10 @@ extern QNetworkAccessManager *network_access_manager;
 class MessageHandler {
 public:
     static void install(const bool debug_arg, const bool log_arg);
-    static QLoggingCategory category;
 
     static bool debug;
     static bool log;
 };
-
-#define mInfo() qCInfo(MessageHandler::category)
-#define mDebug() qCDebug(MessageHandler::category)
-#define mWarning() qCWarning(MessageHandler::category)
-#define mCritical() qCCritical(MessageHandler::category)
-#define mFatal() qCFatal(MessageHandler::category)
 
 QString userAgent();
 QNetworkReply *makeNetworkRequest(const QString &url, const int time_out_millis = 0);
