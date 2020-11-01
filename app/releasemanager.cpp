@@ -259,7 +259,7 @@ void ReleaseManager::setFilterText(const QString &o) {
     }
 }
 
-bool ReleaseManager::updateUrl(const QString &name, const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size) {
+bool ReleaseManager::updateUrl(const QString &name, const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url, int64_t size) {
     if (!ReleaseArchitecture::isKnown(architecture)) {
         mDebug() << "Architecture" << architecture << "is not known!";
         return false;
@@ -271,7 +271,7 @@ bool ReleaseManager::updateUrl(const QString &name, const QString &version, cons
     for (int i = 0; i < m_sourceModel->rowCount(); i++) {
         Release *r = get(i);
         if (r->name().toLower().contains(name))
-            return r->updateUrl(version, status, releaseDate, architecture, imageType, board, url, sha256, md5, size);
+            return r->updateUrl(version, status, releaseDate, architecture, imageType, board, url, size);
     }
     return false;
 }
@@ -355,13 +355,6 @@ void ReleaseManager::loadReleaseFile(const QString &fileContents) {
             board = ymlToQString(e["board"]);
         }
 
-        QString md5 = "";
-        if (e["md5"]) {
-            // NOTE: yml files has md5's for only a few entries
-            md5 = ymlToQString(e["md5"]);
-        }
-        QString sha256 = "";
-
         // TODO: implement these fields if/when yml files start to include these
         QDateTime releaseDate = QDateTime::fromString("", "yyyy-MM-dd");
         int64_t size = 0;
@@ -375,7 +368,7 @@ void ReleaseManager::loadReleaseFile(const QString &fileContents) {
         mDebug() << this->metaObject()->className() << "Adding" << name << arch;
 
         if (!name.isEmpty() && !url.isEmpty() && !arch.isEmpty())
-            updateUrl(name, version, status, releaseDate, arch, imageType, board, url, sha256, md5, size);
+            updateUrl(name, version, status, releaseDate, arch, imageType, board, url, size);
     }
 }
 
@@ -523,7 +516,7 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
     const auto customVersion = new ReleaseVersion(customRelease, 0);
     customRelease->addVersion(customVersion);
 
-    const auto customVariant = new ReleaseVariant(customVersion, QString(), QString(), QString(), 0, ReleaseArchitecture::fromId(ReleaseArchitecture::UNKNOWN), ReleaseImageType::all()[ReleaseImageType::ISO], "UNKNOWN BOARD");
+    const auto customVariant = new ReleaseVariant(customVersion, QString(), 0, ReleaseArchitecture::fromId(ReleaseArchitecture::UNKNOWN), ReleaseImageType::all()[ReleaseImageType::ISO], "UNKNOWN BOARD");
     customVersion->addVariant(customVariant);
 }
 
@@ -562,17 +555,17 @@ void Release::setLocalFile(const QString &path) {
     emit selectedVersionChanged();
 }
 
-bool Release::updateUrl(const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size) {
+bool Release::updateUrl(const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url, int64_t size) {
     int finalVersions = 0;
     for (auto i : m_versions) {
         if (i->number() == version)
-            return i->updateUrl(status, releaseDate, architecture, imageType, board, url, sha256, md5, size);
+            return i->updateUrl(status, releaseDate, architecture, imageType, board, url, size);
         if (i->status() == ReleaseVersion::FINAL)
             finalVersions++;
     }
     ReleaseVersion::Status s = status == "alpha" ? ReleaseVersion::ALPHA : status == "beta" ? ReleaseVersion::BETA : ReleaseVersion::FINAL;
     auto ver = new ReleaseVersion(this, version, s, releaseDate);
-    auto variant = new ReleaseVariant(ver, url, sha256, md5, size, ReleaseArchitecture::fromAbbreviation(architecture), imageType, board);
+    auto variant = new ReleaseVariant(ver, url, size, ReleaseArchitecture::fromAbbreviation(architecture), imageType, board);
     ver->addVariant(variant);
     addVersion(ver);
     if (ver->status() == ReleaseVersion::FINAL)
@@ -716,7 +709,7 @@ const Release *ReleaseVersion::release() const {
     return qobject_cast<const Release*>(parent());
 }
 
-bool ReleaseVersion::updateUrl(const QString &status, const QDateTime &releaseDate, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size) {
+bool ReleaseVersion::updateUrl(const QString &status, const QDateTime &releaseDate, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url, int64_t size) {
     // first determine and eventually update the current alpha/beta/final level of this version
     Status s = status == "alpha" ? ALPHA : status == "beta" ? BETA : FINAL;
     if (s <= m_status) {
@@ -737,7 +730,7 @@ bool ReleaseVersion::updateUrl(const QString &status, const QDateTime &releaseDa
 
     for (auto i : m_variants) {
         if (i->arch() == ReleaseArchitecture::fromAbbreviation(architecture) && i->board() == board)
-            return i->updateUrl(url, sha256, size);
+            return i->updateUrl(url, size);
     }
     // preserve the order from the ReleaseArchitecture::Id enum (to not have ARM first, etc.)
     // it's actually an array so comparing pointers is fine
@@ -747,7 +740,7 @@ bool ReleaseVersion::updateUrl(const QString &status, const QDateTime &releaseDa
             break;
         order++;
     }
-    m_variants.insert(order, new ReleaseVariant(this, url, sha256, md5, size, ReleaseArchitecture::fromAbbreviation(architecture), imageType, board));
+    m_variants.insert(order, new ReleaseVariant(this, url, size, ReleaseArchitecture::fromAbbreviation(architecture), imageType, board));
     return true;
 }
 
@@ -809,31 +802,25 @@ QList<ReleaseVariant *> ReleaseVersion::variantList() const {
 }
 
 
-ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, QString url, QString shaHash, QString md5, int64_t size, ReleaseArchitecture *arch, ReleaseImageType *imageType, QString board)
-: QObject(parent), m_arch(arch), m_image_type(imageType), m_board(board), m_url(url), m_shaHash(shaHash), m_md5(md5), m_size(size)
+ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, QString url, int64_t size, ReleaseArchitecture *arch, ReleaseImageType *imageType, QString board)
+: QObject(parent), m_arch(arch), m_image_type(imageType), m_board(board), m_url(url), m_size(size)
 {
     connect(this, &ReleaseVariant::sizeChanged, this, &ReleaseVariant::realSizeChanged);
 }
 
 ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, const QString &file, int64_t size)
-: QObject(parent), m_image(file), m_arch(ReleaseArchitecture::fromId(ReleaseArchitecture::X86_64)), m_image_type(ReleaseImageType::fromFilename(file)), m_board("UNKNOWN BOARD"), m_shaHash(""), m_md5(""), m_size(size)
+: QObject(parent), m_image(file), m_arch(ReleaseArchitecture::fromId(ReleaseArchitecture::X86_64)), m_image_type(ReleaseImageType::fromFilename(file)), m_board("UNKNOWN BOARD"), m_size(size)
 {
     connect(this, &ReleaseVariant::sizeChanged, this, &ReleaseVariant::realSizeChanged);
     m_status = READY;
 }
 
-bool ReleaseVariant::updateUrl(const QString &url, const QString &sha256, int64_t size) {
+bool ReleaseVariant::updateUrl(const QString &url, int64_t size) {
     bool changed = false;
     if (!url.isEmpty() && m_url.toUtf8().trimmed() != url.toUtf8().trimmed()) {
         // mWarning() << "Url" << m_url << "changed to" << url;
         m_url = url;
         emit urlChanged();
-        changed = true;
-    }
-    if (!sha256.isEmpty() && m_shaHash.trimmed() != sha256.trimmed()) {
-        mWarning() << "SHA256 hash of" << url << "changed from" << m_shaHash << "to" << sha256;
-        m_shaHash = sha256;
-        emit shaHashChanged();
         changed = true;
     }
     if (size != 0 && m_size != size) {
@@ -885,14 +872,6 @@ QString ReleaseVariant::fullName() {
 
 QString ReleaseVariant::url() const {
     return m_url;
-}
-
-QString ReleaseVariant::shaHash() const {
-    return m_shaHash;
-}
-
-QString ReleaseVariant::md5() const {
-    return m_md5;
 }
 
 QString ReleaseVariant::image() const {

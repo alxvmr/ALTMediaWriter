@@ -103,7 +103,7 @@ public:
     QString filterText() const;
     void setFilterText(const QString &o);
 
-    bool updateUrl(const QString &name, const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size);
+    bool updateUrl(const QString &name, const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url, int64_t size);
 
     QStringList architectures() const;
     QStringList fileNameFilters() const;
@@ -205,7 +205,7 @@ class Release : public QObject {
 public:
     Release(ReleaseManager *parent, const QString &name, const QString &displayName, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots);
     Q_INVOKABLE void setLocalFile(const QString &path);
-    bool updateUrl(const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size);
+    bool updateUrl(const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url, int64_t size);
     ReleaseManager *manager();
 
     QString name() const;
@@ -282,7 +282,7 @@ public:
     Release *release();
     const Release *release() const;
 
-    bool updateUrl(const QString &status, const QDateTime &releaseDate, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url, const QString &sha256, const QString &md5, int64_t size);
+    bool updateUrl(const QString &status, const QDateTime &releaseDate, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url, int64_t size);
 
     QString number() const;
     QString name() const;
@@ -320,8 +320,6 @@ private:
  * @property name the name of the release, generated from @ref arch and @ref board
  * @property board the name of supported hardware of the image
  * @property url the URL pointing to the image
- * @property shaHash SHA256 hash of the image
- * @property md5 MD5 of the image
  * @property image the path to the image on the drive
  * @property imageType the type of the image on the drive
  * @property size the size of the image in bytes
@@ -337,7 +335,6 @@ class ReleaseVariant : public QObject {
     Q_PROPERTY(QString board READ board CONSTANT)
 
     Q_PROPERTY(QString url READ url NOTIFY urlChanged)
-    Q_PROPERTY(QString shaHash READ shaHash NOTIFY shaHashChanged)
     Q_PROPERTY(QString image READ image NOTIFY imageChanged)
     Q_PROPERTY(ReleaseImageType *imageType READ imageType CONSTANT)
     Q_PROPERTY(qreal size READ size NOTIFY sizeChanged) // stored as a 64b int, UI doesn't need the precision and QML doesn't support long ints
@@ -379,10 +376,10 @@ public:
         tr("Error")
     };
 
-    ReleaseVariant(ReleaseVersion *parent, QString url,  QString shaHash, QString md5, int64_t size, ReleaseArchitecture *arch, ReleaseImageType *imageType, QString board);
+    ReleaseVariant(ReleaseVersion *parent, QString url, int64_t size, ReleaseArchitecture *arch, ReleaseImageType *imageType, QString board);
     ReleaseVariant(ReleaseVersion *parent, const QString &file, int64_t size);
 
-    bool updateUrl(const QString &url, const QString &sha256, int64_t size);
+    bool updateUrl(const QString &url, int64_t size);
 
     ReleaseVersion *releaseVersion();
     const ReleaseVersion *releaseVersion() const;
@@ -395,9 +392,7 @@ public:
     QString board() const;
 
     QString url() const;
-    QString shaHash() const;
     QString image() const;
-    QString md5() const;
     ReleaseImageType *imageType() const;
     QString temporaryPath() const;
     qreal size() const;
@@ -421,7 +416,6 @@ signals:
     void urlChanged();
     void sizeChanged();
     void realSizeChanged();
-    void shaHashChanged();
     void cancelledDownload();
 
 public slots:
@@ -437,8 +431,6 @@ private:
     ReleaseImageType *m_image_type { nullptr };
     QString m_board {};
     QString m_url {};
-    QString m_shaHash {};
-    QString m_md5 {};
     int64_t m_size { 0 };
     int64_t m_realSize { 0 };
     Status m_status { PREPARING };
