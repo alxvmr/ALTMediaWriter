@@ -20,75 +20,31 @@
 #include "image_download.h"
 #include "utilities.h"
 
-#include <QApplication>
-#include <QAbstractEventDispatcher>
 #include <QNetworkProxyFactory>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QNetworkAccessManager>
 #include <QStandardPaths>
 #include <QStorageInfo>
-#include <QSysInfo>
 #include <QDir>
 #include <QTimer>
 #include <QFile>
 
 ImageDownload::ImageDownload(const QUrl &url_arg, Progress *progress_arg)
 : QObject()
+, url(url_arg)
+, progress(progress_arg)
+, hash(QCryptographicHash::Md5)
 {
-    url = url_arg;
-    progress = progress_arg;
-
+    mWarning() << this->metaObject()->className() << "created for" << url;
+    
     QNetworkProxyFactory::setUseSystemConfiguration(true);
 
-    timeout_timer = new QTimer(this);
-    timeout_timer->setSingleShot(true);
-    timeout_timer->setInterval(10000);
+    const QString tempFilePath = getFilePath() + ".part";
+    file = new QFile(tempFilePath, this);
+    file->open(QIODevice::WriteOnly);
 
-    connect(
-        timeout_timer, &QTimer::timeout,
-        this, &ImageDownload::onTimeout);
-
-    mDebug() << this->metaObject()->className() << "Going to download" << url;
-
-    const QString download_dir_path = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
-    const QDir download_dir(download_dir_path);
-
-    const QString filePath = download_dir.filePath(url.fileName()) + ".part";
-    file = new QFile(filePath, this);
-
-    previousSize = file->size();
-    bytesDownloaded = previousSize;
-
-    if (file->exists()) {
-        mDebug() << this->metaObject()->className() << "Continuing previous download";
-        file->open(QIODevice::Append);
-    } else {
-        file->open(QIODevice::WriteOnly);
-    }
-
-    makeRequest();
-}
-
-void ImageDownload::makeRequest() {
-    newRequest = true;
-
-    QNetworkRequest request;
-    request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
-    request.setUrl(url);
-    request.setRawHeader("Range", QString("bytes=%1-").arg(bytesDownloaded).toLocal8Bit());
-    if (!options.noUserAgent) {
-        request.setHeader(QNetworkRequest::UserAgentHeader, userAgent());
-    }
-
-    reply = network_access_manager->get(request);
-    // NOTE: 64MB buffer in case the user is on a very fast network
-    reply->setReadBufferSize(64L * 1024L * 1024L);
-
-    connect(reply, &QNetworkReply::readyRead, this, &ImageDownload::onReadyRead);
-    connect(reply, &QNetworkReply::finished, this, &ImageDownload::onFinished);
-
-    timeout_timer->start();
+    startImageDownload();
 }
 
 ImageDownload::Result ImageDownload::result() const {
@@ -100,42 +56,51 @@ QString ImageDownload::errorString() const {
 }
 
 void ImageDownload::cancel() {
-    cancelled = true;
-    reply->abort();
+    if (wasCancelled) {
+        return;
+    }
+
+    mWarning() << this->metaObject()->className() << "Cancelling download";
+
+    wasCancelled = true;
+    emit cancelled();
+
+    finish(ImageDownload::Cancelled);
 }
 
-void ImageDownload::onTimeout() {
-    mWarning() << reply->url() << "timed out.";
-    reply->abort();
-}
+void ImageDownload::onImageDownloadReadyRead() {
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    
+    if (startingImageDownload) {
+        mWarning() << "Request started successfully";
+        startingImageDownload = false;
 
-void ImageDownload::onReadyRead() {
-    if (newRequest) {
-        mDebug() << "Request started successfully";
-        newRequest = false;
+        if (progress) {
+            const QVariant remainingSize = reply->header(QNetworkRequest::ContentLengthHeader);
+            if (remainingSize.isValid()) {
+                const qint64 totalSize = file->size() + remainingSize.toULongLong();
+                progress->setTo(totalSize);
+            }
+        }
+
         emit started();
     }
 
-    // Restart timer
-    timeout_timer->start();
-
-    QByteArray buf = reply->readAll();
-    if (reply->error() == QNetworkReply::NoError && buf.size() > 0) {
-
-        bytesDownloaded += buf.size();
-
-        if (progress && reply->header(QNetworkRequest::ContentLengthHeader).isValid())
-            progress->setTo(reply->header(QNetworkRequest::ContentLengthHeader).toULongLong() + previousSize);
-
-        if (progress)
-            progress->setValue(bytesDownloaded);
-
-        if (file->exists() && file->isOpen() && file->isWritable() && file->write(buf) == buf.size()) {
-            // m_hash.addData(buf);
+    const QByteArray data = reply->readAll();
+    if (reply->error() == QNetworkReply::NoError && data.size() > 0) {
+        if (progress && reply->header(QNetworkRequest::ContentLengthHeader).isValid()) {
+            ;
         }
-        else {
+
+        const qint64 writeSize = file->write(data);
+        const bool writeSuccess = (writeSize != -1);
+        if (writeSuccess) {
+            if (progress) {
+                progress->setValue(file->size());
+            }
+        } else {
             QStorageInfo storage(file->fileName());
-            m_errorString =
+            const QString errorString =
             [storage]() {
                 if (storage.bytesAvailable() < 5L * 1024L * 1024L) {
                     return tr("You ran out of space in your Downloads folder.");
@@ -144,38 +109,213 @@ void ImageDownload::onReadyRead() {
                 }
             }();
 
-            m_result = ImageDownload::DiskError;
-            emit finished();
+            finish(ImageDownload::DiskError, errorString);
         }
     }
 }
 
-void ImageDownload::onFinished() {
-    timeout_timer->stop();
+void ImageDownload::onImageDownloadFinished() {
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    reply->deleteLater();
 
-    if (cancelled) {
-        file->close();
-        m_result = ImageDownload::Cancelled;
-        emit finished();
+    if (wasCancelled) {
+        return;
+    } else if (reply->error() == QNetworkReply::NoError) {
+        mWarning() << this->metaObject()->className() << "Finished successfully";
+
+        mWarning() << this->metaObject()->className() << "Downloading md5";
+
+        const QString md5sumUrl = url.adjusted(QUrl::RemoveFilename).toString() + "/MD5SUM";
+        QNetworkReply *md5Reply = makeNetworkRequest(md5sumUrl);
+        
+        connect(
+            md5Reply, &QNetworkReply::finished,
+            this, &ImageDownload::onMd5DownloadFinished);
+        connect(
+            this, &ImageDownload::cancelled,
+            md5Reply, &QNetworkReply::abort);
+    } else {
+        mWarning() << "Download was interrupted by an error:" << reply->errorString();
+        mWarning() << "Attempting to resume";
+
+        emit interrupted();
+
+        QTimer::singleShot(1000, this,
+            [this]() {
+                startImageDownload();
+            });
+    }
+}
+
+void ImageDownload::onMd5DownloadFinished() {
+    QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
+    reply->deleteLater();
+
+    if (wasCancelled) {
+        return;
     } else {
         if (reply->error() == QNetworkReply::NoError) {
-            mDebug() << this->metaObject()->className() << "Finished successfully";
+            mWarning() << this->metaObject()->className() << "Downloaded MD5SUM successfully";
 
-            file->close();
-            m_result = ImageDownload::Success;
-            emit finished();
+            md5 =
+            [this, reply]() {
+                const QByteArray md5sumBytes = reply->readAll();
+                const QString md5sumContents(md5sumBytes);
+
+                // MD5SUM is of the form "sum image \n sum image \n ..."
+                // Search for the sum by finding image matching url
+                const QStringList elements = md5sumContents.split(QRegExp("\\s+"));
+                QString prev = "";
+                for (int i = 0; i < elements.size(); ++i) {
+                    if (elements[i].size() > 0 && url.toString().contains(elements[i]) && prev.size() > 0) {
+                        return prev;
+                    }
+
+                    prev = elements[i];
+                }
+
+                return QString();
+            }();
         } else {
-            mDebug() << "Download was interrupted by an error:" << reply->errorString();
-            mDebug() << "Attempting to resume";
+            mWarning() << this->metaObject()->className() << "Failed to download MD5SUM";
 
-            emit interrupted();
+            md5 = QString();
+        }
 
-            QTimer::singleShot(1000, this,
-            [this]() {
-                makeRequest();
-            });
+        if (md5.isEmpty()) {
+            checkMd5(QString());
+        } else { 
+            file->close();
+            const bool open_success = file->open(QIODevice::ReadOnly);
+            if (open_success) {
+                progress->setTo(0);
+                emit startedMd5Check();
+                QTimer::singleShot(0, this, &ImageDownload::computeMd5);
+            } else {
+                mWarning() << this->metaObject()->className() << "Failed to open file for md5 check";
+
+                finish(ImageDownload::Md5CheckFail);
+            }
         }
     }
+}
 
-    reply->deleteLater();
+void ImageDownload::computeMd5() {
+    if (wasCancelled) {
+        return;
+    }
+
+    const QByteArray bytes = file->read(64L * 1024L);
+    const bool read_success = (bytes.size() > 0);
+    
+    if (read_success) {
+        hash.addData(bytes);
+        progress->setValue(file->pos());
+
+        if (file->atEnd()) {
+            const QByteArray sum_bytes = hash.result().toHex();
+            const QString computedMd5 = QString(sum_bytes);
+            checkMd5(computedMd5);
+        } else {
+            QTimer::singleShot(0, this, &ImageDownload::computeMd5);
+        }
+    } else {
+        finish(ImageDownload::Md5CheckFail, tr("Failed to read from file while verifying"));
+    }
+}
+
+void ImageDownload::startImageDownload() {
+    mWarning() << this->metaObject()->className() << "startImageDownload()";
+
+    startingImageDownload = true;
+
+    QNetworkRequest request;
+    request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+    request.setUrl(url);
+    request.setRawHeader("Range", QString("bytes=%1-").arg(file->size()).toLocal8Bit());
+    if (!options.noUserAgent) {
+        request.setHeader(QNetworkRequest::UserAgentHeader, userAgent());
+    }
+
+    QNetworkReply *reply = network_access_manager->get(request);
+    // NOTE: 64MB buffer in case the user is on a very fast network
+    reply->setReadBufferSize(64L * 1024L * 1024L);
+
+    connect(
+        reply, &QNetworkReply::readyRead,
+        this, &ImageDownload::onImageDownloadReadyRead);
+    connect(
+        reply, &QNetworkReply::finished,
+        this, &ImageDownload::onImageDownloadFinished);
+    connect(
+        this, &ImageDownload::cancelled,
+        reply, &QNetworkReply::abort);
+}
+
+void ImageDownload::checkMd5(const QString &computedMd5) {
+    const bool checkPassed =
+    [this, computedMd5]() {
+        if (md5.isEmpty()) {
+            // Can fail to download md5 sum if:
+            // 1) Failed to download MD5SUM file
+            // 2) MD5SUM file is not present
+            // 3) MD5SUM file does not contain needed sum
+            // In all cases, DON'T treat this as a fail.
+            // Instead, skip the check.
+            mWarning() << this->metaObject()->className() << "Failed to download md5 sum, so skipping md5 check";
+
+            return true;
+        } else {
+            return (computedMd5 == md5);
+        }
+    }();
+
+    if (checkPassed) {
+        mWarning() << this->metaObject()->className() << "Renaming to final filename";
+
+        const QString filePath = getFilePath();
+        const bool rename_success = file->rename(filePath);
+
+        if (rename_success) {
+            finish(ImageDownload::Success);
+        } else {
+            finish(ImageDownload::DiskError, tr("Unable to rename the temporary file."));
+        }
+    } else {
+        mWarning() << "MD5 mismatch";
+        mWarning() << "sum should be =" << md5;
+        mWarning() << "computed sum  =" << computedMd5;
+
+        finish(ImageDownload::Md5CheckFail);
+    }
+}
+
+void ImageDownload::finish(const Result result_arg, const QString &errorString_arg) {
+    m_result = result_arg;
+    m_errorString = errorString_arg;
+
+    mWarning() << "Image download finished";
+    if (!m_errorString.isEmpty()) {
+        mWarning() << "Error string:" << m_errorString;
+    }
+
+    if (m_result == ImageDownload::Success) {
+        file->close();
+    } else {
+        file->remove();
+    }
+
+    emit finished();
+
+    deleteLater();
+}
+
+// Get filename from url and append it to download path
+QString ImageDownload::getFilePath() const {
+    const QString fileName = url.fileName();
+    const QString downloadPath = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
+    const QDir downloadDir(downloadPath);
+    const QString filePath = downloadDir.filePath(fileName);
+
+    return filePath;
 }

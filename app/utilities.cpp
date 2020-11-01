@@ -23,6 +23,8 @@
 #include <QStandardPaths>
 #include <QElapsedTimer>
 #include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QTimer>
 
 QNetworkAccessManager *network_access_manager = new QNetworkAccessManager();
 
@@ -189,4 +191,28 @@ QString userAgent() {
     ret.append(")");
 
     return ret;
+}
+
+QNetworkReply *makeNetworkRequest(const QString &url, const int time_out_millis) {
+    QNetworkRequest request(url);
+    request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
+    if (!options.noUserAgent) {
+        request.setHeader(QNetworkRequest::UserAgentHeader, userAgent());
+    }
+
+    QNetworkReply *reply = network_access_manager->get(request);
+
+    // TODO: this is a function of reply in a newer Qt version
+    // Abort download if it takes more than 5s
+    if (time_out_millis > 0) {
+        auto time_out_timer = new QTimer(reply);
+        QObject::connect(
+            time_out_timer, &QTimer::timeout,
+            [reply]() {
+                reply->abort();
+            });
+        time_out_timer->start(time_out_millis);
+    }
+
+    return reply;
 }

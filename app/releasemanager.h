@@ -26,8 +26,6 @@
 
 #include <QDateTime>
 
-#include "image_download.h"
-
 class ReleaseManager;
 class ReleaseListModel;
 class Release;
@@ -414,9 +412,6 @@ public:
     QString errorString() const;
     void setErrorString(const QString &o);
 
-    static int staticOnMediaCheckAdvanced(void *data, long long offset, long long total);
-    int onMediaCheckAdvanced(long long offset, long long total);
-
     Q_INVOKABLE bool erase();
 
 signals:
@@ -427,13 +422,13 @@ signals:
     void sizeChanged();
     void realSizeChanged();
     void shaHashChanged();
+    void cancelledDownload();
 
 public slots:
     void download();
     void cancelDownload();
     void resetStatus();
-    void onDownloadFinished();
-    void onMd5sumDownloadFinished();
+    void onImageDownloadFinished();
 
 private:
     QString m_temporaryImage {};
@@ -448,7 +443,6 @@ private:
     int64_t m_realSize { 0 };
     Status m_status { PREPARING };
     QString m_error {};
-    ImageDownload *current_download = nullptr;
 
     Progress *m_progress { nullptr };
 };

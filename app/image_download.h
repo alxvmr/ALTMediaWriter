@@ -26,21 +26,25 @@
 
 #include <QObject>
 #include <QUrl>
+#include <QCryptographicHash>
 
 /**
  * Downloads an image using QNetwork and writes downloaded
  * image to disk in parallel. The default download directory
  * is used. While the image file is partially downloaded, it
  * is suffixed with ".part". This suffix is removed when the
- * image download completes. If there's a partially
- * downloaded image present, the download is resumed.
- *
- * If the download is interrupted by an error or time out,
- * periodic attempts to resume are made.
+ * image download completes. When the download is finished,
+ * an attempt to check md5 is made. Md5 sum is downloaded
+ * from the MD5SUM file which should be located next to the
+ * image file. If md5sum download fails due to error or
+ * MD5SUM file not being present, the check is skipped. If
+ * the download is interrupted by an error or time out,
+ * periodic attempts to resume are made. If the download
+ * finishes unsuccessfully, partially downloaded image is
+ * deleted. Image download schedules itself for deletion
+ * when it finishes.
  */
 
-class QNetworkReply;
-class QTimer;
 class QFile;
 
 class ImageDownload final : public QObject {
@@ -50,13 +54,13 @@ public:
     enum Result {
         Success,
         DiskError,
+        Md5CheckFail,
         Cancelled
     };
 
     ImageDownload(const QUrl &url_arg, Progress *progress_arg);
     Result result() const;
     QString errorString() const;
-    void cancel();
 
 signals:
     // Emitted when download sucessfuly starts or resumes after being
@@ -68,32 +72,40 @@ signals:
     // resume are made periodically.
     void interrupted();
 
-    // Emitted when the download finishes, use result() and
-    // errorString() to find out more about finish status.
+    // An md5 check for the downloaded image started. Note that md5 checks happen only if a valid md5 sum could be downloaded for this. Otherwise this check is skipped.
+    void startedMd5Check();
+
+    // Emitted when the download finishes
     void finished();
 
+    void cancelled();
+
+public slots:
+    void cancel();
+
 private slots:
-    void onTimeout();
-    void onReadyRead();
-    void onFinished();
+    void onImageDownloadReadyRead();
+    void onImageDownloadFinished();
+    void onMd5DownloadFinished();
+    void computeMd5();
 
 private:
-    QUrl url;
-    QTimer *timeout_timer;
-    // Size of the previously downloaded file, if continuing
-    // a previous download
-    qint64 previousSize = 0;
-    // Size of the portion download in this session only
-    qint64 bytesDownloaded = 0;
-    QFile *file = nullptr;
-    QNetworkReply *reply = nullptr;
-    Progress *progress = nullptr;
-    bool cancelled = false;
-    bool newRequest = false;
     Result m_result;
     QString m_errorString;
 
-    void makeRequest();
+    const QUrl url;
+    QFile *file = nullptr;
+    Progress *progress = nullptr;
+    bool startingImageDownload = false;
+    bool wasCancelled = false;
+
+    QCryptographicHash hash;
+    QString md5;
+
+    QString getFilePath() const;
+    void startImageDownload();
+    void checkMd5(const QString &computedMd5);
+    void finish(const Result result_arg, const QString &errorString_arg = QString());
 };
 
 #endif // IMAGE_DOWNLOAD_H

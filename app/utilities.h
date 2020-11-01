@@ -27,6 +27,7 @@ class Progress;
 class Options;
 class MessageHandler;
 class QNetworkAccessManager;
+class QNetworkReply;
 
 extern QNetworkAccessManager *network_access_manager;
 
@@ -102,5 +103,6 @@ public:
 extern Options options;
 
 QString userAgent();
+QNetworkReply *makeNetworkRequest(const QString &url, const int time_out_millis = 0);
 
 #endif // UTILITIES_H

@@ -24,6 +24,7 @@
 #include <QAbstractListModel>
 
 #include "releasemanager.h"
+#include "utilities.h"
 
 class DriveManager;
 class DriveProvider;
