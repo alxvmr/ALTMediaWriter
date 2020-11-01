@@ -19,6 +19,7 @@
 
 #include "drivemanager.h"
 #include "progress.h"
+#include "variant.h"
 
 #ifdef __linux__
 # include "linuxdrivemanager.h"
@@ -285,13 +286,13 @@ Drive::RestoreStatus Drive::restoreStatus() {
     return m_restoreStatus;
 }
 
-void Drive::setImage(ReleaseVariant *data) {
+void Drive::setImage(Variant *data) {
     m_image = data;
     if (m_image)
         m_image->setErrorString(QString());
 }
 
-bool Drive::write(ReleaseVariant *data) {
+bool Drive::write(Variant *data) {
     m_image = data;
     m_image->setErrorString(QString());
 

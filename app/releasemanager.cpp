@@ -20,9 +20,8 @@
 #include "releasemanager.h"
 #include "image_type.h"
 #include "architecture.h"
-#include "drivemanager.h"
+#include "variant.h"
 #include "network.h"
-#include "image_download.h"
 #include "progress.h"
 
 #include <yaml-cpp/yaml.h>
@@ -91,7 +90,7 @@ ReleaseManager::ReleaseManager(QObject *parent)
 
     qmlRegisterUncreatableType<Release>("MediaWriter", 1, 0, "Release", "");
     qmlRegisterUncreatableType<ReleaseVersion>("MediaWriter", 1, 0, "Version", "");
-    qmlRegisterUncreatableType<ReleaseVariant>("MediaWriter", 1, 0, "Variant", "");
+    qmlRegisterUncreatableType<Variant>("MediaWriter", 1, 0, "Variant", "");
     qmlRegisterUncreatableType<Architecture>("MediaWriter", 1, 0, "Architecture", "");
     qmlRegisterUncreatableType<ImageType>("MediaWriter", 1, 0, "ImageType", "");
     qmlRegisterUncreatableType<Progress>("MediaWriter", 1, 0, "Progress", "");
@@ -304,7 +303,7 @@ void ReleaseManager::setSelectedIndex(int o) {
     }
 }
 
-ReleaseVariant *ReleaseManager::variant() {
+Variant *ReleaseManager::variant() {
     if (selected()) {
         if (selected()->selectedVersion()) {
             if (selected()->selectedVersion()->selectedVariant()) {
@@ -529,7 +528,7 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
     const auto customVersion = new ReleaseVersion(customRelease, QString(), ReleaseVersion::FINAL);
     customRelease->addVersion(customVersion);
 
-    const auto customVariant = new ReleaseVariant(customVersion, QString(), Architecture::fromId(Architecture::UNKNOWN), ImageType::all()[ImageType::ISO], "UNKNOWN BOARD");
+    const auto customVariant = new Variant(customVersion, QString(), Architecture::fromId(Architecture::UNKNOWN), ImageType::all()[ImageType::ISO], "UNKNOWN BOARD");
     customVersion->addVariant(customVariant);
 }
 
@@ -576,7 +575,7 @@ bool Release::updateUrl(const QString &version, const QString &status, const Arc
     }
     ReleaseVersion::Status s = status == "alpha" ? ReleaseVersion::ALPHA : status == "beta" ? ReleaseVersion::BETA : ReleaseVersion::FINAL;
     auto ver = new ReleaseVersion(this, version, s);
-    auto variant = new ReleaseVariant(ver, url, architecture, imageType, board);
+    auto variant = new Variant(ver, url, architecture, imageType, board);
     ver->addVariant(variant);
     addVersion(ver);
     if (ver->status() == ReleaseVersion::FINAL)
@@ -707,7 +706,7 @@ ReleaseVersion::ReleaseVersion(Release *parent, const QString &number, ReleaseVe
 }
 
 ReleaseVersion::ReleaseVersion(Release *parent, const QString &file)
-: QObject(parent), m_variants({ new ReleaseVariant(this, file) })
+: QObject(parent), m_variants({ new Variant(this, file) })
 {
     connect(this, SIGNAL(selectedVariantChanged()), parent->manager(), SLOT(variantChangedFilter()));
 }
@@ -746,7 +745,7 @@ bool ReleaseVersion::updateUrl(const QString &status, const Architecture *archit
             break;
         order++;
     }
-    m_variants.insert(order, new ReleaseVariant(this, url, architecture, imageType, board));
+    m_variants.insert(order, new Variant(this, url, architecture, imageType, board));
     return true;
 }
 
@@ -767,7 +766,7 @@ QString ReleaseVersion::name() const {
     }
 }
 
-ReleaseVariant *ReleaseVersion::selectedVariant() const {
+Variant *ReleaseVersion::selectedVariant() const {
     if (m_selectedVariant >= 0 && m_selectedVariant < m_variants.count())
         return m_variants[m_selectedVariant];
     return nullptr;
@@ -788,288 +787,17 @@ ReleaseVersion::Status ReleaseVersion::status() const {
     return m_status;
 }
 
-void ReleaseVersion::addVariant(ReleaseVariant *v) {
+void ReleaseVersion::addVariant(Variant *v) {
     m_variants.append(v);
     emit variantsChanged();
     if (m_variants.count() == 1)
         emit selectedVariantChanged();
 }
 
-QQmlListProperty<ReleaseVariant> ReleaseVersion::variants() {
-    return QQmlListProperty<ReleaseVariant>(this, &m_variants);
+QQmlListProperty<Variant> ReleaseVersion::variants() {
+    return QQmlListProperty<Variant>(this, &m_variants);
 }
 
-QList<ReleaseVariant *> ReleaseVersion::variantList() const {
+QList<Variant *> ReleaseVersion::variantList() const {
     return m_variants;
-}
-
-
-ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, QString url, const Architecture *arch, const ImageType *imageType, QString board)
-: QObject(parent)
-, m_arch(arch)
-, m_image_type(imageType)
-, m_board(board)
-, m_url(url)
-, m_progress(new Progress(this))
-{
-
-}
-
-ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, const QString &file)
-: QObject(parent)
-, m_image(file)
-, m_arch(Architecture::fromId(Architecture::X86_64))
-, m_image_type(ImageType::fromFilename(file))
-, m_board("UNKNOWN BOARD")
-, m_progress(new Progress(this))
-{
-    m_status = READY;
-}
-
-bool ReleaseVariant::updateUrl(const QString &url) {
-    bool changed = false;
-    if (!url.isEmpty() && m_url.toUtf8().trimmed() != url.toUtf8().trimmed()) {
-        // qWarning() << "Url" << m_url << "changed to" << url;
-        m_url = url;
-        emit urlChanged();
-        changed = true;
-    }
-    return changed;
-}
-
-ReleaseVersion *ReleaseVariant::releaseVersion() {
-    return qobject_cast<ReleaseVersion*>(parent());
-}
-
-const ReleaseVersion *ReleaseVariant::releaseVersion() const {
-    return qobject_cast<const ReleaseVersion*>(parent());
-}
-
-Release *ReleaseVariant::release() {
-    return releaseVersion()->release();
-}
-
-const Release *ReleaseVariant::release() const {
-    return releaseVersion()->release();
-}
-
-const Architecture *ReleaseVariant::arch() const {
-    return m_arch;
-}
-
-const ImageType *ReleaseVariant::imageType() const {
-    return m_image_type;
-}
-
-QString ReleaseVariant::board() const {
-    return m_board;
-}
-
-QString ReleaseVariant::name() const {
-    return m_arch->description() + " | " + m_board;
-}
-
-QString ReleaseVariant::fullName() {
-    if (release()->isLocal())
-        return QFileInfo(image()).fileName();
-    else
-        return QString("%1 %2 %3").arg(release()->displayName()).arg(releaseVersion()->name()).arg(name());
-}
-
-QString ReleaseVariant::url() const {
-    return m_url;
-}
-
-QString ReleaseVariant::image() const {
-    return m_image;
-}
-
-qreal ReleaseVariant::size() const {
-    return m_size;
-}
-
-Progress *ReleaseVariant::progress() {
-    return m_progress;
-}
-
-void ReleaseVariant::setDelayedWrite(const bool value) {
-    delayedWrite = value;
-}
-
-ReleaseVariant::Status ReleaseVariant::status() const {
-    if (m_status == READY && DriveManager::instance()->isBackendBroken())
-        return WRITING_NOT_POSSIBLE;
-    return m_status;
-}
-
-QString ReleaseVariant::statusString() const {
-    return m_statusStrings[status()];
-}
-
-void ReleaseVariant::onImageDownloadFinished() {
-    ImageDownload *download = qobject_cast<ImageDownload *>(sender());
-    const ImageDownload::Result result = download->result();
-
-    switch (result) {
-        case ImageDownload::Success: {
-            const QString download_dir_path = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
-            const QDir download_dir(download_dir_path);
-            m_image = download_dir.filePath(QUrl(m_url).fileName());;
-
-            emit imageChanged();
-
-            qDebug() << this->metaObject()->className() << "Image is ready";
-            setStatus(READY);
-
-            setSize(QFile(m_image).size());
-
-            if (delayedWrite) {
-                Drive *drive = DriveManager::instance()->selected();
-
-                if (drive != nullptr) {
-                    drive->write(this);
-                }
-            }
-
-            break;
-        }
-        case ImageDownload::DiskError: {
-            setErrorString(download->errorString());
-            setStatus(FAILED_DOWNLOAD);
-
-            break;
-        }
-        case ImageDownload::Md5CheckFail: {
-            qWarning() << "MD5 check of" << m_url << "failed";
-            setErrorString(tr("The downloaded image is corrupted"));
-            setStatus(FAILED_DOWNLOAD);
-
-            break;
-        }
-        case ImageDownload::Cancelled: {
-            break;
-        }
-    }
-}
-
-void ReleaseVariant::download() {
-    if (url().isEmpty() && !image().isEmpty()) {
-        setStatus(READY);
-
-        return;
-    }
-
-    delayedWrite = false;
-
-    resetStatus();
-
-    // Check if already downloaded
-    const QString download_dir_path = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
-    const QDir download_dir(download_dir_path);
-    const QString filePath = download_dir.filePath(QUrl(m_url).fileName());
-    const bool already_downloaded = QFile::exists(filePath);
-
-    if (already_downloaded) {
-        // Already downloaded so skip download step
-        m_image = filePath;
-        emit imageChanged();
-
-        qDebug() << this->metaObject()->className() << m_image << "is already downloaded";
-        setStatus(READY);
-
-        setSize(QFile(m_image).size());
-    } else {
-        // Download image
-        auto download = new ImageDownload(QUrl(m_url));
-
-        connect(
-            download, &ImageDownload::started,
-            [this]() {
-                setErrorString(QString());
-                setStatus(DOWNLOADING);
-            });
-        connect(
-            download, &ImageDownload::interrupted,
-            [this]() {
-                setErrorString(tr("Connection was interrupted, attempting to resume"));
-                setStatus(DOWNLOAD_RESUMING);
-            });
-        connect(
-            download, &ImageDownload::startedMd5Check,
-            [this]() {
-                setErrorString(QString());
-                setStatus(DOWNLOAD_VERIFYING);
-            });
-        connect(
-            download, &ImageDownload::finished,
-            this, &ReleaseVariant::onImageDownloadFinished);
-        connect(
-            download, &ImageDownload::progress,
-            [this](const qint64 value) {
-                m_progress->setCurrent(value);
-            });
-        connect(
-            download, &ImageDownload::progressMaxChanged,
-            [this](const qint64 value) {
-                m_progress->setMax(value);
-            });
-
-        connect(
-            this, &ReleaseVariant::cancelledDownload,
-            download, &ImageDownload::cancel);
-    }
-}
-
-void ReleaseVariant::cancelDownload() {
-    emit cancelledDownload();
-}
-
-void ReleaseVariant::resetStatus() {
-    if (!m_image.isEmpty()) {
-        setStatus(READY);
-    } else {
-        setStatus(PREPARING);
-        m_progress->setMax(0.0);
-        m_progress->setCurrent(NAN);
-    }
-    setErrorString(QString());
-    emit statusChanged();
-}
-
-bool ReleaseVariant::erase() {
-    if (QFile(m_image).remove()) {
-        qDebug() << this->metaObject()->className() << "Deleted" << m_image;
-        m_image = QString();
-        emit imageChanged();
-        return true;
-    }
-    else {
-        qWarning() << this->metaObject()->className() << "An attempt to delete" << m_image << "failed!";
-        return false;
-    }
-}
-
-void ReleaseVariant::setStatus(Status s) {
-    if (m_status != s) {
-        m_status = s;
-        emit statusChanged();
-    }
-}
-
-QString ReleaseVariant::errorString() const {
-    return m_error;
-}
-
-void ReleaseVariant::setErrorString(const QString &o) {
-    if (m_error != o) {
-        m_error = o;
-        emit errorStringChanged();
-    }
-}
-
-void ReleaseVariant::setSize(const qreal value) {
-    if (m_size != value) {
-        m_size = value;
-        emit sizeChanged();
-    }
 }

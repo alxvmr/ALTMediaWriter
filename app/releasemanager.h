@@ -28,10 +28,9 @@ class ReleaseManager;
 class ReleaseListModel;
 class Release;
 class ReleaseVersion;
-class ReleaseVariant;
+class Variant;
 class Architecture;
 class ImageType;
-class Progress;
 
 /*
  * Architecture - singleton (x86, x86_64, etc)
@@ -81,7 +80,7 @@ class ReleaseManager : public QSortFilterProxyModel {
     Q_PROPERTY(Release* selected READ selected NOTIFY selectedChanged)
     Q_PROPERTY(int selectedIndex READ selectedIndex WRITE setSelectedIndex NOTIFY selectedChanged)
 
-    Q_PROPERTY(ReleaseVariant* variant READ variant NOTIFY variantChanged)
+    Q_PROPERTY(Variant* variant READ variant NOTIFY variantChanged)
 
     Q_PROPERTY(QStringList architectures READ architectures CONSTANT)
     Q_PROPERTY(QStringList fileNameFilters READ fileNameFilters CONSTANT)
@@ -108,7 +107,7 @@ public:
     int selectedIndex() const;
     void setSelectedIndex(int o);
 
-    ReleaseVariant *variant();
+    Variant *variant();
 
 public slots:
     void fetchReleases();
@@ -255,8 +254,8 @@ class ReleaseVersion : public QObject {
 
     Q_PROPERTY(ReleaseVersion::Status status READ status NOTIFY statusChanged)
 
-    Q_PROPERTY(QQmlListProperty<ReleaseVariant> variants READ variants NOTIFY variantsChanged)
-    Q_PROPERTY(ReleaseVariant* variant READ selectedVariant NOTIFY selectedVariantChanged)
+    Q_PROPERTY(QQmlListProperty<Variant> variants READ variants NOTIFY variantsChanged)
+    Q_PROPERTY(Variant* variant READ selectedVariant NOTIFY selectedVariantChanged)
     Q_PROPERTY(int variantIndex READ selectedVariantIndex WRITE setSelectedVariantIndex NOTIFY selectedVariantChanged)
 
 public:
@@ -280,10 +279,10 @@ public:
     QString name() const;
     ReleaseVersion::Status status() const;
 
-    void addVariant(ReleaseVariant *v);
-    QQmlListProperty<ReleaseVariant> variants();
-    QList<ReleaseVariant*> variantList() const;
-    ReleaseVariant *selectedVariant() const;
+    void addVariant(Variant *v);
+    QQmlListProperty<Variant> variants();
+    QList<Variant*> variantList() const;
+    Variant *selectedVariant() const;
     int selectedVariantIndex() const;
     void setSelectedVariantIndex(int o);
 
@@ -295,132 +294,8 @@ signals:
 private:
     QString m_number { "0" };
     ReleaseVersion::Status m_status { FINAL };
-    QList<ReleaseVariant*> m_variants {};
+    QList<Variant*> m_variants {};
     int m_selectedVariant { 0 };
-};
-
-
-/**
- * @brief The ReleaseVariant class
- *
- * The variant of the release version. Usually it represents different architectures. It's possible to differentiate netinst and dvd images here too.
- *
- * @property name the name of the release, generated from @ref arch and @ref board
- * @property board the name of supported hardware of the image
- * @property url the URL pointing to the image
- * @property image the path to the image on the drive
- * @property imageType the type of the image on the drive
- * @property size the size of the image in bytes
- * @property progress the progress object of the image - reports the progress of download
- * @property status status of the variant - if it's downloading, being written, etc.
- * @property statusString string representation of the @ref status
- * @property errorString a string better describing the current error @ref status of the variant
- */
-class ReleaseVariant : public QObject {
-    Q_OBJECT
-    Q_PROPERTY(QString name READ name CONSTANT)
-    Q_PROPERTY(QString board READ board CONSTANT)
-
-    Q_PROPERTY(QString url READ url NOTIFY urlChanged)
-    Q_PROPERTY(QString image READ image NOTIFY imageChanged)
-    Q_PROPERTY(const ImageType *imageType READ imageType CONSTANT)
-    Q_PROPERTY(qreal size READ size NOTIFY sizeChanged)
-    Q_PROPERTY(Progress* progress READ progress CONSTANT)
-
-    Q_PROPERTY(Status status READ status NOTIFY statusChanged)
-    Q_PROPERTY(QString statusString READ statusString NOTIFY statusChanged)
-    Q_PROPERTY(QString errorString READ errorString WRITE setErrorString NOTIFY errorStringChanged)
-    Q_PROPERTY(bool delayedWrite WRITE setDelayedWrite)
-public:
-    Q_ENUMS(Type)
-    enum Status {
-        PREPARING = 0,
-        DOWNLOADING,
-        DOWNLOAD_RESUMING,
-        DOWNLOAD_VERIFYING,
-        READY,
-        WRITING_NOT_POSSIBLE,
-        WRITING,
-        WRITE_VERIFYING,
-        FINISHED,
-        FAILED_DOWNLOAD,
-        FAILED
-    };
-    Q_ENUMS(Status)
-    const QStringList m_statusStrings {
-        tr("Preparing"),
-        tr("Downloading"),
-        tr("Resuming download"),
-        tr("Checking the download"),
-        tr("Ready to write"),
-        tr("Image file was saved to your downloads folder. Writing is not possible"),
-        tr("Writing"),
-        tr("Checking the written data"),
-        tr("Finished!"),
-        tr("The written data is corrupted"),
-        tr("Download failed"),
-        tr("Error")
-    };
-
-    ReleaseVariant(ReleaseVersion *parent, QString url, const Architecture *arch, const ImageType *imageType, QString board);
-    ReleaseVariant(ReleaseVersion *parent, const QString &file);
-
-    bool updateUrl(const QString &url);
-
-    ReleaseVersion *releaseVersion();
-    const ReleaseVersion *releaseVersion() const;
-    Release *release();
-    const Release *release() const;
-
-    const Architecture *arch() const;
-    const ImageType *imageType() const;
-    QString name() const;
-    QString fullName();
-    QString board() const;
-
-    QString url() const;
-    QString image() const;
-    qreal size() const;
-    Progress *progress();
-
-    void setDelayedWrite(const bool value);
-
-    Status status() const;
-    QString statusString() const;
-    void setStatus(Status s);
-    QString errorString() const;
-    void setErrorString(const QString &o);
-
-    Q_INVOKABLE bool erase();
-
-signals:
-    void imageChanged();
-    void statusChanged();
-    void errorStringChanged();
-    void urlChanged();
-    void sizeChanged();
-    void cancelledDownload();
-
-public slots:
-    void download();
-    void cancelDownload();
-    void resetStatus();
-    void onImageDownloadFinished();
-
-private:
-    QString m_image {};
-    const Architecture *m_arch = nullptr;
-    const ImageType *m_image_type = nullptr;
-    QString m_board {};
-    QString m_url {};
-    qreal m_size = 0.0;
-    Status m_status { PREPARING };
-    QString m_error {};
-    bool delayedWrite;
-
-    Progress *m_progress;
-
-    void setSize(const qreal value);
 };
 
 #endif // RELEASEMANAGER_H

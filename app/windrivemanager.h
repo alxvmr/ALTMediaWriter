@@ -26,6 +26,7 @@
 
 class WinDriveProvider;
 class WinDrive;
+class Variant;
 
 class WinDriveProvider : public DriveProvider
 {
@@ -48,7 +49,7 @@ public:
     WinDrive(WinDriveProvider *parent, const QString &name, uint64_t size, bool containsLive, int device, const QString &serialNumber);
     ~WinDrive();
 
-    Q_INVOKABLE virtual bool write(ReleaseVariant *data) override;
+    Q_INVOKABLE virtual bool write(Variant *data) override;
     Q_INVOKABLE virtual void cancel() override;
     Q_INVOKABLE virtual void restore() override;
 

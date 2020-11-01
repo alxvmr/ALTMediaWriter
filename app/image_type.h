@@ -34,7 +34,7 @@
  * @property supportedForWriting whether this image type can be written to media
  * @property canWriteWithRootfs whether this image type can be written with rootfs
  */
-class ImageType : public QObject {
+class ImageType final : public QObject {
     Q_OBJECT
     Q_PROPERTY(QStringList abbreviation READ abbreviation CONSTANT)
     Q_PROPERTY(QString name READ name CONSTANT)

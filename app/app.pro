@@ -24,7 +24,8 @@ HEADERS += \
     image_download.h \
     progress.h \
     image_type.h \
-    architecture.h
+    architecture.h \
+    variant.h
 
 SOURCES += main.cpp \
     drivemanager.cpp \
@@ -34,7 +35,8 @@ SOURCES += main.cpp \
     image_download.cpp \
     progress.cpp \
     image_type.cpp \
-    architecture.cpp
+    architecture.cpp \
+    variant.cpp
 
 RESOURCES += qml.qrc \
     assets.qrc \

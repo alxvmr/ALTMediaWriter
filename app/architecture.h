@@ -32,7 +32,7 @@
  * @property abbreviation short names for the architecture, like x86_64
  * @property description a better description what the short stands for, like Intel 64bit
  */
-class Architecture : public QObject {
+class Architecture final : public QObject {
     Q_OBJECT
     Q_PROPERTY(QStringList abbreviation READ abbreviation CONSTANT)
     Q_PROPERTY(QString description READ description CONSTANT)

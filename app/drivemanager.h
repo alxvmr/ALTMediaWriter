@@ -23,13 +23,12 @@
 #include <QDebug>
 #include <QAbstractListModel>
 
-#include "releasemanager.h"
-
 class DriveManager;
 class DriveProvider;
 class Drive;
 class UdisksDrive;
-class Progresss;
+class Progress;
+class Variant;
 
 QString getHelperPath();
 
@@ -168,8 +167,8 @@ public:
     virtual qreal size() const;
     virtual RestoreStatus restoreStatus();
 
-    Q_INVOKABLE virtual void setImage(ReleaseVariant *data);
-    Q_INVOKABLE virtual bool write(ReleaseVariant *data);
+    Q_INVOKABLE virtual void setImage(Variant *data);
+    Q_INVOKABLE virtual bool write(Variant *data);
     Q_INVOKABLE virtual void cancel();
     Q_INVOKABLE virtual void restore() = 0;
 
@@ -182,7 +181,7 @@ signals:
     void restoreStatusChanged();
 
 protected:
-    ReleaseVariant *m_image { nullptr };
+    Variant *m_image { nullptr };
     Progress *m_progress { nullptr };
     QString m_name { };
     uint64_t m_size { 0 };

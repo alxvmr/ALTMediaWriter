@@ -20,6 +20,7 @@
 #include "windrivemanager.h"
 #include "notifications.h"
 #include "progress.h"
+#include "variant.h"
 
 #include <QTimer>
 #include <QDebug>
@@ -245,7 +246,7 @@ WinDrive::~WinDrive() {
         m_child->kill();
 }
 
-bool WinDrive::write(ReleaseVariant *data) {
+bool WinDrive::write(Variant *data) {
     qDebug() << this->metaObject()->className() << "Preparing to write" << data->fullName() << "to drive" << m_device;
     if (!Drive::write(data))
         return false;
@@ -258,8 +259,8 @@ bool WinDrive::write(ReleaseVariant *data) {
     connect(m_child, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), this, &WinDrive::onFinished);
     connect(m_child, &QProcess::readyRead, this, &WinDrive::onReadyRead);
 
-    if (data->status() != ReleaseVariant::DOWNLOADING)
-        m_image->setStatus(ReleaseVariant::WRITING);
+    if (data->status() != Variant::DOWNLOADING)
+        m_image->setStatus(Variant::WRITING);
 
     const QString helperPath = getHelperPath();
     if (!helperPath.isEmpty()) {
@@ -336,12 +337,12 @@ void WinDrive::onFinished(int exitCode, QProcess::ExitStatus exitStatus) {
     qDebug() << m_child->errorString();
 
     if (exitCode == 0) {
-        m_image->setStatus(ReleaseVariant::FINISHED);
+        m_image->setStatus(Variant::FINISHED);
         Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_image->fullName()));
     }
     else {
         m_image->setErrorString(m_child->readAllStandardError().trimmed());
-        m_image->setStatus(ReleaseVariant::FAILED);
+        m_image->setStatus(Variant::FAILED);
     }
 
     m_child->deleteLater();
@@ -372,18 +373,18 @@ void WinDrive::onReadyRead() {
     m_progress->setMax(m_image->size());
     m_progress->setCurrent(NAN);
 
-    if (m_image->status() != ReleaseVariant::WRITE_VERIFYING && m_image->status() != ReleaseVariant::WRITING)
-        m_image->setStatus(ReleaseVariant::WRITING);
+    if (m_image->status() != Variant::WRITE_VERIFYING && m_image->status() != Variant::WRITING)
+        m_image->setStatus(Variant::WRITING);
 
     while (m_child->bytesAvailable() > 0) {
         QString line = m_child->readLine().trimmed();
         if (line == "WRITE") {
             m_progress->setCurrent(0);
-            m_image->setStatus(ReleaseVariant::WRITING);
+            m_image->setStatus(Variant::WRITING);
         }
         else if (line == "DONE") {
             m_progress->setCurrent(m_image->size());
-            m_image->setStatus(ReleaseVariant::FINISHED);
+            m_image->setStatus(Variant::FINISHED);
             Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_image->fullName()));
         }
         else {

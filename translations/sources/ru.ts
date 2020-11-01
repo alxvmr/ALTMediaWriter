@@ -410,7 +410,7 @@ sudo alt-rootfs-installer --rootfs=%1 --media=%2 --target=%3</translation>
     </message>
 </context>
 <context>
-    <name>ReleaseVariant</name>
+    <name>Variant</name>
     <message>
         <source>The downloaded image is corrupted</source>
         <translation>Загруженный образ поврежден</translation>
