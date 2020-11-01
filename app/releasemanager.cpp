@@ -334,9 +334,9 @@ void ReleaseManager::loadReleaseFile(const QString &fileContents) {
         [e, url]() -> ReleaseArchitecture * {
             if (e["arch"]) {
                 const QString arch_abbreviation = ymlToQString(e["arch"]);
-                return ReleaseArchitecture::fromFilename(url);
+                return ReleaseArchitecture::fromAbbreviation(arch_abbreviation);
             } else {
-                return nullptr;
+                return ReleaseArchitecture::fromFilename(url);
             }
         }();
         if (arch == nullptr) {
@@ -368,7 +368,7 @@ void ReleaseManager::loadReleaseFile(const QString &fileContents) {
             continue;
         }
 
-        qDebug() << this->metaObject()->className() << "Adding" << name << arch->abbreviation();
+        qDebug() << this->metaObject()->className() << "Adding" << name << arch->abbreviation().first() << board << QUrl(url).fileName();
 
         for (int i = 0; i < m_sourceModel->rowCount(); i++) {
             Release *release = get(i);
