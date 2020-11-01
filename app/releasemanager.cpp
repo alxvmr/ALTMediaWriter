@@ -261,23 +261,6 @@ void ReleaseManager::setFilterText(const QString &o) {
     }
 }
 
-bool ReleaseManager::updateUrl(const QString &name, const QString &version, const QString &status, const QString &architecture, ImageType *imageType, const QString &board, const QString &url) {
-    if (!ReleaseArchitecture::isKnown(architecture)) {
-        qDebug() << "Architecture" << architecture << "is not known!";
-        return false;
-    }
-    if (imageType->isValid()) {
-        qDebug() << "Image type for " << url << "is not known!";
-        return false;
-    }
-    for (int i = 0; i < m_sourceModel->rowCount(); i++) {
-        Release *r = get(i);
-        if (r->name().toLower().contains(name))
-            return r->updateUrl(version, status, architecture, imageType, board, url);
-    }
-    return false;
-}
-
 int ReleaseManager::filterArchitecture() const {
     return m_filterArchitecture;
 }
@@ -335,38 +318,65 @@ void ReleaseManager::loadReleaseFile(const QString &fileContents) {
     YAML::Node file = YAML::Load(fileContents.toStdString());
 
     for (auto e : file["entries"]) {
-        QString url = ymlToQString(e["link"]);
+        const QString url = ymlToQString(e["link"]);
+        if (url.isEmpty()) {
+            qDebug() << "Invalid url for" << url;
+            continue;
+        }
 
-        QString name = ymlToQString(e["solution"]);
+        const QString name = ymlToQString(e["solution"]);
+        if (name.isEmpty()) {
+            qDebug() << "Invalid name for" << url;
+            continue;
+        }
 
-        QString arch = "unknown";
-        if (e["arch"]) {
-            arch = ymlToQString(e["arch"]);
-        } else {
-            // NOTE: yml files missing arch for a couple entries so get it from filename(url)
-            ReleaseArchitecture *fileNameArch = ReleaseArchitecture::fromFilename(url);
-
-            if (fileNameArch != nullptr) {
-                arch = fileNameArch->abbreviation()[0];
+        const ReleaseArchitecture *arch =
+        [e, url]() -> ReleaseArchitecture * {
+            if (e["arch"]) {
+                const QString arch_abbreviation = ymlToQString(e["arch"]);
+                return ReleaseArchitecture::fromFilename(url);
+            } else {
+                return nullptr;
             }
+        }();
+        if (arch == nullptr) {
+            qDebug() << "Invalid arch for" << url;
+            continue;
         }
 
         // NOTE: yml file doesn't define "board" for pc32/pc64
-        QString board = "PC";
-        if (e["board"]) {
-            board = ymlToQString(e["board"]);
+        const QString board =
+        [e]() -> QString {
+            if (e["board"]) {
+                return ymlToQString(e["board"]);
+            } else {
+                return "PC";
+            }
+        }();
+        if (board.isEmpty()) {
+            qDebug() << "Invalid board for" << url;
+            continue;
         }
 
         // TODO: handle versions if needed
-        QString version = "9";
-        QString status = "0";
+        const QString version = "9";
+        const QString status = "0";
 
-        ImageType *imageType = ImageType::fromFilename(url);
+        const ImageType *imageType = ImageType::fromFilename(url);
+        if (!imageType->isValid()) {
+            qDebug() << "Invalid image type for" << url;
+            continue;
+        }
 
-        qDebug() << this->metaObject()->className() << "Adding" << name << arch;
+        qDebug() << this->metaObject()->className() << "Adding" << name << arch->abbreviation();
 
-        if (!name.isEmpty() && !url.isEmpty() && !arch.isEmpty())
-            updateUrl(name, version, status, arch, imageType, board, url);
+        for (int i = 0; i < m_sourceModel->rowCount(); i++) {
+            Release *release = get(i);
+
+            if (release->name().toLower().contains(name)) {
+                release->updateUrl(version, status, arch, imageType, board, url);
+            }
+        }
     }
 }
 
@@ -555,7 +565,7 @@ void Release::setLocalFile(const QString &path) {
     emit selectedVersionChanged();
 }
 
-bool Release::updateUrl(const QString &version, const QString &status, const QString &architecture, ImageType *imageType, const QString &board, const QString &url) {
+bool Release::updateUrl(const QString &version, const QString &status, const ReleaseArchitecture *architecture, const ImageType *imageType, const QString &board, const QString &url) {
     int finalVersions = 0;
     for (auto i : m_versions) {
         if (i->number() == version)
@@ -565,7 +575,7 @@ bool Release::updateUrl(const QString &version, const QString &status, const QSt
     }
     ReleaseVersion::Status s = status == "alpha" ? ReleaseVersion::ALPHA : status == "beta" ? ReleaseVersion::BETA : ReleaseVersion::FINAL;
     auto ver = new ReleaseVersion(this, version, s);
-    auto variant = new ReleaseVariant(ver, url, ReleaseArchitecture::fromAbbreviation(architecture), imageType, board);
+    auto variant = new ReleaseVariant(ver, url, architecture, imageType, board);
     ver->addVariant(variant);
     addVersion(ver);
     if (ver->status() == ReleaseVersion::FINAL)
@@ -709,7 +719,7 @@ const Release *ReleaseVersion::release() const {
     return qobject_cast<const Release*>(parent());
 }
 
-bool ReleaseVersion::updateUrl(const QString &status, const QString &architecture, ImageType *imageType, const QString &board, const QString &url) {
+bool ReleaseVersion::updateUrl(const QString &status, const ReleaseArchitecture *architecture, const ImageType *imageType, const QString &board, const QString &url) {
     // first determine and eventually update the current alpha/beta/final level of this version
     Status s = status == "alpha" ? ALPHA : status == "beta" ? BETA : FINAL;
     if (s <= m_status) {
@@ -724,18 +734,18 @@ bool ReleaseVersion::updateUrl(const QString &status, const QString &architectur
     }
 
     for (auto i : m_variants) {
-        if (i->arch() == ReleaseArchitecture::fromAbbreviation(architecture) && i->board() == board)
+        if (i->arch() == architecture && i->board() == board)
             return i->updateUrl(url);
     }
     // preserve the order from the ReleaseArchitecture::Id enum (to not have ARM first, etc.)
     // it's actually an array so comparing pointers is fine
     int order = 0;
     for (auto i : m_variants) {
-        if (i->arch() > ReleaseArchitecture::fromAbbreviation(architecture))
+        if (i->arch() > architecture)
             break;
         order++;
     }
-    m_variants.insert(order, new ReleaseVariant(this, url, ReleaseArchitecture::fromAbbreviation(architecture), imageType, board));
+    m_variants.insert(order, new ReleaseVariant(this, url, architecture, imageType, board));
     return true;
 }
 
@@ -793,7 +803,7 @@ QList<ReleaseVariant *> ReleaseVersion::variantList() const {
 }
 
 
-ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, QString url, ReleaseArchitecture *arch, ImageType *imageType, QString board)
+ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, QString url, const ReleaseArchitecture *arch, const ImageType *imageType, QString board)
 : QObject(parent)
 , m_arch(arch)
 , m_image_type(imageType)
@@ -842,11 +852,11 @@ const Release *ReleaseVariant::release() const {
     return releaseVersion()->release();
 }
 
-ReleaseArchitecture *ReleaseVariant::arch() const {
+const ReleaseArchitecture *ReleaseVariant::arch() const {
     return m_arch;
 }
 
-ImageType *ReleaseVariant::imageType() const {
+const ImageType *ReleaseVariant::imageType() const {
     return m_image_type;
 }
 
@@ -1104,14 +1114,6 @@ ReleaseArchitecture *ReleaseArchitecture::fromFilename(const QString &filename) 
         }
     }
     return nullptr;
-}
-
-bool ReleaseArchitecture::isKnown(const QString &abbr) {
-    for (int i = 0; i < _ARCHCOUNT; i++) {
-        if (m_all[i].abbreviation().contains(abbr, Qt::CaseInsensitive))
-            return true;
-    }
-    return false;
 }
 
 QList<ReleaseArchitecture *> ReleaseArchitecture::listAll() {

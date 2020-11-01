@@ -99,8 +99,6 @@ public:
     QString filterText() const;
     void setFilterText(const QString &o);
 
-    bool updateUrl(const QString &name, const QString &version, const QString &status, const QString &architecture, ImageType *imageType, const QString &board, const QString &url);
-
     QStringList architectures() const;
     QStringList fileNameFilters() const;
     int filterArchitecture() const;
@@ -201,7 +199,7 @@ class Release : public QObject {
 public:
     Release(ReleaseManager *parent, const QString &name, const QString &displayName, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots);
     Q_INVOKABLE void setLocalFile(const QString &path);
-    bool updateUrl(const QString &version, const QString &status, const QString &architecture, ImageType *imageType, const QString &board, const QString &url);
+    bool updateUrl(const QString &version, const QString &status, const ReleaseArchitecture *architecture, const ImageType *imageType, const QString &board, const QString &url);
     ReleaseManager *manager();
 
     QString name() const;
@@ -276,7 +274,7 @@ public:
     Release *release();
     const Release *release() const;
 
-    bool updateUrl(const QString &status, const QString &architecture, ImageType *imageType, const QString &board, const QString &url);
+    bool updateUrl(const QString &status, const ReleaseArchitecture *architecture, const ImageType *imageType, const QString &board, const QString &url);
 
     QString number() const;
     QString name() const;
@@ -307,7 +305,6 @@ private:
  *
  * The variant of the release version. Usually it represents different architectures. It's possible to differentiate netinst and dvd images here too.
  *
- * @property arch architecture of the variant
  * @property name the name of the release, generated from @ref arch and @ref board
  * @property board the name of supported hardware of the image
  * @property url the URL pointing to the image
@@ -321,13 +318,12 @@ private:
  */
 class ReleaseVariant : public QObject {
     Q_OBJECT
-    Q_PROPERTY(ReleaseArchitecture* arch READ arch CONSTANT)
     Q_PROPERTY(QString name READ name CONSTANT)
     Q_PROPERTY(QString board READ board CONSTANT)
 
     Q_PROPERTY(QString url READ url NOTIFY urlChanged)
     Q_PROPERTY(QString image READ image NOTIFY imageChanged)
-    Q_PROPERTY(ImageType *imageType READ imageType CONSTANT)
+    Q_PROPERTY(const ImageType *imageType READ imageType CONSTANT)
     Q_PROPERTY(qreal size READ size NOTIFY sizeChanged)
     Q_PROPERTY(Progress* progress READ progress CONSTANT)
 
@@ -366,7 +362,7 @@ public:
         tr("Error")
     };
 
-    ReleaseVariant(ReleaseVersion *parent, QString url, ReleaseArchitecture *arch, ImageType *imageType, QString board);
+    ReleaseVariant(ReleaseVersion *parent, QString url, const ReleaseArchitecture *arch, const ImageType *imageType, QString board);
     ReleaseVariant(ReleaseVersion *parent, const QString &file);
 
     bool updateUrl(const QString &url);
@@ -376,14 +372,14 @@ public:
     Release *release();
     const Release *release() const;
 
-    ReleaseArchitecture *arch() const;
+    const ReleaseArchitecture *arch() const;
+    const ImageType *imageType() const;
     QString name() const;
     QString fullName();
     QString board() const;
 
     QString url() const;
     QString image() const;
-    ImageType *imageType() const;
     qreal size() const;
     Progress *progress();
 
@@ -413,8 +409,8 @@ public slots:
 
 private:
     QString m_image {};
-    ReleaseArchitecture *m_arch { nullptr };
-    ImageType *m_image_type { nullptr };
+    const ReleaseArchitecture *m_arch = nullptr;
+    const ImageType *m_image_type = nullptr;
     QString m_board {};
     QString m_url {};
     qreal m_size = 0.0;
@@ -457,7 +453,6 @@ public:
     static ReleaseArchitecture *fromId(Id id);
     static ReleaseArchitecture *fromAbbreviation(const QString &abbr);
     static ReleaseArchitecture *fromFilename(const QString &filename);
-    static bool isKnown(const QString &abbr);
     static QList<ReleaseArchitecture *> listAll();
     static QStringList listAllDescriptions();
 
