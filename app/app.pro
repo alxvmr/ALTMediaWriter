@@ -22,7 +22,8 @@ HEADERS += \
     network.h \
     notifications.h \
     image_download.h \
-    progress.h
+    progress.h \
+    image_type.h
 
 SOURCES += main.cpp \
     drivemanager.cpp \
@@ -30,7 +31,8 @@ SOURCES += main.cpp \
     network.cpp \
     notifications.cpp \
     image_download.cpp \
-    progress.cpp
+    progress.cpp \
+    image_type.cpp
 
 RESOURCES += qml.qrc \
     assets.qrc \

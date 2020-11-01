@@ -30,7 +30,7 @@ class Release;
 class ReleaseVersion;
 class ReleaseVariant;
 class ReleaseArchitecture;
-class ReleaseImageType;
+class ImageType;
 class Progress;
 
 /*
@@ -99,7 +99,7 @@ public:
     QString filterText() const;
     void setFilterText(const QString &o);
 
-    bool updateUrl(const QString &name, const QString &version, const QString &status, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url);
+    bool updateUrl(const QString &name, const QString &version, const QString &status, const QString &architecture, ImageType *imageType, const QString &board, const QString &url);
 
     QStringList architectures() const;
     QStringList fileNameFilters() const;
@@ -201,7 +201,7 @@ class Release : public QObject {
 public:
     Release(ReleaseManager *parent, const QString &name, const QString &displayName, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots);
     Q_INVOKABLE void setLocalFile(const QString &path);
-    bool updateUrl(const QString &version, const QString &status, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url);
+    bool updateUrl(const QString &version, const QString &status, const QString &architecture, ImageType *imageType, const QString &board, const QString &url);
     ReleaseManager *manager();
 
     QString name() const;
@@ -276,7 +276,7 @@ public:
     Release *release();
     const Release *release() const;
 
-    bool updateUrl(const QString &status, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url);
+    bool updateUrl(const QString &status, const QString &architecture, ImageType *imageType, const QString &board, const QString &url);
 
     QString number() const;
     QString name() const;
@@ -327,7 +327,7 @@ class ReleaseVariant : public QObject {
 
     Q_PROPERTY(QString url READ url NOTIFY urlChanged)
     Q_PROPERTY(QString image READ image NOTIFY imageChanged)
-    Q_PROPERTY(ReleaseImageType *imageType READ imageType CONSTANT)
+    Q_PROPERTY(ImageType *imageType READ imageType CONSTANT)
     Q_PROPERTY(qreal size READ size NOTIFY sizeChanged)
     Q_PROPERTY(Progress* progress READ progress CONSTANT)
 
@@ -366,7 +366,7 @@ public:
         tr("Error")
     };
 
-    ReleaseVariant(ReleaseVersion *parent, QString url, ReleaseArchitecture *arch, ReleaseImageType *imageType, QString board);
+    ReleaseVariant(ReleaseVersion *parent, QString url, ReleaseArchitecture *arch, ImageType *imageType, QString board);
     ReleaseVariant(ReleaseVersion *parent, const QString &file);
 
     bool updateUrl(const QString &url);
@@ -383,7 +383,7 @@ public:
 
     QString url() const;
     QString image() const;
-    ReleaseImageType *imageType() const;
+    ImageType *imageType() const;
     qreal size() const;
     Progress *progress();
 
@@ -414,7 +414,7 @@ public slots:
 private:
     QString m_image {};
     ReleaseArchitecture *m_arch { nullptr };
-    ReleaseImageType *m_image_type { nullptr };
+    ImageType *m_image_type { nullptr };
     QString m_board {};
     QString m_url {};
     qreal m_size = 0.0;
@@ -473,53 +473,6 @@ private:
     const QStringList m_abbreviation {};
     const char *m_description {};
     const char *m_details {};
-};
-
-/**
- * @brief The ReleaseImageType class
- *
- * Class representing the possible image types of the releases
- *
- * @property abbreviation short names for the type, like iso
- * @property name a common name what the short stands for, like "ISO DVD"
- * @property supportedForWriting whether this image type can be written to media
- * @property canWriteWithRootfs whether this image type can be written with rootfs
- */
-class ReleaseImageType : public QObject {
-    Q_OBJECT
-    Q_PROPERTY(QStringList abbreviation READ abbreviation CONSTANT)
-    Q_PROPERTY(QString name READ name CONSTANT)
-    Q_PROPERTY(bool supportedForWriting READ supportedForWriting CONSTANT)
-    Q_PROPERTY(bool canWriteWithRootfs READ canWriteWithRootfs CONSTANT)
-public:
-    enum Id {
-        ISO,
-        TAR,
-        TAR_GZ,
-        TAR_XZ,
-        IMG,
-        IMG_GZ,
-        IMG_XZ,
-        RECOVERY_TAR,
-        UNKNOWN,
-        COUNT,
-    };
-    Q_ENUMS(Id);
-
-    static QList<ReleaseImageType *> all();
-    static ReleaseImageType *fromFilename(const QString &filename);
-
-    Id id() const;
-    QStringList abbreviation() const;
-    QString name() const;
-    QString description() const;
-    bool supportedForWriting() const;
-    bool canWriteWithRootfs() const;
-
-private:
-    ReleaseImageType(const ReleaseImageType::Id id_arg);
-
-    ReleaseImageType::Id m_id;
 };
 
 #endif // RELEASEMANAGER_H
