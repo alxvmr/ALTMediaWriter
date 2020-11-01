@@ -23,7 +23,8 @@ HEADERS += \
     notifications.h \
     image_download.h \
     progress.h \
-    image_type.h
+    image_type.h \
+    architecture.h
 
 SOURCES += main.cpp \
     drivemanager.cpp \
@@ -32,7 +33,8 @@ SOURCES += main.cpp \
     notifications.cpp \
     image_download.cpp \
     progress.cpp \
-    image_type.cpp
+    image_type.cpp \
+    architecture.cpp
 
 RESOURCES += qml.qrc \
     assets.qrc \

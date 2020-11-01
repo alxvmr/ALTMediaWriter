@@ -266,7 +266,7 @@ sudo alt-rootfs-installer --rootfs=%1 --media=%2 --target=%3</translation>
     </message>
 </context>
 <context>
-    <name>ReleaseArchitecture</name>
+    <name>Architecture</name>
     <message>
         <source>AMD 64bit</source>
         <translation></translation>

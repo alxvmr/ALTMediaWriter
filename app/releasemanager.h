@@ -29,7 +29,7 @@ class ReleaseListModel;
 class Release;
 class ReleaseVersion;
 class ReleaseVariant;
-class ReleaseArchitecture;
+class Architecture;
 class ImageType;
 class Progress;
 
@@ -199,7 +199,7 @@ class Release : public QObject {
 public:
     Release(ReleaseManager *parent, const QString &name, const QString &displayName, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots);
     Q_INVOKABLE void setLocalFile(const QString &path);
-    bool updateUrl(const QString &version, const QString &status, const ReleaseArchitecture *architecture, const ImageType *imageType, const QString &board, const QString &url);
+    bool updateUrl(const QString &version, const QString &status, const Architecture *architecture, const ImageType *imageType, const QString &board, const QString &url);
     ReleaseManager *manager();
 
     QString name() const;
@@ -274,7 +274,7 @@ public:
     Release *release();
     const Release *release() const;
 
-    bool updateUrl(const QString &status, const ReleaseArchitecture *architecture, const ImageType *imageType, const QString &board, const QString &url);
+    bool updateUrl(const QString &status, const Architecture *architecture, const ImageType *imageType, const QString &board, const QString &url);
 
     QString number() const;
     QString name() const;
@@ -362,7 +362,7 @@ public:
         tr("Error")
     };
 
-    ReleaseVariant(ReleaseVersion *parent, QString url, const ReleaseArchitecture *arch, const ImageType *imageType, QString board);
+    ReleaseVariant(ReleaseVersion *parent, QString url, const Architecture *arch, const ImageType *imageType, QString board);
     ReleaseVariant(ReleaseVersion *parent, const QString &file);
 
     bool updateUrl(const QString &url);
@@ -372,7 +372,7 @@ public:
     Release *release();
     const Release *release() const;
 
-    const ReleaseArchitecture *arch() const;
+    const Architecture *arch() const;
     const ImageType *imageType() const;
     QString name() const;
     QString fullName();
@@ -409,7 +409,7 @@ public slots:
 
 private:
     QString m_image {};
-    const ReleaseArchitecture *m_arch = nullptr;
+    const Architecture *m_arch = nullptr;
     const ImageType *m_image_type = nullptr;
     QString m_board {};
     QString m_url {};
@@ -421,53 +421,6 @@ private:
     Progress *m_progress;
 
     void setSize(const qreal value);
-};
-
-/**
- * @brief The ReleaseArchitecture class
- *
- * Class representing the possible architectures of the releases
- *
- * @property abbreviation short names for the architecture, like x86_64
- * @property description a better description what the short stands for, like Intel 64bit
- */
-class ReleaseArchitecture : public QObject {
-    Q_OBJECT
-    Q_PROPERTY(QStringList abbreviation READ abbreviation CONSTANT)
-    Q_PROPERTY(QString description READ description CONSTANT)
-public:
-    enum Id {
-        X86_64 = 0,
-        X86,
-        ARM,
-        AARCH64,
-        // NOTE: can't use just 'MIPSEL' because it's a predefined macro on mipsel
-        MIPSEL_arch,
-        RISCV64,
-        E2K,
-        PPC64LE,
-        UNKNOWN,
-        _ARCHCOUNT,
-    };
-    Q_ENUMS(Id);
-    static ReleaseArchitecture *fromId(Id id);
-    static ReleaseArchitecture *fromAbbreviation(const QString &abbr);
-    static ReleaseArchitecture *fromFilename(const QString &filename);
-    static QList<ReleaseArchitecture *> listAll();
-    static QStringList listAllDescriptions();
-
-    QStringList abbreviation() const;
-    QString description() const;
-    int index() const;
-
-private:
-    ReleaseArchitecture(const QStringList &abbreviation, const char *description);
-
-    static ReleaseArchitecture m_all[];
-
-    const QStringList m_abbreviation {};
-    const char *m_description {};
-    const char *m_details {};
 };
 
 #endif // RELEASEMANAGER_H

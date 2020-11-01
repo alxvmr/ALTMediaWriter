@@ -19,6 +19,7 @@
 
 #include "releasemanager.h"
 #include "image_type.h"
+#include "architecture.h"
 #include "drivemanager.h"
 #include "network.h"
 #include "image_download.h"
@@ -91,7 +92,7 @@ ReleaseManager::ReleaseManager(QObject *parent)
     qmlRegisterUncreatableType<Release>("MediaWriter", 1, 0, "Release", "");
     qmlRegisterUncreatableType<ReleaseVersion>("MediaWriter", 1, 0, "Version", "");
     qmlRegisterUncreatableType<ReleaseVariant>("MediaWriter", 1, 0, "Variant", "");
-    qmlRegisterUncreatableType<ReleaseArchitecture>("MediaWriter", 1, 0, "Architecture", "");
+    qmlRegisterUncreatableType<Architecture>("MediaWriter", 1, 0, "Architecture", "");
     qmlRegisterUncreatableType<ImageType>("MediaWriter", 1, 0, "ImageType", "");
     qmlRegisterUncreatableType<Progress>("MediaWriter", 1, 0, "Progress", "");
 
@@ -266,7 +267,7 @@ int ReleaseManager::filterArchitecture() const {
 }
 
 void ReleaseManager::setFilterArchitecture(int o) {
-    if (m_filterArchitecture != o && m_filterArchitecture >= 0 && m_filterArchitecture < ReleaseArchitecture::_ARCHCOUNT) {
+    if (m_filterArchitecture != o && m_filterArchitecture >= 0 && m_filterArchitecture < Architecture::_ARCHCOUNT) {
         m_filterArchitecture = o;
         emit filterArchitectureChanged();
         for (int i = 0; i < m_sourceModel->rowCount(); i++) {
@@ -330,13 +331,13 @@ void ReleaseManager::loadReleaseFile(const QString &fileContents) {
             continue;
         }
 
-        const ReleaseArchitecture *arch =
-        [e, url]() -> ReleaseArchitecture * {
+        const Architecture *arch =
+        [e, url]() -> Architecture * {
             if (e["arch"]) {
                 const QString arch_abbreviation = ymlToQString(e["arch"]);
-                return ReleaseArchitecture::fromAbbreviation(arch_abbreviation);
+                return Architecture::fromAbbreviation(arch_abbreviation);
             } else {
-                return ReleaseArchitecture::fromFilename(url);
+                return Architecture::fromFilename(url);
             }
         }();
         if (arch == nullptr) {
@@ -381,7 +382,7 @@ void ReleaseManager::loadReleaseFile(const QString &fileContents) {
 }
 
 QStringList ReleaseManager::architectures() const {
-    return ReleaseArchitecture::listAllDescriptions();
+    return Architecture::listAllDescriptions();
 }
 
 QStringList ReleaseManager::fileNameFilters() const {
@@ -528,7 +529,7 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
     const auto customVersion = new ReleaseVersion(customRelease, QString(), ReleaseVersion::FINAL);
     customRelease->addVersion(customVersion);
 
-    const auto customVariant = new ReleaseVariant(customVersion, QString(), ReleaseArchitecture::fromId(ReleaseArchitecture::UNKNOWN), ImageType::all()[ImageType::ISO], "UNKNOWN BOARD");
+    const auto customVariant = new ReleaseVariant(customVersion, QString(), Architecture::fromId(Architecture::UNKNOWN), ImageType::all()[ImageType::ISO], "UNKNOWN BOARD");
     customVersion->addVariant(customVariant);
 }
 
@@ -565,7 +566,7 @@ void Release::setLocalFile(const QString &path) {
     emit selectedVersionChanged();
 }
 
-bool Release::updateUrl(const QString &version, const QString &status, const ReleaseArchitecture *architecture, const ImageType *imageType, const QString &board, const QString &url) {
+bool Release::updateUrl(const QString &version, const QString &status, const Architecture *architecture, const ImageType *imageType, const QString &board, const QString &url) {
     int finalVersions = 0;
     for (auto i : m_versions) {
         if (i->number() == version)
@@ -719,7 +720,7 @@ const Release *ReleaseVersion::release() const {
     return qobject_cast<const Release*>(parent());
 }
 
-bool ReleaseVersion::updateUrl(const QString &status, const ReleaseArchitecture *architecture, const ImageType *imageType, const QString &board, const QString &url) {
+bool ReleaseVersion::updateUrl(const QString &status, const Architecture *architecture, const ImageType *imageType, const QString &board, const QString &url) {
     // first determine and eventually update the current alpha/beta/final level of this version
     Status s = status == "alpha" ? ALPHA : status == "beta" ? BETA : FINAL;
     if (s <= m_status) {
@@ -737,7 +738,7 @@ bool ReleaseVersion::updateUrl(const QString &status, const ReleaseArchitecture 
         if (i->arch() == architecture && i->board() == board)
             return i->updateUrl(url);
     }
-    // preserve the order from the ReleaseArchitecture::Id enum (to not have ARM first, etc.)
+    // preserve the order from the Architecture::Id enum (to not have ARM first, etc.)
     // it's actually an array so comparing pointers is fine
     int order = 0;
     for (auto i : m_variants) {
@@ -803,7 +804,7 @@ QList<ReleaseVariant *> ReleaseVersion::variantList() const {
 }
 
 
-ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, QString url, const ReleaseArchitecture *arch, const ImageType *imageType, QString board)
+ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, QString url, const Architecture *arch, const ImageType *imageType, QString board)
 : QObject(parent)
 , m_arch(arch)
 , m_image_type(imageType)
@@ -817,7 +818,7 @@ ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, QString url, const Releas
 ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, const QString &file)
 : QObject(parent)
 , m_image(file)
-, m_arch(ReleaseArchitecture::fromId(ReleaseArchitecture::X86_64))
+, m_arch(Architecture::fromId(Architecture::X86_64))
 , m_image_type(ImageType::fromFilename(file))
 , m_board("UNKNOWN BOARD")
 , m_progress(new Progress(this))
@@ -852,7 +853,7 @@ const Release *ReleaseVariant::release() const {
     return releaseVersion()->release();
 }
 
-const ReleaseArchitecture *ReleaseVariant::arch() const {
+const Architecture *ReleaseVariant::arch() const {
     return m_arch;
 }
 
@@ -1071,75 +1072,4 @@ void ReleaseVariant::setSize(const qreal value) {
         m_size = value;
         emit sizeChanged();
     }
-}
-
-ReleaseArchitecture ReleaseArchitecture::m_all[] = {
-    {{"x86-64"}, QT_TR_NOOP("AMD 64bit")},
-    {{"x86", "i386", "i586", "i686"}, QT_TR_NOOP("Intel 32bit")},
-    {{"armv7hl", "armhfp", "armh"}, QT_TR_NOOP("ARM v7")},
-    {{"aarch64"}, QT_TR_NOOP("AArch64")},
-    {{"mipsel"}, QT_TR_NOOP("MIPS")},
-    {{"riscv", "riscv64"}, QT_TR_NOOP("RiscV64")},
-    {{"e2k"}, QT_TR_NOOP("Elbrus")},
-    {{"ppc64le"}, QT_TR_NOOP("PowerPC")},
-    {{"", "unknown"}, QT_TR_NOOP("Unknown")},
-};
-
-ReleaseArchitecture::ReleaseArchitecture(const QStringList &abbreviation, const char *description)
-: m_abbreviation(abbreviation), m_description(description)
-{
-
-}
-
-ReleaseArchitecture *ReleaseArchitecture::fromId(ReleaseArchitecture::Id id) {
-    if (id >= 0 && id < _ARCHCOUNT)
-        return &m_all[id];
-    return nullptr;
-}
-
-ReleaseArchitecture *ReleaseArchitecture::fromAbbreviation(const QString &abbr) {
-    for (int i = 0; i < _ARCHCOUNT; i++) {
-        if (m_all[i].abbreviation().contains(abbr, Qt::CaseInsensitive))
-            return &m_all[i];
-    }
-    return nullptr;
-}
-
-ReleaseArchitecture *ReleaseArchitecture::fromFilename(const QString &filename) {
-    for (int i = 0; i < _ARCHCOUNT; i++) {
-        ReleaseArchitecture *arch = &m_all[i];
-        for (int j = 0; j < arch->m_abbreviation.size(); j++) {
-            if (filename.contains(arch->m_abbreviation[j], Qt::CaseInsensitive))
-                return &m_all[i];
-        }
-    }
-    return nullptr;
-}
-
-QList<ReleaseArchitecture *> ReleaseArchitecture::listAll() {
-    QList<ReleaseArchitecture *> ret;
-    for (int i = 0; i < _ARCHCOUNT; i++) {
-        ret.append(&m_all[i]);
-    }
-    return ret;
-}
-
-QStringList ReleaseArchitecture::listAllDescriptions() {
-    QStringList ret;
-    for (int i = 0; i < _ARCHCOUNT; i++) {
-        ret.append(m_all[i].description());
-    }
-    return ret;
-}
-
-QStringList ReleaseArchitecture::abbreviation() const {
-    return m_abbreviation;
-}
-
-QString ReleaseArchitecture::description() const {
-    return tr(m_description);
-}
-
-int ReleaseArchitecture::index() const {
-    return this - m_all;
 }
