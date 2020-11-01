@@ -30,6 +30,7 @@ class DriveManager;
 class DriveProvider;
 class Drive;
 class UdisksDrive;
+class Progresss;
 
 QString getHelperPath();
 

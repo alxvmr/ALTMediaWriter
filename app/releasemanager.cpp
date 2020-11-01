@@ -21,6 +21,7 @@
 #include "drivemanager.h"
 #include "utilities.h"
 #include "image_download.h"
+#include "progress.h"
 
 #include <yaml-cpp/yaml.h>
 
@@ -809,9 +810,8 @@ ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, QString url, int64_t size
 , m_board(board)
 , m_url(url)
 , m_size(size)
+, m_progress(new Progress(this))
 {
-    m_progress = new Progress();
-
     connect(this, &ReleaseVariant::sizeChanged, this, &ReleaseVariant::realSizeChanged);
 }
 
@@ -1020,12 +1020,12 @@ void ReleaseVariant::download() {
         connect(
             download, &ImageDownload::progress,
             [this](const qint64 value) {
-                m_progress->setValue(value);
+                m_progress->setCurrent(value);
             });
         connect(
             download, &ImageDownload::progressMaxChanged,
             [this](const qint64 value) {
-                m_progress->setTo(value);
+                m_progress->setMax(value);
             });
 
         connect(
@@ -1041,11 +1041,10 @@ void ReleaseVariant::cancelDownload() {
 void ReleaseVariant::resetStatus() {
     if (!m_image.isEmpty()) {
         setStatus(READY);
-    }
-    else {
+    } else {
         setStatus(PREPARING);
-        m_progress->setValue(0.0);
-        m_progress->setTo(0.0);
+        m_progress->setMax(0.0);
+        m_progress->setCurrent(NAN);
     }
     setErrorString(QString());
     emit statusChanged();

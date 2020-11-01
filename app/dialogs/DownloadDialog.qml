@@ -363,7 +363,7 @@ Dialog {
                             Layout.fillHeight: true
                             horizontalAlignment: Text.AlignHCenter
                             font.pointSize: 9
-                            property double leftSize: releases.variant.progress.to - releases.variant.progress.value
+                            property double leftSize: releases.variant.progress.leftSize
                             property string leftStr:  leftSize <= 0                    ? "" :
                                                      (leftSize < 1024)                 ? qsTr("(%1 B left)").arg(leftSize) :
                                                      (leftSize < (1024 * 1024))        ? qsTr("(%1 KB left)").arg((leftSize / 1024).toFixed(1)) :

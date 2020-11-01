@@ -20,58 +20,12 @@
 #ifndef UTILITIES_H
 #define UTILITIES_H
 
-#include <QObject>
 #include <QLoggingCategory>
 
-class Progress;
-class Options;
-class MessageHandler;
 class QNetworkAccessManager;
 class QNetworkReply;
 
 extern QNetworkAccessManager *network_access_manager;
-
-/**
- * @brief The Progress class
- *
- * Reports the percentual/ratio progress of some activity to the user
- *
- * @property from the minimum value of the reported process
- * @property to the maximum value of the reported process
- * @property value the current value of the process
- * @property ratio the ratio of the value, is in the range [0.0, 1.0]
- */
-class Progress : public QObject {
-    Q_OBJECT
-    Q_PROPERTY(qreal from READ from CONSTANT)
-    Q_PROPERTY(qreal to READ to NOTIFY toChanged)
-    Q_PROPERTY(qreal value READ value NOTIFY valueChanged)
-    Q_PROPERTY(qreal ratio READ ratio NOTIFY valueChanged)
-public:
-    Progress(QObject *parent = nullptr, qreal from = 0.0, qreal to = 1.0);
-
-    qreal from() const;
-    qreal to() const;
-    qreal value() const;
-    qreal ratio() const;
-
-    void setTo(qreal v);
-    void setValue(qreal v);
-    void setValue(qreal v, qreal to);
-
-signals:
-    void valueChanged();
-    void toChanged();
-
-public slots:
-    void update(qreal value);
-    void reset();
-
-private:
-    qreal m_from { 0.0 };
-    qreal m_to { 1.0 };
-    qreal m_value { 0.0 };
-};
 
 class Options {
 public:

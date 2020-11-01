@@ -20,19 +20,19 @@ HEADERS += \
     drivemanager.h \
     releasemanager.h \
     utilities.h \
-    fakedrivemanager.h \
     notifications.h \
     crashhandler.h \
-    image_download.h
+    image_download.h \
+    progress.h
 
 SOURCES += main.cpp \
     drivemanager.cpp \
     releasemanager.cpp \
     utilities.cpp \
-    fakedrivemanager.cpp \
     notifications.cpp \
     crashhandler.cpp \
-    image_download.cpp
+    image_download.cpp \
+    progress.cpp
 
 RESOURCES += qml.qrc \
     assets.qrc \

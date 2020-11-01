@@ -18,6 +18,7 @@
  */
 
 #include "linuxdrivemanager.h"
+#include "progress.h"
 
 #include <QtDBus/QtDBus>
 #include <QDBusArgument>
@@ -286,8 +287,8 @@ void LinuxDrive::onReadyRead() {
     if (!m_process)
         return;
 
-    m_progress->setTo(m_image->size());
-    m_progress->setValue(0.0/0.0);
+    m_progress->setMax(m_image->size());
+    m_progress->setCurrent(NAN);
 
     if (m_image->status() != ReleaseVariant::WRITE_VERIFYING && m_image->status() != ReleaseVariant::WRITING)
         m_image->setStatus(ReleaseVariant::WRITING);
@@ -295,11 +296,11 @@ void LinuxDrive::onReadyRead() {
     while (m_process->bytesAvailable() > 0) {
         QString line = m_process->readLine().trimmed();
         if (line == "WRITE") {
-            m_progress->setValue(0);
+            m_progress->setCurrent(0);
             m_image->setStatus(ReleaseVariant::WRITING);
         }
         else if (line == "DONE") {
-            m_progress->setValue(m_image->size());
+            m_progress->setCurrent(m_image->size());
             m_image->setStatus(ReleaseVariant::FINISHED);
             Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_image->fullName()));
         }
@@ -307,7 +308,7 @@ void LinuxDrive::onReadyRead() {
             bool ok = false;
             qreal val = line.toULongLong(&ok);
             if (ok && val > 0.0)
-                m_progress->setValue(val);
+                m_progress->setCurrent(val);
         }
     }
 }

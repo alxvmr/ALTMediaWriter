@@ -18,6 +18,7 @@
  */
 
 #include "drivemanager.h"
+#include "progress.h"
 
 #ifdef __linux__
 # include "linuxdrivemanager.h"
@@ -30,8 +31,6 @@
 #ifdef _WIN32
 # include "windrivemanager.h"
 #endif // _WIN32
-
-#include "fakedrivemanager.h"
 
 #include <QtQml>
 
@@ -230,9 +229,6 @@ void DriveManager::onBackendBroken(const QString &message) {
 }
 
 DriveProvider *DriveProvider::create(DriveManager *parent)  {
-    if (options.testing)
-        return new FakeDriveProvider(parent);
-
 #ifdef __APPLE__
     return new MacDriveProvider(parent);
 #endif // APPLE

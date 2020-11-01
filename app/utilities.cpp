@@ -34,63 +34,6 @@ static void myMessageOutput(QtMsgType type, const QMessageLogContext &context, c
 static QElapsedTimer timer;
 static FILE *debugFile;
 
-// TODO: everything Q_UNUSED
-
-Progress::Progress(QObject *parent, qreal from, qreal to)
-    : QObject(parent), m_from(from), m_to(to), m_value(from) {
-    connect(this, &Progress::toChanged, this, &Progress::valueChanged);
-}
-
-qreal Progress::from() const {
-    return m_from;
-}
-
-qreal Progress::to() const {
-    return m_to;
-}
-
-qreal Progress::value() const {
-    return m_value;
-}
-
-qreal Progress::ratio() const {
-    return (value() - from()) / (to() - from());
-}
-
-void Progress::setTo(qreal v) {
-    if (m_to != v) {
-        m_to = v;
-        emit toChanged();
-    }
-}
-
-void Progress::setValue(qreal v) {
-    if (m_value != v) {
-        m_value = v;
-        emit valueChanged();
-    }
-}
-
-void Progress::setValue(qreal v, qreal to) {
-    qreal computedValue = v / to * (m_to - m_from) + m_from;
-    if (computedValue != m_value) {
-        m_value = computedValue;
-        emit valueChanged();
-    }
-}
-
-void Progress::update(qreal value) {
-    if (m_value != value) {
-        m_value = value;
-        emit valueChanged();
-    }
-}
-
-void Progress::reset() {
-    update(from());
-}
-
-
 // this is slowly getting out of hand
 // when adding an another option, please consider using a real argv parser
 

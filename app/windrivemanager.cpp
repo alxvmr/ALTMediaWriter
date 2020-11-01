@@ -20,6 +20,7 @@
 #include "windrivemanager.h"
 #include "notifications.h"
 #include "utilities.h"
+#include "progress.h"
 
 #include <QTimer>
 #include <QDebug>
@@ -375,8 +376,8 @@ void WinDrive::onReadyRead() {
     if (!m_child)
         return;
 
-    m_progress->setTo(m_image->size());
-    m_progress->setValue(NAN);
+    m_progress->setMax(m_image->size());
+    m_progress->setCurrent(NAN);
 
     if (m_image->status() != ReleaseVariant::WRITE_VERIFYING && m_image->status() != ReleaseVariant::WRITING)
         m_image->setStatus(ReleaseVariant::WRITING);
@@ -384,11 +385,11 @@ void WinDrive::onReadyRead() {
     while (m_child->bytesAvailable() > 0) {
         QString line = m_child->readLine().trimmed();
         if (line == "WRITE") {
-            m_progress->setValue(0);
+            m_progress->setCurrent(0);
             m_image->setStatus(ReleaseVariant::WRITING);
         }
         else if (line == "DONE") {
-            m_progress->setValue(m_image->size());
+            m_progress->setCurrent(m_image->size());
             m_image->setStatus(ReleaseVariant::FINISHED);
             Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_image->fullName()));
         }
@@ -397,9 +398,9 @@ void WinDrive::onReadyRead() {
             qreal bytes = line.toLongLong(&ok);
             if (ok) {
                 if (bytes < 0)
-                    m_progress->setValue(NAN);
+                    m_progress->setCurrent(NAN);
                 else
-                    m_progress->setValue(bytes);
+                    m_progress->setCurrent(bytes);
             }
         }
     }

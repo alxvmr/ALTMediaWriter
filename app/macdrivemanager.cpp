@@ -20,6 +20,7 @@
 #include "macdrivemanager.h"
 #include "macdrivearbiter.h"
 #include "notifications.h"
+#include "progress.h"
 
 #include <QDebug>
 #include <QDir>
@@ -224,8 +225,8 @@ void MacDrive::onReadyRead() {
         return;
 
     if (m_image->status() == ReleaseVariant::WRITING) {
-        m_progress->setTo(m_image->size());
-        m_progress->setValue(0.0/0.0);
+        m_progress->setMax(m_image->size());
+        m_progress->setCurrent(NAN);
     }
 
     if (m_image->status() != ReleaseVariant::WRITE_VERIFYING && m_image->status() != ReleaseVariant::WRITING)
@@ -235,6 +236,6 @@ void MacDrive::onReadyRead() {
         bool ok;
         int64_t bytes = m_child->readLine().trimmed().toULongLong(&ok);
         if (ok)
-            m_progress->setValue(bytes);
+            m_progress->setCurrent(bytes);
     }
 }
