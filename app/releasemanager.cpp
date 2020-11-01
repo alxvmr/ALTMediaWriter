@@ -809,8 +809,9 @@ ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, QString url, int64_t size
 , m_board(board)
 , m_url(url)
 , m_size(size)
-, m_progress()
 {
+    m_progress = new Progress();
+
     connect(this, &ReleaseVariant::sizeChanged, this, &ReleaseVariant::realSizeChanged);
 }
 
@@ -993,11 +994,7 @@ void ReleaseVariant::download() {
         // Download image
         m_temporaryImage = filePath + ".part";
 
-        if (m_size) {
-            m_progress->setTo(m_size);
-        }
-
-        auto download = new ImageDownload(QUrl(m_url), m_progress);
+        auto download = new ImageDownload(QUrl(m_url));
 
         connect(
             download, &ImageDownload::started,
@@ -1020,6 +1017,16 @@ void ReleaseVariant::download() {
         connect(
             download, &ImageDownload::finished,
             this, &ReleaseVariant::onImageDownloadFinished);
+        connect(
+            download, &ImageDownload::progress,
+            [this](const qint64 value) {
+                m_progress->setValue(value);
+            });
+        connect(
+            download, &ImageDownload::progressMaxChanged,
+            [this](const qint64 value) {
+                m_progress->setTo(value);
+            });
 
         connect(
             this, &ReleaseVariant::cancelledDownload,

@@ -30,10 +30,9 @@
 #include <QTimer>
 #include <QFile>
 
-ImageDownload::ImageDownload(const QUrl &url_arg, Progress *progress_arg)
+ImageDownload::ImageDownload(const QUrl &url_arg)
 : QObject()
 , url(url_arg)
-, progress(progress_arg)
 , hash(QCryptographicHash::Md5)
 {
     mDebug() << this->metaObject()->className() << "created for" << url;
@@ -78,7 +77,8 @@ void ImageDownload::onImageDownloadReadyRead() {
         const QVariant remainingSize = reply->header(QNetworkRequest::ContentLengthHeader);
         if (remainingSize.isValid()) {
             const qint64 totalSize = file->size() + remainingSize.toULongLong();
-            progress->setTo(totalSize);
+
+            emit progressMaxChanged(totalSize);
         }
 
         emit started();
@@ -93,7 +93,7 @@ void ImageDownload::onImageDownloadReadyRead() {
         const qint64 writeSize = file->write(data);
         const bool writeSuccess = (writeSize != -1);
         if (writeSuccess) {
-            progress->setValue(file->size());
+            emit progress(file->size());
         } else {
             QStorageInfo storage(file->fileName());
             const QString errorString =
@@ -184,7 +184,6 @@ void ImageDownload::onMd5DownloadFinished() {
             file->close();
             const bool open_success = file->open(QIODevice::ReadOnly);
             if (open_success) {
-                progress->setTo(0);
                 emit startedMd5Check();
                 QTimer::singleShot(0, this, &ImageDownload::computeMd5);
             } else {
@@ -206,7 +205,7 @@ void ImageDownload::computeMd5() {
     
     if (read_success) {
         hash.addData(bytes);
-        progress->setValue(file->pos());
+        emit progress(file->pos());
 
         if (file->atEnd()) {
             const QByteArray sum_bytes = hash.result().toHex();

@@ -21,9 +21,6 @@
 #ifndef IMAGE_DOWNLOAD_H
 #define IMAGE_DOWNLOAD_H
 
-// TODO: remove
-#include "utilities.h"
-
 #include <QObject>
 #include <QUrl>
 #include <QCryptographicHash>
@@ -58,7 +55,7 @@ public:
         Cancelled
     };
 
-    ImageDownload(const QUrl &url_arg, Progress *progress_arg);
+    ImageDownload(const QUrl &url_arg);
     Result result() const;
     QString errorString() const;
 
@@ -80,6 +77,10 @@ signals:
 
     void cancelled();
 
+    // 
+    void progress(const qint64 value);
+    void progressMaxChanged(const qint64 value);
+
 public slots:
     void cancel();
 
@@ -95,7 +96,6 @@ private:
 
     const QUrl url;
     QFile *file = nullptr;
-    Progress *progress = nullptr;
     bool startingImageDownload = false;
     bool wasCancelled = false;
 
