@@ -358,8 +358,8 @@ void WinDrive::onRestoreFinished(int exitCode, QProcess::ExitStatus exitStatus) 
     if (!m_child)
         return;
 
-    qCritical() << "Process finished" << exitCode << exitStatus;
-    qCritical() << m_child->readAllStandardError();
+    qDebug() << "Process finished" << exitCode << exitStatus;
+    qDebug() << m_child->readAllStandardError();
 
     if (exitCode == 0)
         m_restoreStatus = RESTORED;

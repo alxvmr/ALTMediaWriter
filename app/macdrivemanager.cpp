@@ -121,7 +121,7 @@ bool MacDrive::write(ReleaseVariant *data) {
     QStringList args;
     args << "-e";
     args << command;
-    qCritical() << "The command is" << command;
+    qDebug() << "The command is" << command;
     m_child->setArguments(args);
 
     m_child->start();
@@ -139,7 +139,7 @@ void MacDrive::cancel() {
 }
 
 void MacDrive::restore() {
-    qCritical() << "starting to restore";
+    qDebug() << "starting to restore";
     if (m_child)
         m_child->deleteLater();
 
@@ -169,7 +169,7 @@ void MacDrive::restore() {
     QStringList args;
     args << "-e";
     args << command;
-    qCritical() << "The command is" << command;
+    qDebug() << "The command is" << command;
     m_child->setArguments(args);
 
     //connect(m_process, &QProcess::readyRead, this, &LinuxDrive::onReadyRead);
@@ -207,8 +207,8 @@ void MacDrive::onRestoreFinished(int exitCode, QProcess::ExitStatus exitStatus) 
     if (!m_child)
         return;
 
-    qCritical() << "Process finished" << exitCode << exitStatus;
-    qCritical() << m_child->readAllStandardError();
+    qDebug() << "Process finished" << exitCode << exitStatus;
+    qDebug() << m_child->readAllStandardError();
 
     if (exitCode == 0)
         m_restoreStatus = RESTORED;

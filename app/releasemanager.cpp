@@ -50,7 +50,7 @@ QString releaseImagesCacheDir() {
 QString fileToString(const QString &filename) {
     QFile file(filename);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        qInfo() << "fileToString(): Failed to open file " << filename;
+        qDebug() << "fileToString(): Failed to open file " << filename;
         return "";
     }
     QTextStream fileStream(&file);
@@ -162,7 +162,7 @@ void ReleaseManager::fetchReleases() {
     for (const auto file : releaseFiles) {
         const QString url = GETALT_IMAGES_LOCATION + file;
 
-        qInfo() << "Release url:" << url;
+        qDebug() << "Release url:" << url;
 
         QNetworkReply *reply = makeNetworkRequest(url, 5000);
 
@@ -542,7 +542,7 @@ void Release::setLocalFile(const QString &path) {
     QFileInfo info(QUrl(path).toLocalFile());
 
     if (!info.exists()) {
-        qCritical() << path << "doesn't exist";
+        qWarning() << path << "doesn't exist";
         return;
     }
 
