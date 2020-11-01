@@ -355,7 +355,6 @@ public:
         WRITING,
         WRITE_VERIFYING,
         FINISHED,
-        FAILED_VERIFICATION,
         FAILED_DOWNLOAD,
         FAILED
     };

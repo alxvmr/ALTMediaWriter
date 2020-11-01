@@ -80,8 +80,7 @@ bool MacDrive::write(ReleaseVariant *data) {
     if (!Drive::write(data))
         return false;
 
-    if (m_image->status() == ReleaseVariant::READY || m_image->status() == ReleaseVariant::FAILED ||
-            m_image->status() == ReleaseVariant::FAILED_VERIFICATION || m_image->status() == ReleaseVariant::FINISHED)
+    if (m_image->status() == ReleaseVariant::READY || m_image->status() == ReleaseVariant::FAILED || m_image->status() == ReleaseVariant::FINISHED)
         m_image->setStatus(ReleaseVariant::WRITING);
 
     if (m_child) {
@@ -104,7 +103,6 @@ bool MacDrive::write(ReleaseVariant *data) {
     }
     else {
         data->setErrorString(tr("Could not find the helper binary. Check your installation."));
-        setDelayedWrite(false);
         return false;
     }
     command.append(" write ");
@@ -180,8 +178,6 @@ void MacDrive::restore() {
 
 void MacDrive::onFinished(int exitCode, QProcess::ExitStatus exitStatus) {
     Q_UNUSED(exitStatus)
-
-    setDelayedWrite(false);
 
     if (!m_child)
         return;

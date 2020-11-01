@@ -149,7 +149,6 @@ class Drive : public QObject {
     Q_PROPERTY(QString readableSize READ readableSize CONSTANT)
     Q_PROPERTY(qreal size READ size CONSTANT)
     Q_PROPERTY(RestoreStatus restoreStatus READ restoreStatus NOTIFY restoreStatusChanged)
-    Q_PROPERTY(bool delayedWrite READ delayedWrite WRITE setDelayedWrite NOTIFY delayedWriteChanged)
 public:
     enum RestoreStatus {
         CLEAN = 0,
@@ -168,9 +167,6 @@ public:
     virtual QString readableSize() const;
     virtual qreal size() const;
     virtual RestoreStatus restoreStatus();
-    virtual bool delayedWrite() const;
-
-    virtual void setDelayedWrite(const bool &o);
 
     Q_INVOKABLE virtual void setImage(ReleaseVariant *data);
     Q_INVOKABLE virtual bool write(ReleaseVariant *data);
@@ -184,7 +180,6 @@ public slots:
 
 signals:
     void restoreStatusChanged();
-    void delayedWriteChanged();
 
 protected:
     ReleaseVariant *m_image { nullptr };
@@ -193,7 +188,6 @@ protected:
     uint64_t m_size { 0 };
     RestoreStatus m_restoreStatus { CLEAN };
     QString m_error { };
-    bool m_delayedWrite { false };
 };
 
 #endif // DRIVEMANAGER_H

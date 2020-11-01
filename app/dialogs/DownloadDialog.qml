@@ -191,32 +191,6 @@ Dialog {
                 }
             },
             State {
-                name: "failed_verification_no_drives"
-                when: releases.variant.status === Variant.FAILED_VERIFICATION && drives.length <= 0
-                PropertyChanges {
-                    target: rightButton;
-                    text: qsTr("Retry");
-                    enabled: false;
-                    color: "red";
-                    onClicked: drives.selected.write(releases.variant)
-                }
-            },
-            State {
-                name: "failed_verification"
-                when: releases.variant.status === Variant.FAILED_VERIFICATION && drives.length > 0
-                PropertyChanges {
-                    target: messageLoseData;
-                    visible: true
-                }
-                PropertyChanges {
-                    target: rightButton;
-                    text: qsTr("Retry");
-                    enabled: true;
-                    color: "red";
-                    onClicked: drives.selected.write(releases.variant)
-                }
-            },
-            State {
                 name: "failed_download"
                 when: releases.variant.status === Variant.FAILED_DOWNLOAD
                 PropertyChanges {
@@ -435,7 +409,7 @@ Dialog {
                                 value: driveCombo.currentIndex
                             }
                             onActivated: {
-                                if ([Variant.FINISHED, Variant.FAILED, Variant.FAILED_VERIFICATION].indexOf(releases.variant.status) >= 0)
+                                if ([Variant.FINISHED, Variant.FAILED].indexOf(releases.variant.status) >= 0)
                                     releases.variant.resetStatus()
                             }
                             placeholderText: qsTr("There are no portable drives connected")

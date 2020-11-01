@@ -301,23 +301,6 @@ Drive::RestoreStatus Drive::restoreStatus() {
     return m_restoreStatus;
 }
 
-bool Drive::delayedWrite() const {
-    return m_delayedWrite;
-}
-
-void Drive::setDelayedWrite(const bool &o) {
-    if (m_delayedWrite != o) {
-        m_delayedWrite = o;
-        emit delayedWriteChanged();
-        if (m_delayedWrite) {
-            write(m_image);
-        }
-        else {
-            cancel();
-        }
-    }
-}
-
 void Drive::setImage(ReleaseVariant *data) {
     m_image = data;
     if (m_image)
@@ -338,8 +321,6 @@ bool Drive::write(ReleaseVariant *data) {
 }
 
 void Drive::cancel() {
-    m_delayedWrite = false;
-    emit delayedWriteChanged();
     m_error = QString();
     m_restoreStatus = CLEAN;
     emit restoreStatusChanged();

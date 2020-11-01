@@ -266,7 +266,6 @@ bool WinDrive::write(ReleaseVariant *data) {
         m_child->setProgram(helperPath);
     } else {
         data->setErrorString(tr("Could not find the helper binary. Check your installation."));
-        setDelayedWrite(false);
         return false;
     }
 
@@ -333,8 +332,6 @@ bool WinDrive::operator==(const WinDrive &o) const {
 }
 
 void WinDrive::onFinished(int exitCode, QProcess::ExitStatus exitStatus) {
-    setDelayedWrite(false);
-
     if (!m_child)
         return;
 

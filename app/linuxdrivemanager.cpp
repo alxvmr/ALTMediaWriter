@@ -190,8 +190,7 @@ bool LinuxDrive::write(ReleaseVariant *data) {
     if (!Drive::write(data))
         return false;
 
-    if (m_image->status() == ReleaseVariant::READY || m_image->status() == ReleaseVariant::FAILED ||
-            m_image->status() == ReleaseVariant::FAILED_VERIFICATION || m_image->status() == ReleaseVariant::FINISHED)
+    if (m_image->status() == ReleaseVariant::READY || m_image->status() == ReleaseVariant::FAILED || m_image->status() == ReleaseVariant::FINISHED)
         m_image->setStatus(ReleaseVariant::WRITING);
 
     if (!m_process)
@@ -203,7 +202,6 @@ bool LinuxDrive::write(ReleaseVariant *data) {
     } else {
         data->setErrorString(tr("Could not find the helper binary. Check your installation."));
         data->setStatus(ReleaseVariant::FAILED);
-        setDelayedWrite(false);
         return false;
     }
 
@@ -314,8 +312,6 @@ void LinuxDrive::onReadyRead() {
 
 void LinuxDrive::onFinished(int exitCode, QProcess::ExitStatus status) {
     qDebug() << this->metaObject()->className() << "Helper process finished with status" << status;
-
-    setDelayedWrite(false);
 
     if (!m_process)
         return;
