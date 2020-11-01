@@ -800,7 +800,12 @@ ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, QString url, ReleaseArchi
 }
 
 ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, const QString &file)
-: QObject(parent), m_image(file), m_arch(ReleaseArchitecture::fromId(ReleaseArchitecture::X86_64)), m_image_type(ReleaseImageType::fromFilename(file)), m_board("UNKNOWN BOARD")
+: QObject(parent)
+, m_image(file)
+, m_arch(ReleaseArchitecture::fromId(ReleaseArchitecture::X86_64))
+, m_image_type(ReleaseImageType::fromFilename(file))
+, m_board("UNKNOWN BOARD")
+, m_progress(new Progress(this))
 {
     m_status = READY;
 }
