@@ -43,10 +43,8 @@ lupdate_only {
         $$PWD/simple/*.qml \
         $$PWD/views/*.qml \
         linuxdrivemanager.cpp \
-        macdrivemanager.cpp \
         windrivemanager.cpp
     HEADERS += linuxdrivemanager.h \
-        macdrivemanager.h \
         windrivemanager.h
 }
 
@@ -75,24 +73,6 @@ linux {
     appdatafile.files = "$$top_srcdir/dist/linux/mediawriter.appdata.xml"
 
     INSTALLS += icon desktopfile appdatafile
-}
-macx {
-    TARGET = "ALT Media Writer"
-    HEADERS += macdrivemanager.h \
-                macdrivearbiter.h
-    SOURCES += macdrivemanager.cpp
-    OBJECTIVE_SOURCES += macdrivearbiter.mm
-
-    QMAKE_LFLAGS += -F/System/Library/Frameworks
-    LIBS += -framework Foundation
-    LIBS += -framework DiskArbitration
-    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.9
-
-    QMAKE_INFO_PLIST = Info.plist
-    ICON = assets/icon/mediawriter.icns
-
-    QMAKE_POST_LINK += sed -i -e "s/@MEDIAWRITER_VERSION_SHORT@/$$MEDIAWRITER_VERSION_SHORT/g" \"./$${TARGET}.app/Contents/Info.plist\";
-    QMAKE_POST_LINK += sed -i -e "s/@MEDIAWRITER_VERSION@/$$MEDIAWRITER_VERSION/g" \"./$${TARGET}.app/Contents/Info.plist\";
 }
 win32 {
     HEADERS += windrivemanager.h

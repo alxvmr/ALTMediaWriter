@@ -35,17 +35,6 @@ void Notifications::notify(const QString &title, const QString &body) {
 
 #endif // __linux
 
-#ifdef __APPLE__
-
-void Notifications::notify(const QString &title, const QString &body) {
-    static QSystemTrayIcon *icon = new QSystemTrayIcon();
-    if (!icon->isVisible())
-        icon->show();
-    icon->showMessage(title, body);
-}
-
-#endif // APPLE
-
 #ifdef _WIN32
 
 void Notifications::notify(const QString &title, const QString &body) {

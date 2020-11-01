@@ -24,10 +24,6 @@
 # include "linuxdrivemanager.h"
 #endif // __linux__
 
-#ifdef __APPLE__
-# include "macdrivemanager.h"
-#endif // __APPLE__
-
 #ifdef _WIN32
 # include "windrivemanager.h"
 #endif // _WIN32
@@ -42,10 +38,6 @@ QString getHelperPath() {
         return "linux";
         #endif // __linux__
 
-        #ifdef __APPLE__
-        return "mac";
-        #endif // __APPLE__
-
         #ifdef _WIN32
         return "win";
         #endif // _WIN32
@@ -55,10 +47,6 @@ QString getHelperPath() {
         #ifdef __linux__
         return "helper";
         #endif // __linux__
-
-        #ifdef __APPLE__
-        return "helper";
-        #endif // __APPLE__
 
         #ifdef _WIN32
         return "helper.exe";
@@ -229,10 +217,6 @@ void DriveManager::onBackendBroken(const QString &message) {
 }
 
 DriveProvider *DriveProvider::create(DriveManager *parent)  {
-#ifdef __APPLE__
-    return new MacDriveProvider(parent);
-#endif // APPLE
-
 #ifdef _WIN32
     return new WinDriveProvider(parent);
 #endif // _WIN32

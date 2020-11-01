@@ -6,10 +6,7 @@ linux {
 win32 {
     SUBDIRS = win
 }
-macx {
-    SUBDIRS = mac
-}
 
 lupdate_only {
-    SUBDIRS = linux win mac
+    SUBDIRS = linux win
 }

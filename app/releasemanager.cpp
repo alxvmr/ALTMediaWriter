@@ -1228,7 +1228,7 @@ bool ReleaseImageType::supportedForWriting() const {
 }
 
 bool ReleaseImageType::canWriteWithRootfs() const {
-#if defined(__APPLE__) || defined(_WIN32)
+#if defined(_WIN32)
     return false;
 #else
     if (m_id == TAR_XZ) {
