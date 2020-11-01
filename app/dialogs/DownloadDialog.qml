@@ -344,7 +344,7 @@ Dialog {
                         }
                         AdwaitaCheckBox {
                             text: qsTr("Write the image after downloading")
-                            enabled: drives.selected && ((releases.variant.status == Variant.DOWNLOADING) || (releases.variant.status == Variant.DOWNLOAD_RESUMING))
+                            enabled: drives.selected && ((releases.variant.status == Variant.DOWNLOADING) || (releases.variant.status == Variant.DOWNLOAD_RESUMING)) && releases.variant.imageType.supportedForWriting
                             visible: enabled
 
                             onCheckedChanged: {

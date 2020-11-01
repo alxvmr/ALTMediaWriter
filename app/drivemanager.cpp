@@ -311,7 +311,7 @@ bool Drive::write(ReleaseVariant *data) {
     m_image = data;
     m_image->setErrorString(QString());
 
-    if (data && data->size() > 0 && size() > 0 && data->realSize() > size()) {
+    if (data->size() > size()) {
         m_image->setErrorString(tr("This drive is not large enough."));
         cancel();
         return false;

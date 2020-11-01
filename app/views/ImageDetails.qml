@@ -149,19 +149,6 @@ Item {
 
                                 color: mixColors(palette.window, palette.windowText, 0.3)
                             }
-                            Text {
-                                font.pointSize: 12
-                                visible: releases.variant.realSize != releases.variant.size && releases.variant.realSize > 0.1
-                                property double size: releases.variant.realSize
-                                property string sizeString: size <= 0 ? "" :
-                                                           (size < 1024) ? (size + " B") :
-                                                           (size < (1024 * 1024)) ? ((size / 1024).toFixed(1) + " KB") :
-                                                           (size < (1024 * 1024 * 1024)) ? ((size / 1024 / 1024).toFixed(1) + " MB") :
-                                                           ((size / 1024 / 1024 / 1024).toFixed(1) + " GB")
-                                //: The downloaded image is compressed, this refers to the size which it will take after being decompressed and written to the drive
-                                text: qsTr("(%1 after writing)").arg(sizeString)
-                                color: mixColors(palette.window, palette.windowText, 0.3)
-                            }
                         }
                         ColumnLayout {
                             width: parent.width
@@ -305,13 +292,6 @@ Item {
                                             }
                                         }
                                     }
-                                }
-                                Text {
-                                    // I'm sorry, everyone, I can't find a better way to determine if the date is valid
-                                    visible: releases.selected.version.releaseDate.toLocaleDateString().length > 0
-                                    text: qsTr(", released on %1").arg(releases.selected.version.releaseDate.toLocaleDateString())
-                                    font.pointSize: 8
-                                    color: mixColors(palette.window, palette.windowText, 0.3)
                                 }
                                 Text {
                                     text: "      "

@@ -260,7 +260,7 @@ void ReleaseManager::setFilterText(const QString &o) {
     }
 }
 
-bool ReleaseManager::updateUrl(const QString &name, const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url, int64_t size) {
+bool ReleaseManager::updateUrl(const QString &name, const QString &version, const QString &status, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url) {
     if (!ReleaseArchitecture::isKnown(architecture)) {
         qDebug() << "Architecture" << architecture << "is not known!";
         return false;
@@ -272,7 +272,7 @@ bool ReleaseManager::updateUrl(const QString &name, const QString &version, cons
     for (int i = 0; i < m_sourceModel->rowCount(); i++) {
         Release *r = get(i);
         if (r->name().toLower().contains(name))
-            return r->updateUrl(version, status, releaseDate, architecture, imageType, board, url, size);
+            return r->updateUrl(version, status, architecture, imageType, board, url);
     }
     return false;
 }
@@ -356,10 +356,6 @@ void ReleaseManager::loadReleaseFile(const QString &fileContents) {
             board = ymlToQString(e["board"]);
         }
 
-        // TODO: implement these fields if/when yml files start to include these
-        QDateTime releaseDate = QDateTime::fromString("", "yyyy-MM-dd");
-        int64_t size = 0;
-
         // TODO: handle versions if needed
         QString version = "9";
         QString status = "0";
@@ -369,7 +365,7 @@ void ReleaseManager::loadReleaseFile(const QString &fileContents) {
         qDebug() << this->metaObject()->className() << "Adding" << name << arch;
 
         if (!name.isEmpty() && !url.isEmpty() && !arch.isEmpty())
-            updateUrl(name, version, status, releaseDate, arch, imageType, board, url, size);
+            updateUrl(name, version, status, arch, imageType, board, url);
     }
 }
 
@@ -511,13 +507,13 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
 
     // Create custom release, version and variant
     // Insert custom release at the end of the front page
-    const auto customRelease = new Release (manager(), "custom", tr("Custom image"), QT_TRANSLATE_NOOP("Release", "Pick a file from your drive(s)"), { QT_TRANSLATE_NOOP("Release", "<p>Here you can choose a OS image from your hard drive to be written to your flash disk</p><p>Currently it is only supported to write raw disk images (.iso or .bin)</p>") }, "qrc:/logo/custom", {});
+    const auto customRelease = new Release(manager(), "custom", tr("Custom image"), QT_TRANSLATE_NOOP("Release", "Pick a file from your drive(s)"), { QT_TRANSLATE_NOOP("Release", "<p>Here you can choose a OS image from your hard drive to be written to your flash disk</p><p>Currently it is only supported to write raw disk images (.iso or .bin)</p>") }, "qrc:/logo/custom", {});
     m_releases.insert(FRONTPAGE_ROW_COUNT - 1, customRelease);
 
-    const auto customVersion = new ReleaseVersion(customRelease, 0);
+    const auto customVersion = new ReleaseVersion(customRelease, QString(), ReleaseVersion::FINAL);
     customRelease->addVersion(customVersion);
 
-    const auto customVariant = new ReleaseVariant(customVersion, QString(), 0, ReleaseArchitecture::fromId(ReleaseArchitecture::UNKNOWN), ReleaseImageType::all()[ReleaseImageType::ISO], "UNKNOWN BOARD");
+    const auto customVariant = new ReleaseVariant(customVersion, QString(), ReleaseArchitecture::fromId(ReleaseArchitecture::UNKNOWN), ReleaseImageType::all()[ReleaseImageType::ISO], "UNKNOWN BOARD");
     customVersion->addVariant(customVariant);
 }
 
@@ -539,9 +535,7 @@ Release::Release(ReleaseManager *parent, const QString &name, const QString &dis
 }
 
 void Release::setLocalFile(const QString &path) {
-    QFileInfo info(QUrl(path).toLocalFile());
-
-    if (!info.exists()) {
+    if (QFile::exists(path)) {
         qWarning() << path << "doesn't exist";
         return;
     }
@@ -551,22 +545,22 @@ void Release::setLocalFile(const QString &path) {
         m_versions.removeFirst();
     }
 
-    m_versions.append(new ReleaseVersion(this, QUrl(path).toLocalFile(), info.size()));
+    m_versions.append(new ReleaseVersion(this, path));
     emit versionsChanged();
     emit selectedVersionChanged();
 }
 
-bool Release::updateUrl(const QString &version, const QString &status, const QDateTime &releaseDate, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url, int64_t size) {
+bool Release::updateUrl(const QString &version, const QString &status, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url) {
     int finalVersions = 0;
     for (auto i : m_versions) {
         if (i->number() == version)
-            return i->updateUrl(status, releaseDate, architecture, imageType, board, url, size);
+            return i->updateUrl(status, architecture, imageType, board, url);
         if (i->status() == ReleaseVersion::FINAL)
             finalVersions++;
     }
     ReleaseVersion::Status s = status == "alpha" ? ReleaseVersion::ALPHA : status == "beta" ? ReleaseVersion::BETA : ReleaseVersion::FINAL;
-    auto ver = new ReleaseVersion(this, version, s, releaseDate);
-    auto variant = new ReleaseVariant(ver, url, size, ReleaseArchitecture::fromAbbreviation(architecture), imageType, board);
+    auto ver = new ReleaseVersion(this, version, s);
+    auto variant = new ReleaseVariant(ver, url, ReleaseArchitecture::fromAbbreviation(architecture), imageType, board);
     ver->addVariant(variant);
     addVersion(ver);
     if (ver->status() == ReleaseVersion::FINAL)
@@ -688,16 +682,16 @@ void Release::setSelectedVersionIndex(int o) {
 }
 
 
-ReleaseVersion::ReleaseVersion(Release *parent, const QString &number, ReleaseVersion::Status status, QDateTime releaseDate)
-: QObject(parent), m_number(number), m_status(status), m_releaseDate(releaseDate)
+ReleaseVersion::ReleaseVersion(Release *parent, const QString &number, ReleaseVersion::Status status)
+: QObject(parent), m_number(number), m_status(status)
 {
     if (status != FINAL)
         emit parent->prereleaseChanged();
     connect(this, SIGNAL(selectedVariantChanged()), parent->manager(), SLOT(variantChangedFilter()));
 }
 
-ReleaseVersion::ReleaseVersion(Release *parent, const QString &file, int64_t size)
-: QObject(parent), m_variants({ new ReleaseVariant(this, file, size) })
+ReleaseVersion::ReleaseVersion(Release *parent, const QString &file)
+: QObject(parent), m_variants({ new ReleaseVariant(this, file) })
 {
     connect(this, SIGNAL(selectedVariantChanged()), parent->manager(), SLOT(variantChangedFilter()));
 }
@@ -710,7 +704,7 @@ const Release *ReleaseVersion::release() const {
     return qobject_cast<const Release*>(parent());
 }
 
-bool ReleaseVersion::updateUrl(const QString &status, const QDateTime &releaseDate, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url, int64_t size) {
+bool ReleaseVersion::updateUrl(const QString &status, const QString &architecture, ReleaseImageType *imageType, const QString &board, const QString &url) {
     // first determine and eventually update the current alpha/beta/final level of this version
     Status s = status == "alpha" ? ALPHA : status == "beta" ? BETA : FINAL;
     if (s <= m_status) {
@@ -723,15 +717,10 @@ bool ReleaseVersion::updateUrl(const QString &status, const QDateTime &releaseDa
         // return if it got downgraded in the meantime
         return false;
     }
-    // update release date
-    if (m_releaseDate != releaseDate && releaseDate.isValid()) {
-        m_releaseDate = releaseDate;
-        emit releaseDateChanged();
-    }
 
     for (auto i : m_variants) {
         if (i->arch() == ReleaseArchitecture::fromAbbreviation(architecture) && i->board() == board)
-            return i->updateUrl(url, size);
+            return i->updateUrl(url);
     }
     // preserve the order from the ReleaseArchitecture::Id enum (to not have ARM first, etc.)
     // it's actually an array so comparing pointers is fine
@@ -741,7 +730,7 @@ bool ReleaseVersion::updateUrl(const QString &status, const QDateTime &releaseDa
             break;
         order++;
     }
-    m_variants.insert(order, new ReleaseVariant(this, url, size, ReleaseArchitecture::fromAbbreviation(architecture), imageType, board));
+    m_variants.insert(order, new ReleaseVariant(this, url, ReleaseArchitecture::fromAbbreviation(architecture), imageType, board));
     return true;
 }
 
@@ -783,10 +772,6 @@ ReleaseVersion::Status ReleaseVersion::status() const {
     return m_status;
 }
 
-QDateTime ReleaseVersion::releaseDate() const {
-    return m_releaseDate;
-}
-
 void ReleaseVersion::addVariant(ReleaseVariant *v) {
     m_variants.append(v);
     emit variantsChanged();
@@ -803,36 +788,29 @@ QList<ReleaseVariant *> ReleaseVersion::variantList() const {
 }
 
 
-ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, QString url, int64_t size, ReleaseArchitecture *arch, ReleaseImageType *imageType, QString board)
+ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, QString url, ReleaseArchitecture *arch, ReleaseImageType *imageType, QString board)
 : QObject(parent)
 , m_arch(arch)
 , m_image_type(imageType)
 , m_board(board)
 , m_url(url)
-, m_size(size)
 , m_progress(new Progress(this))
 {
-    connect(this, &ReleaseVariant::sizeChanged, this, &ReleaseVariant::realSizeChanged);
+
 }
 
-ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, const QString &file, int64_t size)
-: QObject(parent), m_image(file), m_arch(ReleaseArchitecture::fromId(ReleaseArchitecture::X86_64)), m_image_type(ReleaseImageType::fromFilename(file)), m_board("UNKNOWN BOARD"), m_size(size)
+ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, const QString &file)
+: QObject(parent), m_image(file), m_arch(ReleaseArchitecture::fromId(ReleaseArchitecture::X86_64)), m_image_type(ReleaseImageType::fromFilename(file)), m_board("UNKNOWN BOARD")
 {
-    connect(this, &ReleaseVariant::sizeChanged, this, &ReleaseVariant::realSizeChanged);
     m_status = READY;
 }
 
-bool ReleaseVariant::updateUrl(const QString &url, int64_t size) {
+bool ReleaseVariant::updateUrl(const QString &url) {
     bool changed = false;
     if (!url.isEmpty() && m_url.toUtf8().trimmed() != url.toUtf8().trimmed()) {
         // qWarning() << "Url" << m_url << "changed to" << url;
         m_url = url;
         emit urlChanged();
-        changed = true;
-    }
-    if (size != 0 && m_size != size) {
-        m_size = size;
-        emit sizeChanged();
         changed = true;
     }
     return changed;
@@ -893,21 +871,8 @@ qreal ReleaseVariant::size() const {
     return m_size;
 }
 
-qreal ReleaseVariant::realSize() const {
-    if (m_realSize <= 0)
-        return m_size;
-    return m_realSize;
-}
-
 Progress *ReleaseVariant::progress() {
     return m_progress;
-}
-
-void ReleaseVariant::setRealSize(qint64 o) {
-    if (m_realSize != o) {
-        m_realSize = o;
-        emit realSizeChanged();
-    }
 }
 
 void ReleaseVariant::setDelayedWrite(const bool value) {
@@ -939,10 +904,7 @@ void ReleaseVariant::onImageDownloadFinished() {
             qDebug() << this->metaObject()->className() << "Image is ready";
             setStatus(READY);
 
-            if (QFile(m_image).size() != m_size) {
-                m_size = QFile(m_image).size();
-                emit sizeChanged();
-            }
+            setSize(QFile(m_image).size());
 
             if (delayedWrite) {
                 Drive *drive = DriveManager::instance()->selected();
@@ -999,11 +961,7 @@ void ReleaseVariant::download() {
         qDebug() << this->metaObject()->className() << m_image << "is already downloaded";
         setStatus(READY);
 
-        const QFile image_file(m_image);
-        if (m_size != image_file.size()) {
-            m_size = image_file.size();
-            emit sizeChanged();
-        }
+        setSize(QFile(m_image).size());
     } else {
         // Download image
         m_temporaryImage = filePath + ".part";
@@ -1092,6 +1050,13 @@ void ReleaseVariant::setErrorString(const QString &o) {
     if (m_error != o) {
         m_error = o;
         emit errorStringChanged();
+    }
+}
+
+void ReleaseVariant::setSize(const qreal value) {
+    if (m_size != value) {
+        m_size = value;
+        emit sizeChanged();
     }
 }
 
