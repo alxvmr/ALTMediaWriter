@@ -54,7 +54,7 @@ class Variant final : public QObject {
 
     Q_PROPERTY(QString url READ url NOTIFY urlChanged)
     Q_PROPERTY(QString image READ image NOTIFY imageChanged)
-    Q_PROPERTY(const ImageType *imageType READ imageType CONSTANT)
+    Q_PROPERTY(ImageType *imageType READ imageType CONSTANT)
     Q_PROPERTY(qreal size READ size NOTIFY sizeChanged)
     Q_PROPERTY(Progress* progress READ progress CONSTANT)
 
@@ -93,7 +93,7 @@ public:
         tr("Error")
     };
 
-    Variant(ReleaseVersion *parent, QString url, const Architecture *arch, const ImageType *imageType, QString board);
+    Variant(ReleaseVersion *parent, QString url, Architecture *arch, ImageType *imageType, QString board);
     Variant(ReleaseVersion *parent, const QString &file);
 
     bool updateUrl(const QString &url);
@@ -103,8 +103,8 @@ public:
     Release *release();
     const Release *release() const;
 
-    const Architecture *arch() const;
-    const ImageType *imageType() const;
+    Architecture *arch() const;
+    ImageType *imageType() const;
     QString name() const;
     QString fullName();
     QString board() const;
@@ -140,8 +140,8 @@ public slots:
 
 private:
     QString m_image {};
-    const Architecture *m_arch = nullptr;
-    const ImageType *m_image_type = nullptr;
+    Architecture *m_arch;
+    ImageType *m_image_type;
     QString m_board {};
     QString m_url {};
     qreal m_size = 0.0;

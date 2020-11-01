@@ -198,7 +198,7 @@ class Release : public QObject {
 public:
     Release(ReleaseManager *parent, const QString &name, const QString &displayName, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots);
     Q_INVOKABLE void setLocalFile(const QString &path);
-    bool updateUrl(const QString &version, const QString &status, const Architecture *architecture, const ImageType *imageType, const QString &board, const QString &url);
+    bool updateUrl(const QString &version, const QString &status, Architecture *architecture, ImageType *imageType, const QString &board, const QString &url);
     ReleaseManager *manager();
 
     QString name() const;
@@ -273,7 +273,7 @@ public:
     Release *release();
     const Release *release() const;
 
-    bool updateUrl(const QString &status, const Architecture *architecture, const ImageType *imageType, const QString &board, const QString &url);
+    bool updateUrl(const QString &status, Architecture *architecture, ImageType *imageType, const QString &board, const QString &url);
 
     QString number() const;
     QString name() const;

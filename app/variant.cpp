@@ -30,7 +30,7 @@
 #include <QStandardPaths>
 #include <QDir>
 
-Variant::Variant(ReleaseVersion *parent, QString url, const Architecture *arch, const ImageType *imageType, QString board)
+Variant::Variant(ReleaseVersion *parent, QString url, Architecture *arch, ImageType *imageType, QString board)
 : QObject(parent)
 , m_arch(arch)
 , m_image_type(imageType)
@@ -79,12 +79,12 @@ const Release *Variant::release() const {
     return releaseVersion()->release();
 }
 
-const Architecture *Variant::arch() const {
+Architecture *Variant::arch() const {
     return m_arch;
 }
 
-const ImageType *Variant::imageType() const {
-    return m_image_type;
+ImageType *Variant::imageType() const {
+    return (ImageType *)m_image_type;
 }
 
 QString Variant::board() const {

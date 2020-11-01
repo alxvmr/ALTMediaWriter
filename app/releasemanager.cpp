@@ -330,7 +330,7 @@ void ReleaseManager::loadReleaseFile(const QString &fileContents) {
             continue;
         }
 
-        const Architecture *arch =
+        Architecture *arch =
         [e, url]() -> Architecture * {
             if (e["arch"]) {
                 const QString arch_abbreviation = ymlToQString(e["arch"]);
@@ -362,13 +362,13 @@ void ReleaseManager::loadReleaseFile(const QString &fileContents) {
         const QString version = "9";
         const QString status = "0";
 
-        const ImageType *imageType = ImageType::fromFilename(url);
+        ImageType *imageType = ImageType::fromFilename(url);
         if (!imageType->isValid()) {
             qDebug() << "Invalid image type for" << url;
             continue;
         }
 
-        qDebug() << this->metaObject()->className() << "Adding" << name << arch->abbreviation().first() << board << QUrl(url).fileName();
+        qDebug() << this->metaObject()->className() << "Adding" << name << arch->abbreviation().first() << board << imageType->abbreviation().first() << QUrl(url).fileName();
 
         for (int i = 0; i < m_sourceModel->rowCount(); i++) {
             Release *release = get(i);
@@ -565,7 +565,7 @@ void Release::setLocalFile(const QString &path) {
     emit selectedVersionChanged();
 }
 
-bool Release::updateUrl(const QString &version, const QString &status, const Architecture *architecture, const ImageType *imageType, const QString &board, const QString &url) {
+bool Release::updateUrl(const QString &version, const QString &status, Architecture *architecture, ImageType *imageType, const QString &board, const QString &url) {
     int finalVersions = 0;
     for (auto i : m_versions) {
         if (i->number() == version)
@@ -719,7 +719,7 @@ const Release *ReleaseVersion::release() const {
     return qobject_cast<const Release*>(parent());
 }
 
-bool ReleaseVersion::updateUrl(const QString &status, const Architecture *architecture, const ImageType *imageType, const QString &board, const QString &url) {
+bool ReleaseVersion::updateUrl(const QString &status, Architecture *architecture, ImageType *imageType, const QString &board, const QString &url) {
     // first determine and eventually update the current alpha/beta/final level of this version
     Status s = status == "alpha" ? ALPHA : status == "beta" ? BETA : FINAL;
     if (s <= m_status) {
