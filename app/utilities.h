@@ -27,25 +27,13 @@ class QNetworkReply;
 
 extern QNetworkAccessManager *network_access_manager;
 
-class Options {
-public:
-    void parse(QStringList argv);
-    void printHelp();
-
-    bool testing { false };
-    bool verbose { false };
-#ifdef QT_NO_DEBUG
-    bool logging { false };
-#else
-    bool logging { true };
-#endif
-    bool noUserAgent { false }; // disables sending the custom ALT Media Writer user agent header
-};
-
 class MessageHandler {
 public:
-    static void install();
+    static void install(const bool debug_arg, const bool log_arg);
     static QLoggingCategory category;
+
+    static bool debug;
+    static bool log;
 };
 
 #define mInfo() qCInfo(MessageHandler::category)
@@ -53,8 +41,6 @@ public:
 #define mWarning() qCWarning(MessageHandler::category)
 #define mCritical() qCCritical(MessageHandler::category)
 #define mFatal() qCFatal(MessageHandler::category)
-
-extern Options options;
 
 QString userAgent();
 QNetworkReply *makeNetworkRequest(const QString &url, const int time_out_millis = 0);

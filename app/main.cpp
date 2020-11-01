@@ -19,6 +19,7 @@
 
 #include <QApplication>
 #include <QQmlApplicationEngine>
+#include <QCommandLineParser>
 #include <QQmlContext>
 #include <QLoggingCategory>
 #include <QTranslator>
@@ -55,7 +56,6 @@ Q_IMPORT_PLUGIN(QmlSettingsPlugin);
 
 int main(int argc, char **argv)
 {
-    MessageHandler::install();
     CrashHandler::install();
 
 #ifdef __linux
@@ -78,7 +78,22 @@ int main(int argc, char **argv)
 
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     QApplication app(argc, argv);
-    options.parse(app.arguments());
+    app.setApplicationVersion(MEDIAWRITER_VERSION);
+
+    QCommandLineParser parser;
+    parser.setApplicationDescription(QApplication::tr("A tool to write images of ALT media to portable drives like flash drives or memory cards."));
+    parser.addHelpOption();
+    parser.addVersionOption();
+
+    const QCommandLineOption optionDebug({"d", "debug"}, QApplication::tr("Print debug messages"));
+    parser.addOption(optionDebug);
+
+    const QCommandLineOption optionLog({"l", "log"}, QApplication::tr("Log all messages to a log file located in Documents"));
+    parser.addOption(optionLog);
+
+    parser.process(app);
+
+    MessageHandler::install(parser.isSet(optionDebug), parser.isSet(optionLog));
 
     // considering how often we hit driver issues, I have decided to force
     // the QML software renderer on Windows and Linux, since Qt 5.9

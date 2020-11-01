@@ -25,90 +25,71 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QTimer>
+#include <QFile>
 
 QNetworkAccessManager *network_access_manager = new QNetworkAccessManager();
 
-Options options;
-
-static void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg);
+static void myMessageOutput(QtMsgType type, const QMessageLogContext &, const QString &msg);
 static QElapsedTimer timer;
-static FILE *debugFile;
+static QFile *logFile;
 
-// this is slowly getting out of hand
-// when adding an another option, please consider using a real argv parser
-
-void Options::parse(QStringList argv) {
-    int index;
-    if (argv.contains("--testing"))
-        testing = true;
-    if (argv.contains("--verbose") || argv.contains("-v")) {
-        verbose = true;
-        logging = false;
-    }
-    if (argv.contains("--logging") || argv.contains("-l"))
-        logging = true;
-    if (argv.contains("--no-user-agent")) {
-        noUserAgent = true;
-    }
-    if (argv.contains("--help")) {
-        printHelp();
+static void myMessageOutput(QtMsgType type, const QMessageLogContext &, const QString &msg) {
+    if (type == QtDebugMsg && !MessageHandler::debug && !MessageHandler::log) {
+        return;
     }
 
-    if (options.logging) {
-        QString debugFileName = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/" ORIGIN_MEDIAWRITER_NAME ".log";
-        debugFile = fopen(debugFileName.toStdString().c_str(), "w");
-        if (!debugFile) {
-            debugFile = stderr;
+    // Construct message
+    const char type_char = 
+    [type]() {
+        switch (type) {
+            case QtDebugMsg: return 'D';
+            case QtInfoMsg: return 'I';
+            case QtWarningMsg: return 'W';
+            case QtCriticalMsg: return 'C';
+            case QtFatalMsg: return 'F';
         }
+
+        return '?';
+    }();
+
+    const qint64 time = timer.elapsed();
+
+    const QByteArray msg_bytes = msg.toLocal8Bit();
+    const char *msg_cstr = msg_bytes.constData();
+
+    const size_t buffer_size = 1000;
+    static char buffer[buffer_size];
+    snprintf(buffer, buffer_size, "%c@%lldms: %s\n", type_char, time, msg_cstr);
+
+    // Print message to console
+    printf("%s", buffer);
+
+    // Write message to log file
+    if (MessageHandler::log) {
+        logFile->write(buffer);
+        logFile->flush();
     }
-}
 
-void Options::printHelp() {
-    QTextStream out(stdout);
-    out << MEDIAWRITER_NAME " [--testing] [--no-user-agent] [--releasesUrl <url>]\n";
-}
-
-
-
-static void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
-    QByteArray localMsg = msg.toLocal8Bit();
-    switch (type) {
-    case QtDebugMsg:
-        if (options.verbose || options.logging)
-            fprintf(debugFile, "D");
-        break;
-#if QT_VERSION >= 0x050500
-    case QtInfoMsg:
-        fprintf(debugFile, "I");
-        break;
-#endif
-    case QtWarningMsg:
-        fprintf(debugFile, "W");
-        break;
-    case QtCriticalMsg:
-        fprintf(debugFile, "C");
-        break;
-    case QtFatalMsg:
-        fprintf(debugFile, "F");
-    }
-    if ((type == QtDebugMsg && (options.verbose || options.logging)) || type != QtDebugMsg) {
-        if (context.line > 0)
-            fprintf(debugFile, "@%lldms: %s (%s:%u)\n", timer.elapsed(), localMsg.constData(), context.file, context.line);
-        else
-            fprintf(debugFile, "@%lldms: %s\n", timer.elapsed(), localMsg.constData());
-        fflush(debugFile);
-    }
-    if (type == QtFatalMsg)
+    if (type == QtFatalMsg) {
         exit(1);
+    }
 }
 
-void MessageHandler::install() {
+void MessageHandler::install(const bool debug_arg, const bool log_arg) {
+    debug = debug_arg;
+    log = log_arg;
+
+    const QString logFilename = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/" ORIGIN_MEDIAWRITER_NAME ".log";
+    logFile = new QFile(logFilename);
+    logFile->open(QIODevice::WriteOnly);
+
     timer.start();
-    debugFile = stderr;
-    qInstallMessageHandler(myMessageOutput); // Install the handler
+    qInstallMessageHandler(myMessageOutput);
 }
 
 QLoggingCategory MessageHandler::category { "org.fedoraproject.MediaWriter" };
+bool MessageHandler::debug;
+bool MessageHandler::log;
 
 QString userAgent() {
     QString ret = QString("FedoraMediaWriter/%1 (").arg(MEDIAWRITER_VERSION);
@@ -139,13 +120,11 @@ QString userAgent() {
 QNetworkReply *makeNetworkRequest(const QString &url, const int time_out_millis) {
     QNetworkRequest request(url);
     request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
-    if (!options.noUserAgent) {
-        request.setHeader(QNetworkRequest::UserAgentHeader, userAgent());
-    }
+    request.setHeader(QNetworkRequest::UserAgentHeader, userAgent());
 
     QNetworkReply *reply = network_access_manager->get(request);
 
-    // TODO: this is a function of reply in a newer Qt version
+    // TODO: Qt 5.15 added QNetworkRequest::setTransferTimeout()
     // Abort download if it takes more than 5s
     if (time_out_millis > 0) {
         auto time_out_timer = new QTimer(reply);
