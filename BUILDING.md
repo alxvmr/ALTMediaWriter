@@ -13,3 +13,5 @@ Run build.sh found in "altmediawriter/dist/win". Possible run modes are:
 * "./build.sh deploy" - construct an installer from executables
 * "./build.sh build_and_deploy"
 At the end you should be left with the installer file located in "deploy" folder.
+
+To build without using build.sh, use "/mingw32/qt5-static/bin/qmake", NOT regular qmake because windows build is only setup for static build.
