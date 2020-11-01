@@ -910,6 +910,10 @@ void ReleaseVariant::setRealSize(qint64 o) {
     }
 }
 
+void ReleaseVariant::setDelayedWrite(const bool value) {
+    delayedWrite = value;
+}
+
 ReleaseVariant::Status ReleaseVariant::status() const {
     if (m_status == READY && DriveManager::instance()->isBackendBroken())
         return WRITING_NOT_POSSIBLE;
@@ -940,6 +944,14 @@ void ReleaseVariant::onImageDownloadFinished() {
                 emit sizeChanged();
             }
 
+            if (delayedWrite) {
+                Drive *drive = DriveManager::instance()->selected();
+
+                if (drive != nullptr) {
+                    drive->write(this);
+                }
+            }
+
             break;
         }
         case ImageDownload::DiskError: {
@@ -967,6 +979,8 @@ void ReleaseVariant::download() {
 
         return;
     }
+
+    delayedWrite = false;
 
     resetStatus();
 
@@ -1006,7 +1020,7 @@ void ReleaseVariant::download() {
             download, &ImageDownload::interrupted,
             [this]() {
                 setErrorString(tr("Connection was interrupted, attempting to resume"));
-                setStatus(RESUMING);
+                setStatus(DOWNLOAD_RESUMING);
             });
         connect(
             download, &ImageDownload::startedMd5Check,

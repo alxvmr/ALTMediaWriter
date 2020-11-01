@@ -122,11 +122,6 @@ int main(int argc, char **argv)
     engine.rootContext()->setContextProperty("drives", DriveManager::instance());
     engine.rootContext()->setContextProperty("releases", new ReleaseManager());
     engine.rootContext()->setContextProperty("mediawriterVersion", MEDIAWRITER_VERSION);
-#if (defined(__linux) || defined(_WIN32))
-    engine.rootContext()->setContextProperty("platformSupportsDelayedWriting", true);
-#else
-    engine.rootContext()->setContextProperty("platformSupportsDelayedWriting", false);
-#endif
     qDebug() << "Loading the QML source code";
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 
@@ -167,6 +162,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &, const QString &
 
     // Print message to console
     printf("%s", buffer);
+    fflush(stdout);
 
     // Write message to log file
     if (myMessageOutputDebug) {

@@ -52,20 +52,6 @@ Dialog {
         reset()
     }
 
-    Connections {
-        target: releases
-        onSelectedChanged: {
-            reset();
-        }
-    }
-
-    Connections {
-        target: drives
-        onSelectedChanged: {
-            drives.selected.delayedWrite = false
-        }
-    }
-
     contentItem: Rectangle {
         id: dialogContainer
         anchors.fill: parent
@@ -95,7 +81,7 @@ Dialog {
             },
             State {
                 name: "resuming"
-                when: releases.variant.status === Variant.RESUMING
+                when: releases.variant.status === Variant.DOWNLOAD_RESUMING
                 PropertyChanges {
                     target: progressBar;
                     value: 0.0/0.0
@@ -383,24 +369,12 @@ Dialog {
                             }
                         }
                         AdwaitaCheckBox {
-                            id: writeImmediately
-                            enabled: driveCombo.count && opacity > 0.0 && releases.variant.imageType.supportedForWriting
-                            visible: platformSupportsDelayedWriting
-                            opacity: (releases.variant.status == Variant.DOWNLOADING || (releases.variant.status == Variant.DOWNLOAD_VERIFYING && releases.variant.progress.ratio < 0.95)) ? 1.0 : 0.0
-                            text: qsTr("Write the image immediately when the download is finished")
-                            Binding on checked {
-                                value: drives.selected ? drives.selected.delayedWrite : false
-                            }
-                            Binding {
-                                target: drives.selected
-                                property: "delayedWrite"
-                                value: writeImmediately.checked
-                            }
+                            text: qsTr("Write the image after downloading")
+                            enabled: drives.selected && ((releases.variant.status == Variant.DOWNLOADING) || (releases.variant.status == Variant.DOWNLOAD_RESUMING))
+                            visible: enabled
+
                             onCheckedChanged: {
-                                if (checked) {
-                                    if (drives.selected)
-                                        drives.selected.setImage(releases.variant)
-                                }
+                                releases.variant.delayedWrite = checked
                             }
                         }
                     }

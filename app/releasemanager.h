@@ -63,8 +63,6 @@ class Progress;
  *
  * It is a QSortFilterProxyModel - that means the actual release data has to be provided first by the @ref ReleaseListModel .
  *
- * It's also a @ref DownloadReceiver - it tries to fetch the list of current releases when the app is started
- *
  * @property frontPage is true if the application is on the front page
  * @property beingUpdated is true when the background data update is still running (waiting for data)
  * @property filterArchitecture index of the currently selected architecture
@@ -344,12 +342,13 @@ class ReleaseVariant : public QObject {
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(QString statusString READ statusString NOTIFY statusChanged)
     Q_PROPERTY(QString errorString READ errorString WRITE setErrorString NOTIFY errorStringChanged)
+    Q_PROPERTY(bool delayedWrite WRITE setDelayedWrite)
 public:
     Q_ENUMS(Type)
     enum Status {
         PREPARING = 0,
         DOWNLOADING,
-        RESUMING,
+        DOWNLOAD_RESUMING,
         DOWNLOAD_VERIFYING,
         READY,
         WRITING_NOT_POSSIBLE,
@@ -401,6 +400,8 @@ public:
 
     void setRealSize(qint64 o);
 
+    void setDelayedWrite(const bool value);
+
     Status status() const;
     QString statusString() const;
     void setStatus(Status s);
@@ -435,6 +436,7 @@ private:
     int64_t m_realSize { 0 };
     Status m_status { PREPARING };
     QString m_error {};
+    bool delayedWrite;
 
     Progress *m_progress;
 };
