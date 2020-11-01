@@ -271,10 +271,7 @@ bool WinDrive::write(ReleaseVariant *data) {
 
     QStringList args;
     args << "write";
-    if (data->status() == ReleaseVariant::WRITING)
-        args << data->image();
-    else
-        args << data->temporaryPath();
+    args << data->image();
     args << QString("%1").arg(m_device);
     m_child->setArguments(args);
 

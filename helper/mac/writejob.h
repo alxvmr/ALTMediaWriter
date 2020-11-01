@@ -23,7 +23,6 @@
 #include <QObject>
 #include <QTextStream>
 #include <QProcess>
-#include <QFileSystemWatcher>
 
 #ifndef MEDIAWRITER_LZMA_LIMIT
 // 256MB memory limit for the decompressor
@@ -38,7 +37,6 @@ public:
 
 private slots:
     void work();
-    void onFileChanged(const QString &path);
 
     bool writePlain();
     bool writeCompressed();
@@ -48,8 +46,6 @@ private:
 
     QTextStream out { stdout };
     QTextStream err { stderr };
-
-    QFileSystemWatcher watcher { };
 
     const int BLOCK_SIZE { 512 * 1024 };
 };

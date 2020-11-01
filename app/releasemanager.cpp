@@ -863,10 +863,6 @@ QString ReleaseVariant::image() const {
     return m_image;
 }
 
-QString ReleaseVariant::temporaryPath() const {
-    return m_temporaryImage;
-}
-
 qreal ReleaseVariant::size() const {
     return m_size;
 }
@@ -954,7 +950,6 @@ void ReleaseVariant::download() {
 
     if (already_downloaded) {
         // Already downloaded so skip download step
-        m_temporaryImage = QString();
         m_image = filePath;
         emit imageChanged();
 
@@ -964,8 +959,6 @@ void ReleaseVariant::download() {
         setSize(QFile(m_image).size());
     } else {
         // Download image
-        m_temporaryImage = filePath + ".part";
-
         auto download = new ImageDownload(QUrl(m_url));
 
         connect(

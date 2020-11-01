@@ -207,10 +207,7 @@ bool LinuxDrive::write(ReleaseVariant *data) {
 
     QStringList args;
     args << "write";
-    if (data->status() == ReleaseVariant::WRITING)
-        args << data->image();
-    else
-        args << data->temporaryPath();
+    args << data->image();
     args << m_device;
 
     qDebug() << this->metaObject()->className() << "Helper command will be" << args;

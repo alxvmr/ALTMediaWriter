@@ -24,10 +24,10 @@
 #include <QTextStream>
 #include <QProcess>
 #include <QtGlobal>
-
 #include <QtDBus>
 #include <QDBusInterface>
 #include <QDBusUnixFileDescriptor>
+#include <QProcess>
 
 #include <unistd.h>
 #include <errno.h>
@@ -37,8 +37,6 @@
 #include <utility>
 
 #include <lzma.h>
-
-#include <QDebug>
 
 typedef QHash<QString, QVariant> Properties;
 typedef QHash<QString, Properties> InterfacesAndProperties;
@@ -53,7 +51,6 @@ WriteJob::WriteJob(const QString &what, const QString &where)
     qDBusRegisterMetaType<Properties>();
     qDBusRegisterMetaType<InterfacesAndProperties>();
     qDBusRegisterMetaType<DBusIntrospection>();
-    connect(&watcher, &QFileSystemWatcher::fileChanged, this, &WriteJob::onFileChanged);
     QTimer::singleShot(0, this, SLOT(work()));
 }
 
@@ -246,40 +243,12 @@ void WriteJob::work() {
     if (fd.fileDescriptor() < 0)
         return;
 
-    if (what.endsWith(".part")) {
-        watcher.addPath(what);
-    }
-    else {
-        if (!write(fd.fileDescriptor()))
-            return;
-    }
+    if (!write(fd.fileDescriptor()))
+        return;
 
     err << "DONE\n";
     out.flush();
     qApp->exit(0);
-}
-
-void WriteJob::onFileChanged(const QString &path) {
-    if (QFile::exists(path))
-        return;
-
-    what = what.replace(QRegExp(".part$"), "");
-
-    if (!QFile::exists(what)) {
-        qApp->exit(4);
-        return;
-    }
-
-    //to immediately trigger the UI into writing mode
-    out << "WRITE\n";
-    out.flush();
-    out << "1\n";
-    out.flush();
-
-    if (!write(fd.fileDescriptor())) {
-        qApp->exit(4);
-        return;
-    }
 }
 
 std::tuple<std::unique_ptr<char[]>, char*, std::size_t> pageAlignedBuffer(std::size_t pages) {

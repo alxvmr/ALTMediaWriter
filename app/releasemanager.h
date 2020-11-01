@@ -384,7 +384,6 @@ public:
     QString url() const;
     QString image() const;
     ReleaseImageType *imageType() const;
-    QString temporaryPath() const;
     qreal size() const;
     Progress *progress();
 
@@ -413,7 +412,6 @@ public slots:
     void onImageDownloadFinished();
 
 private:
-    QString m_temporaryImage {};
     QString m_image {};
     ReleaseArchitecture *m_arch { nullptr };
     ReleaseImageType *m_image_type { nullptr };

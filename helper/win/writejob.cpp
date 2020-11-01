@@ -25,7 +25,6 @@
 #include <QProcess>
 #include <QFile>
 #include <QThread>
-
 #include <QDebug>
 
 #include <io.h>
@@ -39,13 +38,7 @@ WriteJob::WriteJob(const QString &what, const QString &where)
     bool ok = false;
     this->where = where.toInt(&ok);
 
-    if (what.endsWith(".part")) {
-        connect(&watcher, &QFileSystemWatcher::fileChanged, this, &WriteJob::onFileChanged);
-        watcher.addPath(what);
-    }
-    else {
-        QTimer::singleShot(0, this, &WriteJob::work);
-    }
+    QTimer::singleShot(0, this, &WriteJob::work);
 }
 
 HANDLE WriteJob::openDrive(int physicalDriveNumber) {
@@ -209,18 +202,6 @@ void WriteJob::work() {
     err << "DONE\n";
     out.flush();
     qApp->exit(0);
-}
-
-void WriteJob::onFileChanged(const QString &path) {
-    if (QFile::exists(path))
-        return;
-
-    what = what.replace(QRegExp("[.]part$"), "");
-
-    out << "WRITE\n";
-    out.flush();
-
-    work();
 }
 
 bool WriteJob::write() {
