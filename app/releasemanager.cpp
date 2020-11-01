@@ -803,7 +803,13 @@ QList<ReleaseVariant *> ReleaseVersion::variantList() const {
 
 
 ReleaseVariant::ReleaseVariant(ReleaseVersion *parent, QString url, int64_t size, ReleaseArchitecture *arch, ReleaseImageType *imageType, QString board)
-: QObject(parent), m_arch(arch), m_image_type(imageType), m_board(board), m_url(url), m_size(size)
+: QObject(parent)
+, m_arch(arch)
+, m_image_type(imageType)
+, m_board(board)
+, m_url(url)
+, m_size(size)
+, m_progress()
 {
     connect(this, &ReleaseVariant::sizeChanged, this, &ReleaseVariant::realSizeChanged);
 }
@@ -893,9 +899,6 @@ qreal ReleaseVariant::realSize() const {
 }
 
 Progress *ReleaseVariant::progress() {
-    if (!m_progress)
-        m_progress = new Progress(this, 0.0, size());
-
     return m_progress;
 }
 
@@ -1034,10 +1037,8 @@ void ReleaseVariant::resetStatus() {
     }
     else {
         setStatus(PREPARING);
-        if (m_progress) {
-            m_progress->setValue(0.0);
-            m_progress->setTo(0.0);
-        }
+        m_progress->setValue(0.0);
+        m_progress->setTo(0.0);
     }
     setErrorString(QString());
     emit statusChanged();

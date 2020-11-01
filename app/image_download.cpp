@@ -75,12 +75,10 @@ void ImageDownload::onImageDownloadReadyRead() {
         mWarning() << "Request started successfully";
         startingImageDownload = false;
 
-        if (progress) {
-            const QVariant remainingSize = reply->header(QNetworkRequest::ContentLengthHeader);
-            if (remainingSize.isValid()) {
-                const qint64 totalSize = file->size() + remainingSize.toULongLong();
-                progress->setTo(totalSize);
-            }
+        const QVariant remainingSize = reply->header(QNetworkRequest::ContentLengthHeader);
+        if (remainingSize.isValid()) {
+            const qint64 totalSize = file->size() + remainingSize.toULongLong();
+            progress->setTo(totalSize);
         }
 
         emit started();
@@ -88,16 +86,14 @@ void ImageDownload::onImageDownloadReadyRead() {
 
     const QByteArray data = reply->readAll();
     if (reply->error() == QNetworkReply::NoError && data.size() > 0) {
-        if (progress && reply->header(QNetworkRequest::ContentLengthHeader).isValid()) {
+        if (reply->header(QNetworkRequest::ContentLengthHeader).isValid()) {
             ;
         }
 
         const qint64 writeSize = file->write(data);
         const bool writeSuccess = (writeSize != -1);
         if (writeSuccess) {
-            if (progress) {
-                progress->setValue(file->size());
-            }
+            progress->setValue(file->size());
         } else {
             QStorageInfo storage(file->fileName());
             const QString errorString =

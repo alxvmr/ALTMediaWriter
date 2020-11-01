@@ -436,7 +436,7 @@ private:
     Status m_status { PREPARING };
     QString m_error {};
 
-    Progress *m_progress { nullptr };
+    Progress *m_progress;
 };
 
 /**
