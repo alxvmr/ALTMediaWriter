@@ -63,17 +63,25 @@ QList<QString> sectionsFilenames() {
     return files;
 }
 
-QString ymlToQString(const YAML::Node &yml_value) {
-    const std::string value_std = yml_value.as<std::string>();
-    QString out = QString::fromStdString(value_std);
+QString yml_get(const YAML::Node &node, const QString &key) {
+    const std::string key_std = key.toStdString();
+    const bool node_has_key = node[key_std];
 
-    // Remove HTML character entities that don't render in Qt
-    out.replace("&colon;", ":");
-    out.replace("&nbsp;", " ");
-    // Remove newlines because text will have wordwrap
-    out.replace("\n", " ");
+    if (node_has_key) {
+        const YAML::Node value_yml = node[key_std];
+        const std::string value_std = value_yml.as<std::string>();
+        QString value = QString::fromStdString(value_std);
 
-    return out;
+        // Remove HTML character entities that don't render in Qt
+        value.replace("&colon;", ":");
+        value.replace("&nbsp;", " ");
+        // Remove newlines because text will have wordwrap
+        value.replace("\n", " ");
+
+        return value;
+    } else {
+        return QString();
+    }
 }
 
 ReleaseManager::ReleaseManager(QObject *parent)
@@ -404,13 +412,13 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
     }
 
     for (auto variantData : variants["entries"]) {
-        const QString url = ymlToQString(variantData["link"]);
+        const QString url = yml_get(variantData, "link");
         if (url.isEmpty()) {
             qDebug() << "Invalid url for" << url;
             continue;
         }
 
-        const QString name = ymlToQString(variantData["solution"]);
+        const QString name = yml_get(variantData, "solution");
         if (name.isEmpty()) {
             qDebug() << "Invalid name for" << url;
             continue;
@@ -418,8 +426,8 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
 
         Architecture *arch =
         [variantData, url]() -> Architecture * {
-            if (variantData["arch"]) {
-                const QString arch_abbreviation = ymlToQString(variantData["arch"]);
+            const QString arch_abbreviation = yml_get(variantData, "arch");
+            if (!arch_abbreviation.isEmpty()) {
                 return Architecture::fromAbbreviation(arch_abbreviation);
             } else {
                 return Architecture::fromFilename(url);
@@ -430,19 +438,16 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
             continue;
         }
 
-        // NOTE: yml file doesn't define "board" for pc32/pc64
+        // NOTE: yml file doesn't define "board" for pc32/pc64, so default to "PC"
         const QString board =
         [variantData]() -> QString {
-            if (variantData["board"]) {
-                return ymlToQString(variantData["board"]);
+            const QString out = yml_get(variantData, "board");
+            if (!out.isEmpty()) {
+                return out;
             } else {
                 return "PC";
             }
         }();
-        if (board.isEmpty()) {
-            qDebug() << "Invalid board for" << url;
-            continue;
-        }
 
         ImageType *imageType = ImageType::fromFilename(url);
         if (!imageType->isValid()) {
@@ -548,28 +553,36 @@ ReleaseListModel::ReleaseListModel(const QList<QString> &sectionsFiles, ReleaseM
 
     for (auto sectionFile : sectionsFiles) {
         const YAML::Node section = YAML::Load(sectionFile.toStdString());
+
+        if (!section["members"]) {
+            continue;
+        }
         
         for (unsigned int i = 0; i < section["members"].size(); i++) {
             const YAML::Node releaseData = section["members"][i];
-            const QString name = ymlToQString(releaseData["code"]);
+
+            const QString name = yml_get(releaseData, "code");
 
             qDebug() << "Loading section: " << name;
 
-            std::string lang = "_en";
-            if (QLocale().language() == QLocale::Russian) {
-                lang = "_ru";
-            }
+            const QString language =
+            []() {
+                if (QLocale().language() == QLocale::Russian) {
+                    return "_ru";
+                } else {
+                    return "_en";
+                }
+            }();
             
-            const QString display_name = ymlToQString(releaseData["name" + lang]);
-            const QString summary = ymlToQString(releaseData["descr" + lang]);
-
-            QString description = ymlToQString(releaseData["descr_full" + lang]);
+            const QString display_name = yml_get(releaseData, "name" + language);
+            const QString summary = yml_get(releaseData, "descr" + language);
+            const QString description = yml_get(releaseData, "descr_full" + language);
 
             // NOTE: currently no screenshots
             const QStringList screenshots;
             
             // Check that icon file exists
-            const QString icon_name = ymlToQString(releaseData["img"]);
+            const QString icon_name = yml_get(releaseData, "img");
             const QString icon_path_test = ":/logo/" + icon_name;
             const QFile icon_file(icon_path_test);
             if (!icon_file.exists()) {
