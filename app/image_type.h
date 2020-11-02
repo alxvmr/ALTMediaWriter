@@ -25,25 +25,19 @@
 #include <QString>
 
 /**
- * @brief The ImageType class
- *
  * Class representing the possible image types of the releases
  *
  * @property abbreviation short names for the type, like iso
  * @property name a common name what the short stands for, like "ISO DVD"
- * @property supportedForWriting whether this image type can be written to media
- * @property canWriteWithRootfs whether this image type can be written with rootfs
+ * @property canWrite whether this image type is supported for writing
  */
 class ImageType final : public QObject {
     Q_OBJECT
-    Q_PROPERTY(QStringList abbreviation READ abbreviation CONSTANT)
     Q_PROPERTY(QString name READ name CONSTANT)
-    Q_PROPERTY(bool supportedForWriting READ supportedForWriting CONSTANT)
-    Q_PROPERTY(bool canWriteWithRootfs READ canWriteWithRootfs CONSTANT)
+    Q_PROPERTY(bool canWrite READ canWrite CONSTANT)
 public:
     enum Id {
         ISO,
-        TAR,
         TAR_GZ,
         TAR_XZ,
         IMG,
@@ -61,9 +55,7 @@ public:
     bool isValid() const;
     QStringList abbreviation() const;
     QString name() const;
-    QString description() const;
-    bool supportedForWriting() const;
-    bool canWriteWithRootfs() const;
+    bool canWrite() const;
 
 private:
     ImageType(const ImageType::Id id_arg);

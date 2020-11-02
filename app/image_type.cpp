@@ -38,7 +38,6 @@ bool ImageType::isValid() const {
 QStringList ImageType::abbreviation() const {
     switch (m_id) {
         case ISO: return {"iso", "dvd"};
-        case TAR: return {"tar"};
         case TAR_GZ: return {"tgz", "tar.gz"};
         case TAR_XZ: return {"archive", "tar.xz"};
         case IMG: return {"img"};
@@ -54,7 +53,6 @@ QStringList ImageType::abbreviation() const {
 QString ImageType::name() const {
     switch (m_id) {
         case ISO: return tr("ISO DVD");
-        case TAR: return {"TAR Archive"};
         case TAR_GZ: return tr("GZIP TAR Archive");
         case TAR_XZ: return tr("LZMA TAR Archive");
         case IMG: return tr("IMG");
@@ -67,27 +65,16 @@ QString ImageType::name() const {
     return QString();
 }
 
-bool ImageType::supportedForWriting() const {
-    static const QList<ImageType::Id> unsupported = {
-        TAR_GZ, TAR_XZ, IMG_GZ, RECOVERY_TAR, UNKNOWN, COUNT
+bool ImageType::canWrite() const {
+    static const QList<ImageType::Id> supported_types = {
+        ISO, IMG, IMG_XZ
     };
 
-    return !unsupported.contains(m_id);
-}
-
-bool ImageType::canWriteWithRootfs() const {
-#if defined(_WIN32)
-    return false;
-#else
-    if (m_id == TAR_XZ) {
-        return true;
-    } else {
-        return false;
-    }
-#endif
+    return supported_types.contains(m_id);
 }
 
 ImageType::ImageType(const ImageType::Id id_arg)
-: m_id(id_arg) {
+: m_id(id_arg)
+{
 
 }
