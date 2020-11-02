@@ -29,7 +29,6 @@ class Progress;
 class ImageType;
 class Architecture;
 class Release;
-class ReleaseVersion;
 
 /**
  * @brief The Variant class
@@ -93,13 +92,11 @@ public:
         tr("Error")
     };
 
-    Variant(ReleaseVersion *parent, QString url, Architecture *arch, ImageType *imageType, QString board);
-    Variant(ReleaseVersion *parent, const QString &file);
+    Variant(QString url, Architecture *arch, ImageType *imageType, QString board, Release *parent);
+    Variant(const QString &file, Release *parent);
 
     bool updateUrl(const QString &url);
 
-    ReleaseVersion *releaseVersion();
-    const ReleaseVersion *releaseVersion() const;
     Release *release();
     const Release *release() const;
 

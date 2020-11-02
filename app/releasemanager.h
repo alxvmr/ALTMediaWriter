@@ -27,7 +27,6 @@
 class ReleaseManager;
 class ReleaseListModel;
 class Release;
-class ReleaseVersion;
 class Variant;
 class Architecture;
 class ImageType;
@@ -172,7 +171,6 @@ private:
  * @property isLocal true if name is "custom"
  * @property icon path of the icon of this release
  * @property screenshots a list of paths to screenshots (typically HTTP URLs)
- * @property prerelease true if the release contains a prerelease version of a future version
  * @property versions a list of available versions of the @ref ReleaseVersion class
  * @property versionNames a list of the names of the available versions
  * @property version the currently selected @ref ReleaseVersion
@@ -189,16 +187,13 @@ class Release : public QObject {
     Q_PROPERTY(QString icon READ icon CONSTANT)
     Q_PROPERTY(QStringList screenshots READ screenshots CONSTANT)
 
-    Q_PROPERTY(QString prerelease READ prerelease NOTIFY prereleaseChanged)
-
-    Q_PROPERTY(QQmlListProperty<ReleaseVersion> versions READ versions NOTIFY versionsChanged)
-    Q_PROPERTY(QStringList versionNames READ versionNames NOTIFY versionsChanged)
-    Q_PROPERTY(ReleaseVersion* version READ selectedVersion NOTIFY selectedVersionChanged)
-    Q_PROPERTY(int versionIndex READ selectedVersionIndex WRITE setSelectedVersionIndex NOTIFY selectedVersionChanged)
+    Q_PROPERTY(QQmlListProperty<Variant> variants READ variants NOTIFY variantsChanged)
+    Q_PROPERTY(Variant* variant READ selectedVariant NOTIFY selectedVariantChanged)
+    Q_PROPERTY(int variantIndex READ selectedVariantIndex WRITE setSelectedVariantIndex NOTIFY selectedVariantChanged)
 public:
     Release(ReleaseManager *parent, const QString &name, const QString &displayName, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots);
     Q_INVOKABLE void setLocalFile(const QString &path);
-    bool updateUrl(const QString &version, const QString &status, Architecture *architecture, ImageType *imageType, const QString &board, const QString &url);
+    void updateUrl(const QString &url, Architecture *architecture, ImageType *imageType, const QString &board);
     ReleaseManager *manager();
 
     QString name() const;
@@ -208,78 +203,7 @@ public:
     bool isLocal() const;
     QString icon() const;
     QStringList screenshots() const;
-    QString prerelease() const;
 
-    void addVersion(ReleaseVersion *version);
-    void removeVersion(ReleaseVersion *version);
-    QQmlListProperty<ReleaseVersion> versions();
-    QList<ReleaseVersion*> versionList() const;
-    QStringList versionNames() const;
-    ReleaseVersion *selectedVersion() const;
-    int selectedVersionIndex() const;
-    void setSelectedVersionIndex(int o);
-
-signals:
-    void versionsChanged();
-    void selectedVersionChanged();
-    void prereleaseChanged();
-private:
-    QString m_name {};
-    QString m_displayName {};
-    QString m_summary {};
-    QString m_description {};
-    QString m_icon {};
-    QStringList m_screenshots {};
-    QList<ReleaseVersion *> m_versions {};
-    int m_selectedVersion { 0 };
-};
-
-
-/**
- * @brief The ReleaseVersion class
- *
- * Represents the version of the release. It can have multiple variants (like a different architecture or netinst/live)
- *
- * @property number the version number (as string)
- * @property name the name of the release (version + alpha/beta/etc)
- * @property status the release status of the version (alpha - beta - release candidate - final)
- * @property variants list of the version's variants, like architectures
- * @property variant the currently selected variant
- * @property variantIndex the index of the currently selected variant
- */
-class ReleaseVersion : public QObject {
-    Q_OBJECT
-    Q_PROPERTY(QString number READ number CONSTANT)
-    Q_PROPERTY(QString name READ name CONSTANT)
-
-    Q_PROPERTY(ReleaseVersion::Status status READ status NOTIFY statusChanged)
-
-    Q_PROPERTY(QQmlListProperty<Variant> variants READ variants NOTIFY variantsChanged)
-    Q_PROPERTY(Variant* variant READ selectedVariant NOTIFY selectedVariantChanged)
-    Q_PROPERTY(int variantIndex READ selectedVariantIndex WRITE setSelectedVariantIndex NOTIFY selectedVariantChanged)
-
-public:
-    enum Status {
-        FINAL,
-        RELEASE_CANDIDATE,
-        BETA,
-        ALPHA
-    };
-
-    Q_ENUMS(Status)
-
-    ReleaseVersion(Release *parent, const QString &number, ReleaseVersion::Status status);
-    ReleaseVersion(Release *parent, const QString &file);
-    Release *release();
-    const Release *release() const;
-
-    bool updateUrl(const QString &status, Architecture *architecture, ImageType *imageType, const QString &board, const QString &url);
-
-    QString number() const;
-    QString name() const;
-    ReleaseVersion::Status status() const;
-
-    void addVariant(Variant *v);
     QQmlListProperty<Variant> variants();
     QList<Variant*> variantList() const;
     Variant *selectedVariant() const;
@@ -289,13 +213,15 @@ public:
 signals:
     void variantsChanged();
     void selectedVariantChanged();
-    void statusChanged();
-
 private:
-    QString m_number { "0" };
-    ReleaseVersion::Status m_status { FINAL };
-    QList<Variant*> m_variants {};
-    int m_selectedVariant { 0 };
+    QString m_name;
+    QString m_displayName;
+    QString m_summary;
+    QString m_description;
+    QString m_icon;
+    QStringList m_screenshots;
+    QList<Variant *> m_variants;
+    int m_selectedVariant = 0;
 };
 
 #endif // RELEASEMANAGER_H

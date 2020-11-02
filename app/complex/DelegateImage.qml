@@ -81,12 +81,6 @@ Item {
                     text: release.displayName
                     color: palette.text
                 }
-                Text {
-                    text: " " + release.version.name
-                    visible: !release.isLocal
-                    font.pointSize: 9
-                    color: palette.text
-                }
                 Item {
                     Layout.fillWidth: true
                     height: 1

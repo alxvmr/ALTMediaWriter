@@ -30,7 +30,7 @@
 #include <QStandardPaths>
 #include <QDir>
 
-Variant::Variant(ReleaseVersion *parent, QString url, Architecture *arch, ImageType *imageType, QString board)
+Variant::Variant(QString url, Architecture *arch, ImageType *imageType, QString board, Release *parent)
 : QObject(parent)
 , m_arch(arch)
 , m_image_type(imageType)
@@ -41,7 +41,7 @@ Variant::Variant(ReleaseVersion *parent, QString url, Architecture *arch, ImageT
 
 }
 
-Variant::Variant(ReleaseVersion *parent, const QString &file)
+Variant::Variant(const QString &file, Release *parent)
 : QObject(parent)
 , m_image(file)
 , m_arch(Architecture::fromId(Architecture::X86_64))
@@ -63,20 +63,12 @@ bool Variant::updateUrl(const QString &url) {
     return changed;
 }
 
-ReleaseVersion *Variant::releaseVersion() {
-    return qobject_cast<ReleaseVersion*>(parent());
-}
-
-const ReleaseVersion *Variant::releaseVersion() const {
-    return qobject_cast<const ReleaseVersion*>(parent());
-}
-
 Release *Variant::release() {
-    return releaseVersion()->release();
+    return qobject_cast<Release*>(parent());
 }
 
 const Release *Variant::release() const {
-    return releaseVersion()->release();
+    return qobject_cast<const Release*>(parent());
 }
 
 Architecture *Variant::arch() const {
@@ -99,7 +91,7 @@ QString Variant::fullName() {
     if (release()->isLocal())
         return QFileInfo(image()).fileName();
     else
-        return QString("%1 %2 %3").arg(release()->displayName()).arg(releaseVersion()->name()).arg(name());
+        return QString("%1 %2").arg(release()->displayName(), name());
 }
 
 QString Variant::url() const {

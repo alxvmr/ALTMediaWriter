@@ -89,7 +89,6 @@ ReleaseManager::ReleaseManager(QObject *parent)
     setSourceModel(m_sourceModel);
 
     qmlRegisterUncreatableType<Release>("MediaWriter", 1, 0, "Release", "");
-    qmlRegisterUncreatableType<ReleaseVersion>("MediaWriter", 1, 0, "Version", "");
     qmlRegisterUncreatableType<Variant>("MediaWriter", 1, 0, "Variant", "");
     qmlRegisterUncreatableType<Architecture>("MediaWriter", 1, 0, "Architecture", "");
     qmlRegisterUncreatableType<ImageType>("MediaWriter", 1, 0, "ImageType", "");
@@ -120,7 +119,9 @@ ReleaseManager::ReleaseManager(QObject *parent)
         }
     }
 
-    connect(this, SIGNAL(selectedChanged()), this, SLOT(variantChangedFilter()));
+    connect(
+        this, &ReleaseManager::selectedChanged,
+        this, &ReleaseManager::variantChangedFilter);
 
     // Download releases from getalt.org
 
@@ -129,23 +130,28 @@ ReleaseManager::ReleaseManager(QObject *parent)
 
 bool ReleaseManager::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const {
     Q_UNUSED(source_parent)
+    auto release = get(source_row);
+    
     if (m_frontPage) {
+        // Don't filter when on front page, just show 3 releases
         const bool on_front_page = (source_row < FRONTPAGE_ROW_COUNT);
         return on_front_page;
+    } else if (release->isLocal()) {
+        // Always show local release
+        return true;
     } else {
-        auto r = get(source_row);
-        bool containsArch = false;
-        for (auto version : r->versionList()) {
-            for (auto variant : version->variantList()) {
+        // Otherwise filter by arch
+        const bool releaseHasVariantWithArch =
+        [this, release]() {
+            for (auto variant : release->variantList()) {
                 if (variant->arch()->index() == m_filterArchitecture) {
-                    containsArch = true;
-                    break;
+                    return true;
                 }
             }
-            if (containsArch)
-                break;
-        }
-        return r->isLocal() || (containsArch && r->displayName().contains(m_filterText, Qt::CaseInsensitive));
+            return false;
+        }();
+
+        return releaseHasVariantWithArch;
     }
 }
 
@@ -269,19 +275,22 @@ void ReleaseManager::setFilterArchitecture(int o) {
     if (m_filterArchitecture != o && m_filterArchitecture >= 0 && m_filterArchitecture < Architecture::_ARCHCOUNT) {
         m_filterArchitecture = o;
         emit filterArchitectureChanged();
+
+        // Select first variant with this arch
+        // TODO: needed? probably something goes wrong in qml if don't do this
         for (int i = 0; i < m_sourceModel->rowCount(); i++) {
-            Release *r = get(i);
-            for (auto v : r->versionList()) {
-                int j = 0;
-                for (auto variant : v->variantList()) {
-                    if (variant->arch()->index() == o) {
-                        v->setSelectedVariantIndex(j);
-                        break;
-                    }
-                    j++;
+            Release *release = get(i);
+
+            for (auto variant : release->variantList()) {
+                if (variant->arch()->index() == o) {
+                    const int index = release->variantList().indexOf(variant);
+                    release->setSelectedVariantIndex(index);
+
+                    break;
                 }
             }
         }
+
         invalidateFilter();
     }
 }
@@ -304,14 +313,13 @@ void ReleaseManager::setSelectedIndex(int o) {
 }
 
 Variant *ReleaseManager::variant() {
-    if (selected()) {
-        if (selected()->selectedVersion()) {
-            if (selected()->selectedVersion()->selectedVariant()) {
-                return selected()->selectedVersion()->selectedVariant();
-            }
-        }
+    Release *release = selected();
+
+    if (release != nullptr) {
+        return release->selectedVariant();
+    } else {
+        return nullptr;
     }
-    return nullptr;
 }
 
 void ReleaseManager::loadReleaseFile(const QString &fileContents) {
@@ -358,10 +366,6 @@ void ReleaseManager::loadReleaseFile(const QString &fileContents) {
             continue;
         }
 
-        // TODO: handle versions if needed
-        const QString version = "9";
-        const QString status = "0";
-
         ImageType *imageType = ImageType::fromFilename(url);
         if (!imageType->isValid()) {
             qDebug() << "Invalid image type for" << url;
@@ -374,7 +378,7 @@ void ReleaseManager::loadReleaseFile(const QString &fileContents) {
             Release *release = get(i);
 
             if (release->name().toLower().contains(name)) {
-                release->updateUrl(version, status, arch, imageType, board, url);
+                release->updateUrl(url, arch, imageType, board);
             }
         }
     }
@@ -520,16 +524,11 @@ ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
         }
     }
 
-    // Create custom release, version and variant
+    // Create custom release and variant
     // Insert custom release at the end of the front page
     const auto customRelease = new Release(manager(), "custom", tr("Custom image"), QT_TRANSLATE_NOOP("Release", "Pick a file from your drive(s)"), { QT_TRANSLATE_NOOP("Release", "<p>Here you can choose a OS image from your hard drive to be written to your flash disk</p><p>Currently it is only supported to write raw disk images (.iso or .bin)</p>") }, "qrc:/logo/custom", {});
+    customRelease->updateUrl(QString(), Architecture::fromId(Architecture::UNKNOWN), ImageType::all()[ImageType::ISO], QString("UNKNOWN BOARD"));
     m_releases.insert(FRONTPAGE_ROW_COUNT - 1, customRelease);
-
-    const auto customVersion = new ReleaseVersion(customRelease, QString(), ReleaseVersion::FINAL);
-    customRelease->addVersion(customVersion);
-
-    const auto customVariant = new Variant(customVersion, QString(), Architecture::fromId(Architecture::UNKNOWN), ImageType::all()[ImageType::ISO], "UNKNOWN BOARD");
-    customVersion->addVariant(customVariant);
 }
 
 ReleaseManager *ReleaseListModel::manager() {
@@ -544,9 +543,18 @@ Release *ReleaseListModel::get(int index) {
 
 
 Release::Release(ReleaseManager *parent, const QString &name, const QString &display_name, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots)
-: QObject(parent), m_name(name), m_displayName(display_name), m_summary(summary), m_description(description), m_icon(icon), m_screenshots(screenshots)
+: QObject(parent)
+, m_name(name)
+, m_displayName(display_name)
+, m_summary(summary)
+, m_description(description)
+, m_icon(icon)
+, m_screenshots(screenshots)
 {
-    connect(this, SIGNAL(selectedVersionChanged()), parent, SLOT(variantChangedFilter()));
+    // TODO: connect to release's signal in parent, not the other way around, won't need to have parent be releasemanager then
+    connect(
+        this, &Release::selectedVariantChanged,
+        parent, &ReleaseManager::variantChangedFilter);
 }
 
 void Release::setLocalFile(const QString &path) {
@@ -555,47 +563,64 @@ void Release::setLocalFile(const QString &path) {
         return;
     }
 
-    if (m_versions.count() == 1) {
-        m_versions.first()->deleteLater();
-        m_versions.removeFirst();
-    }
+    // TODO: don't need to delete, can change path in variant. Though have to consider the case where path doesn't exist.
 
-    m_versions.append(new ReleaseVersion(this, path));
-    emit versionsChanged();
-    emit selectedVersionChanged();
+    // Delete old variant
+    for (auto variant : m_variants) {
+        variant->deleteLater();
+    }
+    m_variants.clear();
+
+    // Add new variant
+    auto local_variant = new Variant(path, this);
+    m_variants.append(local_variant);
+    emit variantsChanged();
+    emit selectedVariantChanged();
 }
 
-bool Release::updateUrl(const QString &version, const QString &status, Architecture *architecture, ImageType *imageType, const QString &board, const QString &url) {
-    int finalVersions = 0;
-    for (auto i : m_versions) {
-        if (i->number() == version)
-            return i->updateUrl(status, architecture, imageType, board, url);
-        if (i->status() == ReleaseVersion::FINAL)
-            finalVersions++;
-    }
-    ReleaseVersion::Status s = status == "alpha" ? ReleaseVersion::ALPHA : status == "beta" ? ReleaseVersion::BETA : ReleaseVersion::FINAL;
-    auto ver = new ReleaseVersion(this, version, s);
-    auto variant = new Variant(ver, url, architecture, imageType, board);
-    ver->addVariant(variant);
-    addVersion(ver);
-    if (ver->status() == ReleaseVersion::FINAL)
-        finalVersions++;
-    if (finalVersions > 2) {
-        QString min = "0";
-        ReleaseVersion *oldVer = nullptr;
-        for (auto i : m_versions) {
-            if (i->number() < min) {
-                min = i->number();
-                oldVer = i;
+void Release::updateUrl(const QString &url, Architecture *architecture, ImageType *imageType, const QString &board) {
+    // If variant already exists, update it
+    Variant *variant_in_list =
+    [=]() -> Variant * {
+        for (auto variant : m_variants) {
+            // TODO: equals?
+            if (variant->arch() == architecture && variant->board() == board) {
+                return variant;
             }
         }
-        removeVersion(oldVer);
+        return nullptr;
+    }();
+    if (variant_in_list != nullptr) {
+        variant_in_list->updateUrl(url);
+        return;
     }
-    return true;
-}
 
-ReleaseManager *Release::manager() {
-    return qobject_cast<ReleaseManager*>(parent());
+    // Otherwise make a new variant
+
+    // NOTE: preserve the order from the Architecture::Id enum (to not have ARM first, etc.)
+    const int insert_index =
+    [this, architecture]() {
+        int out = 0;
+        for (auto variant : m_variants) {
+            // NOTE: doing pointer comparison because architectures are a singleton pointers
+            if (variant->arch() > architecture) {
+                return out;
+            }
+
+            out++;
+        }
+        return out;
+    }();
+    auto new_variant = new Variant(url, architecture, imageType, board, this);
+
+    m_variants.insert(insert_index, new_variant);
+    emit variantsChanged();
+    
+    // Select first variant by default
+    // TODO: use setSelectedVariantIndex()? Need to avoid checking for (if changed) condition in there then
+    if (m_variants.count() == 1) {
+        emit selectedVariantChanged();
+    }
 }
 
 QString Release::name() const {
@@ -626,178 +651,27 @@ QStringList Release::screenshots() const {
     return m_screenshots;
 }
 
-QString Release::prerelease() const {
-    if (m_versions.empty() || m_versions.first()->status() == ReleaseVersion::FINAL)
-        return "";
-    return m_versions.first()->name();
-}
-
-QQmlListProperty<ReleaseVersion> Release::versions() {
-    return QQmlListProperty<ReleaseVersion>(this, m_versions);
-}
-
-QList<ReleaseVersion *> Release::versionList() const {
-    return m_versions;
-}
-
-QStringList Release::versionNames() const {
-    QStringList ret;
-    for (auto i : m_versions) {
-        ret.append(i->name());
-    }
-    return ret;
-}
-
-void Release::addVersion(ReleaseVersion *version) {
-    for (int i = 0; i < m_versions.count(); i++) {
-        if (m_versions[i]->number() < version->number()) {
-            m_versions.insert(i, version);
-            emit versionsChanged();
-            if (version->status() != ReleaseVersion::FINAL && m_selectedVersion >= i) {
-                m_selectedVersion++;
-            }
-            emit selectedVersionChanged();
-            return;
-        }
-    }
-    m_versions.append(version);
-    emit versionsChanged();
-    emit selectedVersionChanged();
-}
-
-void Release::removeVersion(ReleaseVersion *version) {
-    int idx = m_versions.indexOf(version);
-    if (!version || idx < 0)
-        return;
-
-    if (m_selectedVersion == idx) {
-        m_selectedVersion = 0;
-        emit selectedVersionChanged();
-    }
-    m_versions.removeAt(idx);
-    version->deleteLater();
-    emit versionsChanged();
-}
-
-ReleaseVersion *Release::selectedVersion() const {
-    if (m_selectedVersion >= 0 && m_selectedVersion < m_versions.count())
-        return m_versions[m_selectedVersion];
-    return nullptr;
-}
-
-int Release::selectedVersionIndex() const {
-    return m_selectedVersion;
-}
-
-void Release::setSelectedVersionIndex(int o) {
-    if (m_selectedVersion != o && m_selectedVersion >= 0 && m_selectedVersion < m_versions.count()) {
-        m_selectedVersion = o;
-        emit selectedVersionChanged();
-    }
-}
-
-
-ReleaseVersion::ReleaseVersion(Release *parent, const QString &number, ReleaseVersion::Status status)
-: QObject(parent), m_number(number), m_status(status)
-{
-    if (status != FINAL)
-        emit parent->prereleaseChanged();
-    connect(this, SIGNAL(selectedVariantChanged()), parent->manager(), SLOT(variantChangedFilter()));
-}
-
-ReleaseVersion::ReleaseVersion(Release *parent, const QString &file)
-: QObject(parent), m_variants({ new Variant(this, file) })
-{
-    connect(this, SIGNAL(selectedVariantChanged()), parent->manager(), SLOT(variantChangedFilter()));
-}
-
-Release *ReleaseVersion::release() {
-    return qobject_cast<Release*>(parent());
-}
-
-const Release *ReleaseVersion::release() const {
-    return qobject_cast<const Release*>(parent());
-}
-
-bool ReleaseVersion::updateUrl(const QString &status, Architecture *architecture, ImageType *imageType, const QString &board, const QString &url) {
-    // first determine and eventually update the current alpha/beta/final level of this version
-    Status s = status == "alpha" ? ALPHA : status == "beta" ? BETA : FINAL;
-    if (s <= m_status) {
-        m_status = s;
-        emit statusChanged();
-        if (s == FINAL)
-            emit release()->prereleaseChanged();
-    }
-    else {
-        // return if it got downgraded in the meantime
-        return false;
-    }
-
-    for (auto i : m_variants) {
-        if (i->arch() == architecture && i->board() == board)
-            return i->updateUrl(url);
-    }
-    // preserve the order from the Architecture::Id enum (to not have ARM first, etc.)
-    // it's actually an array so comparing pointers is fine
-    int order = 0;
-    for (auto i : m_variants) {
-        if (i->arch() > architecture)
-            break;
-        order++;
-    }
-    m_variants.insert(order, new Variant(this, url, architecture, imageType, board));
-    return true;
-}
-
-QString ReleaseVersion::number() const {
-    return m_number;
-}
-
-QString ReleaseVersion::name() const {
-    switch (m_status) {
-        case ALPHA:
-        return tr("%1 Alpha").arg(m_number);
-        case BETA:
-        return tr("%1 Beta").arg(m_number);
-        case RELEASE_CANDIDATE:
-        return tr("%1 Release Candidate").arg(m_number);
-        default:
-        return QString("%1").arg(m_number);
-    }
-}
-
-Variant *ReleaseVersion::selectedVariant() const {
+Variant *Release::selectedVariant() const {
     if (m_selectedVariant >= 0 && m_selectedVariant < m_variants.count())
         return m_variants[m_selectedVariant];
     return nullptr;
 }
 
-int ReleaseVersion::selectedVariantIndex() const {
+int Release::selectedVariantIndex() const {
     return m_selectedVariant;
 }
 
-void ReleaseVersion::setSelectedVariantIndex(int o) {
+void Release::setSelectedVariantIndex(int o) {
     if (m_selectedVariant != o && m_selectedVariant >= 0 && m_selectedVariant < m_variants.count()) {
         m_selectedVariant = o;
         emit selectedVariantChanged();
     }
 }
 
-ReleaseVersion::Status ReleaseVersion::status() const {
-    return m_status;
-}
-
-void ReleaseVersion::addVariant(Variant *v) {
-    m_variants.append(v);
-    emit variantsChanged();
-    if (m_variants.count() == 1)
-        emit selectedVariantChanged();
-}
-
-QQmlListProperty<Variant> ReleaseVersion::variants() {
+QQmlListProperty<Variant> Release::variants() {
     return QQmlListProperty<Variant>(this, m_variants);
 }
 
-QList<Variant *> ReleaseVersion::variantList() const {
+QList<Variant *> Release::variantList() const {
     return m_variants;
 }

@@ -36,22 +36,8 @@ Item {
     property bool focused: contentList.currentIndex === 1
     enabled: focused
 
-    onFocusedChanged: {
-        if (focused && !prereleaseNotification.wasOpen && releases.selected.prerelease.length > 0)
-            prereleaseTimer.start()
-    }
-
-    Connections {
-        target: focused && releases.selected ? releases.selected : null
-        onPrereleaseChanged: {
-            if (releases.selected.prerelease.length > 0)
-                prereleaseTimer.start()
-        }
-    }
-
     function toMainScreen() {
         archPopover.open = false
-        versionPopover.open = false
         canGoBack = false
         contentList.currentIndex--
     }
@@ -104,7 +90,6 @@ Item {
                                 return
                             deviceNotification.open = false
                             archPopover.open = false
-                            versionPopover.open = false
                             dlDialog.visible = true
                             releases.variant.download()
                         }
@@ -157,148 +142,21 @@ Item {
                             Text {
                                 font.pointSize: 10
                                 color: mixColors(palette.window, palette.windowText, 0.3)
-                                visible: typeof releases.selected.version !== 'undefined'
+                                visible: releases.selected.variant
                                 text: releases.variant.name
                             }
                             Text {
                                 font.pointSize: 8
                                 color: mixColors(palette.window, palette.windowText, 0.3)
-                                visible: releases.selected.version && releases.variant
+                                visible: releases.variant
                                 text: releases.variant.imageType.name
                             }
                             RowLayout {
                                 spacing: 0
                                 width: parent.width
                                 Text {
-                                    text: qsTr("Version %1").arg(releases.selected.version.name)
-                                    font.pointSize: 8
-
-                                    color: versionRepeater.count <= 1 ? mixColors(palette.window, palette.windowText, 0.3) : versionMouse.containsPress ? Qt.lighter("#1d61bf", 1.7) : versionMouse.containsMouse ? Qt.darker("#1d61bf", 1.5) : "#1d61bf"
-                                    Behavior on color { ColorAnimation { duration: 100 } }
-                                    MouseArea {
-                                        id: versionMouse
-                                        activeFocusOnTab: true
-                                        enabled: versionRepeater.count > 1
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                                        function action() {
-                                            versionPopover.open = !versionPopover.open
-                                        }
-                                        onClicked: {
-                                            action()
-                                        }
-                                        Keys.onSpacePressed: action()
-                                        FocusRectangle {
-                                            anchors.fill: parent
-                                            anchors.margins: -2
-                                            visible: parent.activeFocus
-                                        }
-                                    }
-
-                                    BusyIndicator {
-                                        anchors.right: parent.left
-                                        anchors.rightMargin: 4
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        height: parent.height * 0.8
-                                        width: height
-                                        opacity: releases.beingUpdated ? 0.6 : 0.0
-                                        visible: opacity > 0.01
-                                        Behavior on opacity { NumberAnimation { } }
-                                    }
-
-                                    Rectangle {
-                                        visible: versionRepeater.count > 1
-                                        anchors {
-                                            left: parent.left
-                                            right: parent.right
-                                            top: parent.bottom
-                                        }
-                                        radius: height / 2
-                                        color: parent.color
-                                        antialiasing: true
-                                        height: 1
-                                    }
-
-
-                                    AdwaitaPopOver {
-                                        id: versionPopover
-                                        z: 2
-                                        anchors {
-                                            horizontalCenter: parent.horizontalCenter
-                                            top: parent.bottom
-                                            topMargin: 8 + opacity * 24
-                                        }
-
-                                        onOpenChanged: {
-                                            if (open) {
-                                                prereleaseNotification.open = false
-                                                archPopover.open = false
-                                            }
-                                        }
-
-                                        ColumnLayout {
-                                            spacing: 9
-                                            ExclusiveGroup {
-                                                id: versionEG
-                                            }
-                                            Repeater {
-                                                id: versionRepeater
-                                                model: releases.selected.versions
-                                                AdwaitaRadioButton {
-                                                    text: name
-                                                    Layout.alignment: Qt.AlignVCenter
-                                                    exclusiveGroup: versionEG
-                                                    checked: index == releases.selected.versionIndex
-                                                    onCheckedChanged: {
-                                                        if (checked)
-                                                            releases.selected.versionIndex = index
-                                                        versionPopover.open = false
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                    AdwaitaPopNotification {
-                                        id: prereleaseNotification
-                                        z: 2
-                                        property bool wasOpen: false
-                                        anchors {
-                                            left: parent.left
-                                            top: parent.bottom
-                                            topMargin: 8 + opacity * 24
-                                        }
-
-                                        onOpenChanged: {
-                                            if (open) {
-                                                versionPopover.open = false
-                                                archPopover.open = false
-                                            }
-                                        }
-
-                                        Text {
-                                            text: qsTr("ALT %1 was released! Check it out!<br>If you want a stable, finished system, it's better to stay at version %2.").arg(releases.selected.prerelease).arg(releases.selected.version.name)
-                                            font.pointSize: 8
-                                            color: "white"
-                                        }
-
-                                        Timer {
-                                            id: prereleaseTimer
-                                            interval: 300
-                                            repeat: false
-                                            onTriggered: {
-                                                prereleaseNotification.open = true
-                                                prereleaseNotification.wasOpen = true
-                                            }
-                                        }
-                                    }
-                                }
-                                Text {
-                                    text: "      "
-                                }
-                                Text {
                                     Layout.alignment: Qt.AlignRight
-                                    visible: releases.selected.version.variants.length > 1
+                                    visible: releases.selected.variants.length > 1
                                     text: qsTr("Other variants...")
                                     font.pointSize: 8
                                     color: archMouse.containsPress ? Qt.lighter("#1d61bf", 1.7) : archMouse.containsMouse ? Qt.darker("#1d61bf", 1.5) : "#1d61bf"
@@ -310,12 +168,7 @@ Item {
                                         hoverEnabled: true
                                         cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                                         function action() {
-                                            if (versionPopover.open) {
-                                                versionPopover.open = false
-                                            }
-                                            else {
-                                                archPopover.open = !archPopover.open
-                                            }
+                                            archPopover.open = !archPopover.open
                                         }
                                         Keys.onSpacePressed: action()
                                         onClicked: {
@@ -348,28 +201,21 @@ Item {
                                             topMargin: 8 + opacity * 24
                                         }
 
-                                        onOpenChanged: {
-                                            if (open) {
-                                                versionPopover.open = false
-                                                prereleaseNotification.open = false
-                                            }
-                                        }
-
                                         ColumnLayout {
                                             spacing: 9
                                             ExclusiveGroup {
                                                 id: archEG
                                             }
                                             Repeater {
-                                                model: releases.selected.version.variants
+                                                model: releases.selected.variants
                                                 AdwaitaRadioButton {
                                                     text: name
                                                     Layout.alignment: Qt.AlignVCenter
                                                     exclusiveGroup: archEG
-                                                    checked: index == releases.selected.version.variantIndex
+                                                    checked: index == releases.selected.variantIndex
                                                     onCheckedChanged: {
                                                         if (checked)
-                                                            releases.selected.version.variantIndex = index
+                                                            releases.selected.variantIndex = index
                                                         archPopover.open = false
                                                     }
                                                 }
