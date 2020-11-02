@@ -2,8 +2,6 @@ TEMPLATE = app
 
 QT += core network dbus
 
-LIBS += -lisomd5
-
 CONFIG += link_pkgconfig
 PKGCONFIG += liblzma
 

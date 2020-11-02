@@ -15,3 +15,14 @@ Run build.sh found in "altmediawriter/dist/win". Possible run modes are:
 At the end you should be left with the installer file located in "deploy" folder.
 
 To build without using build.sh, use "/mingw32/qt5-static/bin/qmake", NOT regular qmake because windows build is only setup for static build.
+
+# Debugging
+To show debug messages from the app, set the qt environment variable like this:
+
+    export QT_LOGGING_RULES="*.debug=true;qt.*.debug=false"
+
+To also show debug messages from Qt:
+
+    export QT_LOGGING_RULES="*.debug=true"
+
+On windows using an MSYS2/mingw console this shouldn't be needed.

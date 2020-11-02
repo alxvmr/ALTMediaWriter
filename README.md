@@ -19,3 +19,5 @@ Please don't forget to attach the ALTMediaWriter.log file that will appear in yo
 For details about cryptography, see [CRYPTOGRAPHY.md](CRYPTOGRAPHY.md).
 
 Some brief privacy information (regarding User-Agent strings) is in [PRIVACY.md](PRIVACY.md).
+
+To enable debug messages (qDebug()) on linux, set QT_LOGGING_RULES variable like this:
