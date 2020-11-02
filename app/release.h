@@ -40,7 +40,7 @@ class ImageType;
  * @property name the name of the release, like "Fedora Workstation"
  * @property summary the summary describing the release - displayed on the main screen
  * @property description the extensive description of the release - displayed on the detail screen
- * @property isLocal true if name is "custom"
+ * @property isCustom true if this is the custom release
  * @property icon path of the icon of this release
  * @property screenshots a list of paths to screenshots (typically HTTP URLs)
  * @property versions a list of available versions of the @ref ReleaseVersion class
@@ -54,7 +54,7 @@ class Release : public QObject {
     Q_PROPERTY(QString summary READ summary CONSTANT)
     Q_PROPERTY(QString description READ description CONSTANT)
 
-    Q_PROPERTY(bool isLocal READ isLocal CONSTANT)
+    Q_PROPERTY(bool isCustom READ isCustom CONSTANT)
 
     Q_PROPERTY(QString icon READ icon CONSTANT)
     Q_PROPERTY(QStringList screenshots READ screenshots CONSTANT)
@@ -64,15 +64,19 @@ class Release : public QObject {
     Q_PROPERTY(int variantIndex READ selectedVariantIndex WRITE setSelectedVariantIndex NOTIFY selectedVariantChanged)
 public:
     Release(ReleaseManager *parent, const QString &name, const QString &displayName, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots);
-    Q_INVOKABLE void setLocalFile(const QString &path);
-    void updateUrl(const QString &url, Architecture *architecture, ImageType *imageType, const QString &board);
+
+    static Release *custom(ReleaseManager *parent);
+
+    void updateUrl(const QString &url, Architecture *architecture, ImageType *imageType, const QString &board, const bool live);
     ReleaseManager *manager();
+
+    Q_INVOKABLE void setLocalFile(const QString &path);
 
     QString name() const;
     QString displayName() const;
     QString summary() const;
     QString description() const;
-    bool isLocal() const;
+    bool isCustom() const;
     QString icon() const;
     QStringList screenshots() const;
 
@@ -94,6 +98,7 @@ private:
     QStringList m_screenshots;
     QList<Variant *> m_variants;
     int m_selectedVariant = 0;
+    bool m_isCustom;
 };
 
 #endif // RELEASE_H

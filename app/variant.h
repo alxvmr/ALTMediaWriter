@@ -92,8 +92,7 @@ public:
         tr("Error")
     };
 
-    Variant(QString url, Architecture *arch, ImageType *imageType, QString board, Release *parent);
-    Variant(const QString &file, Release *parent);
+    Variant(QString url, Architecture *arch, ImageType *imageType, QString board, const bool live, Release *parent);
 
     bool updateUrl(const QString &url);
 
@@ -105,6 +104,7 @@ public:
     QString name() const;
     QString fullName();
     QString board() const;
+    bool live() const;
 
     QString url() const;
     QString image() const;
@@ -140,6 +140,7 @@ private:
     Architecture *m_arch;
     ImageType *m_image_type;
     QString m_board {};
+    bool m_live;
     QString m_url {};
     qreal m_size = 0.0;
     Status m_status { PREPARING };

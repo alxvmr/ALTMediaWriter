@@ -31,26 +31,16 @@
 #include <QStandardPaths>
 #include <QDir>
 
-Variant::Variant(QString url, Architecture *arch, ImageType *imageType, QString board, Release *parent)
+Variant::Variant(QString url, Architecture *arch, ImageType *imageType, QString board, const bool live, Release *parent)
 : QObject(parent)
 , m_arch(arch)
 , m_image_type(imageType)
 , m_board(board)
+, m_live(live)
 , m_url(url)
 , m_progress(new Progress(this))
 {
 
-}
-
-Variant::Variant(const QString &file, Release *parent)
-: QObject(parent)
-, m_image(file)
-, m_arch(Architecture::fromId(Architecture::X86_64))
-, m_image_type(ImageType::fromFilename(file))
-, m_board("UNKNOWN BOARD")
-, m_progress(new Progress(this))
-{
-    m_status = READY;
 }
 
 bool Variant::updateUrl(const QString &url) {
@@ -84,12 +74,22 @@ QString Variant::board() const {
     return m_board;
 }
 
+bool Variant::live() const {
+    return m_live;
+}
+
 QString Variant::name() const {
-    return m_arch->description() + " | " + m_board;
+    QString out = m_arch->description() + " | " + m_board;
+
+    if (m_live) {
+        out += " LIVE";
+    }
+
+    return out;
 }
 
 QString Variant::fullName() {
-    if (release()->isLocal())
+    if (release()->isCustom())
         return QFileInfo(image()).fileName();
     else
         return QString("%1 %2").arg(release()->displayName(), name());

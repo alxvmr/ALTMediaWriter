@@ -137,7 +137,7 @@ bool ReleaseManager::filterAcceptsRow(int source_row, const QModelIndex &source_
         // Don't filter when on front page, just show 3 releases
         const bool on_front_page = (source_row < FRONTPAGE_ROW_COUNT);
         return on_front_page;
-    } else if (release->isLocal()) {
+    } else if (release->isCustom()) {
         // Always show local release
         return true;
     } else {
@@ -455,6 +455,16 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
             continue;
         }
 
+        const bool live =
+        [variantData]() {
+            const QString live_string = yml_get(variantData, "live");
+            if (!live_string.isEmpty()) {
+                return (live_string == "1");
+            } else {
+                return false;
+            }
+        }();
+
         qDebug() << "Loading variant:" << name << arch->abbreviation().first() << board << imageType->abbreviation().first() << QUrl(url).fileName();
 
         for (int i = 0; i < m_sourceModel->rowCount(); i++) {
@@ -463,7 +473,7 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
             if (release->name().toLower().contains(name)) {
                 // Select first release to get a valid variant to avoid null selected variant
                 m_selectedIndex = i;
-                release->updateUrl(url, arch, imageType, board);
+                release->updateUrl(url, arch, imageType, board, live);
             }
         }
     }
@@ -617,10 +627,7 @@ ReleaseListModel::ReleaseListModel(const QList<QString> &sectionsFiles, ReleaseM
         }
     }
 
-    // Create custom release and variant
-    // Insert custom release at the end of the front page
-    const auto customRelease = new Release(manager(), "custom", tr("Custom image"), QT_TRANSLATE_NOOP("Release", "Pick a file from your drive(s)"), { QT_TRANSLATE_NOOP("Release", "<p>Here you can choose a OS image from your hard drive to be written to your flash disk</p><p>Currently it is only supported to write raw disk images (.iso or .bin)</p>") }, "qrc:/logo/custom", {});
-    customRelease->updateUrl(QString(), Architecture::fromId(Architecture::UNKNOWN), ImageType::all()[ImageType::ISO], QString("UNKNOWN BOARD"));
+    auto customRelease = Release::custom(manager());
     m_releases.insert(FRONTPAGE_ROW_COUNT - 1, customRelease);
 }
 

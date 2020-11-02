@@ -93,7 +93,7 @@ Item {
                             dlDialog.visible = true
                             releases.variant.download()
                         }
-                        enabled: !releases.selected.isLocal || releases.variant.image
+                        enabled: !releases.selected.isCustom || releases.variant.image
                     }
                 }
 
@@ -138,7 +138,7 @@ Item {
                         ColumnLayout {
                             width: parent.width
                             spacing: 6
-                            opacity: releases.selected.isLocal ? 0.0 : 1.0
+                            opacity: releases.selected.isCustom ? 0.0 : 1.0
                             Text {
                                 font.pointSize: 10
                                 color: mixColors(palette.window, palette.windowText, 0.3)

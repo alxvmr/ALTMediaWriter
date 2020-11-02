@@ -33,6 +33,7 @@ Release::Release(ReleaseManager *parent, const QString &name, const QString &dis
 , m_description(description)
 , m_icon(icon)
 , m_screenshots(screenshots)
+, m_isCustom(false)
 {
     // TODO: connect to release's signal in parent, not the other way around, won't need to have parent be releasemanager then
     connect(
@@ -40,34 +41,21 @@ Release::Release(ReleaseManager *parent, const QString &name, const QString &dis
         parent, &ReleaseManager::variantChangedFilter);
 }
 
-void Release::setLocalFile(const QString &path) {
-    if (QFile::exists(path)) {
-        qWarning() << path << "doesn't exist";
-        return;
-    }
+Release *Release::custom(ReleaseManager *parent) {
+    auto customRelease = new Release(parent, QString(), tr("Custom image"), QT_TRANSLATE_NOOP("Release", "Pick a file from your drive(s)"), { QT_TRANSLATE_NOOP("Release", "<p>Here you can choose a OS image from your hard drive to be written to your flash disk</p><p>Currently it is only supported to write raw disk images (.iso or .bin)</p>") }, "qrc:/logo/custom", {});
+    customRelease->m_isCustom = true;
+    customRelease->setLocalFile(QString());
 
-    // TODO: don't need to delete, can change path in variant. Though have to consider the case where path doesn't exist.
-
-    // Delete old variant
-    for (auto variant : m_variants) {
-        variant->deleteLater();
-    }
-    m_variants.clear();
-
-    // Add new variant
-    auto local_variant = new Variant(path, this);
-    m_variants.append(local_variant);
-    emit variantsChanged();
-    emit selectedVariantChanged();
+    return customRelease;
 }
 
-void Release::updateUrl(const QString &url, Architecture *architecture, ImageType *imageType, const QString &board) {
+void Release::updateUrl(const QString &url, Architecture *architecture, ImageType *imageType, const QString &board, const bool live) {
     // If variant already exists, update it
     Variant *variant_in_list =
     [=]() -> Variant * {
         for (auto variant : m_variants) {
             // TODO: equals?
-            if (variant->arch() == architecture && variant->board() == board) {
+            if (variant->arch() == architecture && variant->imageType() == imageType && variant->board() == board && variant->live() == live) {
                 return variant;
             }
         }
@@ -96,7 +84,7 @@ void Release::updateUrl(const QString &url, Architecture *architecture, ImageTyp
         }
         return out;
     }();
-    auto new_variant = new Variant(url, architecture, imageType, board, this);
+    auto new_variant = new Variant(url, architecture, imageType, board, live, this);
 
     m_variants.insert(insert_index, new_variant);
     emit variantsChanged();
@@ -107,6 +95,24 @@ void Release::updateUrl(const QString &url, Architecture *architecture, ImageTyp
         emit selectedVariantChanged();
     }
 }
+
+void Release::setLocalFile(const QString &path) {
+    // Delete old custom variant (there's only one, but iterate anyway)
+    for (auto variant : m_variants) {
+        variant->deleteLater();
+    }
+    m_variants.clear();
+
+    // Add new variant
+    ImageType *image_type = ImageType::fromFilename(path);
+    auto customVariant = new Variant(path, Architecture::fromId(Architecture::UNKNOWN), image_type, QString(), false, this);
+    // NOTE: start out in ready because don't need to download
+    customVariant->setStatus(Variant::READY);
+    m_variants.append(customVariant);
+    
+    emit variantsChanged();
+    emit selectedVariantChanged();
+ }
 
 QString Release::name() const {
     return m_name;
@@ -124,8 +130,8 @@ QString Release::description() const {
     return m_description;
 }
 
-bool Release::isLocal() const {
-    return m_name == "custom";
+bool Release::isCustom() const {
+    return m_isCustom;
 }
 
 QString Release::icon() const {

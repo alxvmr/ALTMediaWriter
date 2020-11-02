@@ -287,7 +287,7 @@ Dialog {
                         InfoMessage {
                             id: messageSelectedImage
                             width: infoColumn.width
-                            visible: releases.selected.isLocal
+                            visible: releases.selected.isCustom
                             text: "<font color=\"gray\">" + qsTr("Selected:") + "</font> " + (releases.variant.image ? (((String)(releases.variant.image)).split("/").slice(-1)[0]) : ("<font color=\"gray\">" + qsTr("None") + "</font>"))
                         }
 

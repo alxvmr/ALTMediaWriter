@@ -99,7 +99,7 @@ Item {
         }
         Arrow {
             id: arrow
-            visible: !release.isLocal
+            visible: !release.isCustom
             anchors {
                 verticalCenter: parent.verticalCenter
                 right: parent.right
@@ -146,7 +146,7 @@ Item {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         function action() {
-            if (release.isLocal) {
+            if (release.isCustom) {
                 releases.selectedIndex = index
                 fileDialog.visible = true
             } else {
