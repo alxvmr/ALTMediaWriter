@@ -149,7 +149,7 @@ Item {
                                 font.pointSize: 8
                                 color: mixColors(palette.window, palette.windowText, 0.3)
                                 visible: releases.variant
-                                text: releases.variant.imageType.name
+                                text: releases.variant && releases.variant.imageType.name
                             }
                             RowLayout {
                                 spacing: 0

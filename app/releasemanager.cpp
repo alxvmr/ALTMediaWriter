@@ -32,21 +32,9 @@
 #include <QApplication>
 #include <QAbstractEventDispatcher>
 
-#define GETALT_IMAGES_LOCATION "http://getalt.org/_data/images/"
+#define GETALT_IMAGES_URL "http://getalt.org/_data/images/"
+#define GETALT_SECTIONS_URL "http://getalt.org/_data/sections/"
 #define FRONTPAGE_ROW_COUNT 3
-
-QString releaseImagesCacheDir() {
-    QString appdataPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
-
-    QDir dir(appdataPath);
-    
-    // Make path if it doesn't exist
-    if (!dir.exists()) {
-        dir.mkpath(appdataPath);
-    }
-
-    return appdataPath + "/";
-}
 
 QString fileToString(const QString &filename) {
     QFile file(filename);
@@ -62,11 +50,16 @@ QString fileToString(const QString &filename) {
     return str;
 }
 
-QList<QString> getReleaseImagesFiles() {
+QList<QString> imageFiles() {
     const QDir dir(":/images");
-    const QList<QString> releaseImagesFiles = dir.entryList();
+    const QList<QString> files = dir.entryList();
+    return files;
+}
 
-    return releaseImagesFiles;
+QList<QString> sectionFiles() {
+    const QDir dir(":/sections");
+    const QList<QString> files = dir.entryList();
+    return files;
 }
 
 QString ymlToQString(const YAML::Node &yml_value) {
@@ -83,10 +76,10 @@ QString ymlToQString(const YAML::Node &yml_value) {
 }
 
 ReleaseManager::ReleaseManager(QObject *parent)
-: QSortFilterProxyModel(parent), m_sourceModel(new ReleaseListModel(this))
+: QSortFilterProxyModel(parent)
+// , m_sourceModel(new ReleaseListModel(this))
 {
     qDebug() << this->metaObject()->className() << "construction";
-    setSourceModel(m_sourceModel);
 
     qmlRegisterUncreatableType<Release>("MediaWriter", 1, 0, "Release", "");
     qmlRegisterUncreatableType<Variant>("MediaWriter", 1, 0, "Variant", "");
@@ -94,29 +87,30 @@ ReleaseManager::ReleaseManager(QObject *parent)
     qmlRegisterUncreatableType<ImageType>("MediaWriter", 1, 0, "ImageType", "");
     qmlRegisterUncreatableType<Progress>("MediaWriter", 1, 0, "Progress", "");
 
-    const QList<QString> releaseImagesList = getReleaseImagesFiles();
+    // Load built-in metadata to display something while 
+    // up-to-date metadata is downloading
 
-    // Try to load releases from cache
-    bool loadedCachedReleases = true;
-    for (auto release : releaseImagesList) {
-        QString cachePath = releaseImagesCacheDir() + release;
-        QFile cache(cachePath);
-        if (!cache.open(QIODevice::ReadOnly)) {
-            loadedCachedReleases = false;
-            break;
-        } else {
-            cache.close();
-        }
-        loadReleaseFile(fileToString(cachePath));
-    }
+    // Load sections
+    const QList<QString> sections =
+    []() {
+        QList<QString> out;
 
-    if (!loadedCachedReleases) {
-        // Load built-in release images if failed to load cache
-        for (auto release : releaseImagesList) {
-            const QString built_in_relese_images_path = ":/images/" + release;
-            const QString release_images_string = fileToString(built_in_relese_images_path);
-            loadReleaseFile(release_images_string);
+        for (auto sectionFile : sectionFiles()) {
+            const QString sectionFilepath = ":/sections/" + sectionFile;
+            const QString section = fileToString(sectionFilepath);
+            out.append(section);
         }
+
+        return out;
+    }();
+    m_sourceModel = new ReleaseListModel(sections, this);
+    setSourceModel(m_sourceModel);
+
+    // Load images
+    for (auto imageFile : imageFiles()) {
+        const QString imageFilepath = ":/images/" + imageFile;
+        const QString image = fileToString(imageFilepath);
+        loadReleaseFile(image);
     }
 
     connect(
@@ -124,8 +118,7 @@ ReleaseManager::ReleaseManager(QObject *parent)
         this, &ReleaseManager::variantChangedFilter);
 
     // Download releases from getalt.org
-
-    QTimer::singleShot(0, this, SLOT(fetchReleases()));
+    QTimer::singleShot(0, this, &ReleaseManager::downloadMetadata);
 }
 
 bool ReleaseManager::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const {
@@ -159,27 +152,55 @@ Release *ReleaseManager::get(int index) const {
     return m_sourceModel->get(index);
 }
 
-void ReleaseManager::fetchReleases() {
+void ReleaseManager::downloadMetadata() {
+    qDebug() << "Downloading metadata";
+    
     setBeingUpdated(true);
+
+    const QList<QString> section_urls =
+    []() {
+        QList<QString> out;
+        for (const auto sectionFile : sectionFiles()) {
+            const QString url = GETALT_SECTIONS_URL + sectionFile;
+            out.append(url);
+            qDebug() << "Section url:" << url;
+        }
+        return out;
+    }();
+
+    const QList<QString> image_urls =
+    []() {
+        QList<QString> out;
+
+        for (const auto imageFile : imageFiles()) {
+            const QString url = GETALT_IMAGES_URL + imageFile;
+            out.append(url);
+            qDebug() << "Image url:" << url;
+        }
+
+        return out;
+    }();
 
     // Create requests to download all release files and
     // collect the replies
-    QHash<QString, QNetworkReply *> replies;
-    const QList<QString> releaseFiles = getReleaseImagesFiles();
-    for (const auto file : releaseFiles) {
-        const QString url = GETALT_IMAGES_LOCATION + file;
+    const QHash<QString, QNetworkReply *> replies =
+    [section_urls, image_urls]() {
+        QHash<QString, QNetworkReply *> out;
+        const QList<QString> all_urls = section_urls + image_urls;
 
-        qDebug() << "Release url:" << url;
+        for (const auto url : all_urls) {
+            QNetworkReply *reply = makeNetworkRequest(url, 5000);
 
-        QNetworkReply *reply = makeNetworkRequest(url, 5000);
+            out[url] = reply;
+        }
 
-        replies[file] = reply;
-    }
+        return out;
+    }();
 
     // This will run when all the replies are finished (or
     // technically, the last one)
     const auto onReplyFinished =
-    [this, replies]() {
+    [this, replies, section_urls, image_urls]() {
         // Only proceed if this is the last reply
         for (auto reply : replies) {
             if (!reply->isFinished()) {
@@ -190,31 +211,84 @@ void ReleaseManager::fetchReleases() {
         // Check that all replies suceeded
         // If not, retry
         for (auto reply : replies.values()) {
-            const bool success = (reply->error() == QNetworkReply::NoError && reply->bytesAvailable() > 0);
-            if (!success) {
-                qWarning() << "Was not able to fetch new releases:" << reply->errorString() << "Retrying in 10 seconds.";
-                QTimer::singleShot(10000, this, SLOT(fetchReleases()));
+            // NOTE: ignore ContentNotFoundError since it can happen if one of the files was moved or renamed
+            const QNetworkReply::NetworkError error = reply->error();
+            const bool download_failed = (error != QNetworkReply::NoError && error != QNetworkReply::ContentNotFoundError);
+
+            if (download_failed) {
+                qWarning() << "Failed to download metadata:" << reply->errorString() << reply->error() << "Retrying in 10 seconds.";
+                QTimer::singleShot(10000, this, &ReleaseManager::downloadMetadata);
 
                 return;
             }
         }
 
-        qDebug() << this->metaObject()->className() << "Downloaded all release files";
+        qDebug() << "Downloaded metadata, loading it";
 
-        // Finally, save release files if all is good
-        for (auto file : replies.keys()) {
-            QNetworkReply *reply = replies[file];
+        // Collect results
+        QHash<QString, QString> url_to_file;
 
-            const QByteArray contents_bytes = reply->readAll();
-            const QString contents(contents_bytes);
+        for (auto url : replies.keys()) {
+            QNetworkReply *reply = replies[url];
 
-            // Save to cache
-            const QString cachePath = releaseImagesCacheDir() + file;
-            std::ofstream cacheFile(cachePath.toStdString());
-            cacheFile << contents.toStdString();
+            const QString contents =
+            [reply, url, image_urls, section_urls]() {
+                if (reply->bytesAvailable() > 0) {
+                    const QByteArray bytes = reply->readAll();
 
-            loadReleaseFile(contents);
+                    return QString(bytes);
+                } else {
+                    // If file failed to download for whatever reason, load built-in metadata
+                    const QString file_name = QUrl(url).fileName();
+                    const QString type_string =
+                    [url, image_urls, section_urls]() {
+                        if (image_urls.contains(url)) {
+                            return "images";
+                        } else {
+                            return "sections";
+                        }
+                    }();
 
+                    qDebug() << "Failed to download metadata from" << url;
+                    qDebug() << "Using built-in version instead";
+
+                    const QString builtin_file_path = QString(":/%1/%2").arg(type_string, file_name);
+                    return fileToString(builtin_file_path);
+                }
+            }();
+
+            url_to_file[url] = contents;
+        }
+
+        const QList<QString> sections =
+        [section_urls, url_to_file]() {
+            QList<QString> out;
+            for (const auto section_url : section_urls) {
+                const QString section = url_to_file[section_url];
+                out.append(section);
+            }
+            return out;
+        }();
+
+        m_sourceModel->deleteLater();
+        m_sourceModel = new ReleaseListModel(sections, this);
+        setSourceModel(m_sourceModel);
+
+        const QList<QString> images =
+        [image_urls, url_to_file]() {
+            QList<QString> out;
+            for (const auto image_url : image_urls) {
+                const QString image = url_to_file[image_url];
+                out.append(image);
+            }
+            return out;
+        }();
+
+        for (auto image : images) {
+            loadReleaseFile(image);
+        }
+
+        for (auto reply : replies.values()) {
             reply->deleteLater();
         }
 
@@ -372,7 +446,7 @@ void ReleaseManager::loadReleaseFile(const QString &fileContents) {
             continue;
         }
 
-        qDebug() << this->metaObject()->className() << "Adding" << name << arch->abbreviation().first() << board << imageType->abbreviation().first() << QUrl(url).fileName();
+        qDebug() << "Loading variant:" << name << arch->abbreviation().first() << board << imageType->abbreviation().first() << QUrl(url).fileName();
 
         for (int i = 0; i < m_sourceModel->rowCount(); i++) {
             Release *release = get(i);
@@ -461,19 +535,21 @@ QVariant ReleaseListModel::data(const QModelIndex &index, int role) const {
     return QVariant();
 }
 
-ReleaseListModel::ReleaseListModel(ReleaseManager *parent)
-: QAbstractListModel(parent) {
-    // Load releases from sections files
-    const QDir sections_dir(":/sections");
-    const QList<QString> sectionsFiles = sections_dir.entryList();
+ReleaseListModel::ReleaseListModel(const QList<QString> &sections, ReleaseManager *parent)
+: QAbstractListModel(parent)
+{
+    qDebug() << "Creating ReleaseListModel";
 
-    for (auto sectionFile : sectionsFiles) {
-        const QString sectionFileContents = fileToString(":/sections/" + sectionFile);
-        const YAML::Node sectionsFile = YAML::Load(sectionFileContents.toStdString());
+    for (auto section : sections) {
+        // If section is empty, fall back to 
 
+        const YAML::Node sectionsFile = YAML::Load(section.toStdString());
+        
         for (unsigned int i = 0; i < sectionsFile["members"].size(); i++) {
             const YAML::Node release_yml = sectionsFile["members"][i];
             const QString name = ymlToQString(release_yml["code"]);
+
+            qDebug() << "Loading section: " << name;
 
             std::string lang = "_en";
             if (QLocale().language() == QLocale::Russian) {
@@ -591,6 +667,8 @@ void Release::updateUrl(const QString &url, Architecture *architecture, ImageTyp
         return nullptr;
     }();
     if (variant_in_list != nullptr) {
+        qDebug() << "Variant already loaded, only updating url";
+
         variant_in_list->updateUrl(url);
         return;
     }
