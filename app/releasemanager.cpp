@@ -37,10 +37,10 @@
 #define GETALT_SECTIONS_URL "http://getalt.org/_data/sections/"
 #define FRONTPAGE_ROW_COUNT 3
 
-QString fileToString(const QString &filename) {
+QString readFile(const QString &filename) {
     QFile file(filename);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        qDebug() << "fileToString(): Failed to open file " << filename;
+        qDebug() << "readFile(): Failed to open file " << filename;
         return "";
     }
     QTextStream fileStream(&file);
@@ -51,13 +51,13 @@ QString fileToString(const QString &filename) {
     return str;
 }
 
-QList<QString> imageFiles() {
+QList<QString> imagesFilenames() {
     const QDir dir(":/images");
     const QList<QString> files = dir.entryList();
     return files;
 }
 
-QList<QString> sectionFiles() {
+QList<QString> sectionsFilenames() {
     const QDir dir(":/sections");
     const QList<QString> files = dir.entryList();
     return files;
@@ -78,7 +78,6 @@ QString ymlToQString(const YAML::Node &yml_value) {
 
 ReleaseManager::ReleaseManager(QObject *parent)
 : QSortFilterProxyModel(parent)
-// , m_sourceModel(new ReleaseListModel(this))
 {
     qDebug() << this->metaObject()->className() << "construction";
 
@@ -91,27 +90,27 @@ ReleaseManager::ReleaseManager(QObject *parent)
     // Load built-in metadata to display something while 
     // up-to-date metadata is downloading
 
-    // Load sections
-    const QList<QString> sections =
+    // Load sections metadata
+    const QList<QString> sectionsFiles =
     []() {
         QList<QString> out;
 
-        for (auto sectionFile : sectionFiles()) {
-            const QString sectionFilepath = ":/sections/" + sectionFile;
-            const QString section = fileToString(sectionFilepath);
-            out.append(section);
+        for (auto sectionFilename : sectionsFilenames()) {
+            const QString sectionFilepath = ":/sections/" + sectionFilename;
+            const QString sectionFile = readFile(sectionFilepath);
+            out.append(sectionFile);
         }
 
         return out;
     }();
-    m_sourceModel = new ReleaseListModel(sections, this);
+    m_sourceModel = new ReleaseListModel(sectionsFiles, this);
     setSourceModel(m_sourceModel);
 
-    // Load images
-    for (auto imageFile : imageFiles()) {
-        const QString imageFilepath = ":/images/" + imageFile;
-        const QString image = fileToString(imageFilepath);
-        loadReleaseFile(image);
+    // Load images metadata
+    for (auto imagesFilename : imagesFilenames()) {
+        const QString imageFilepath = ":/images/" + imagesFilename;
+        const QString variantsFile = readFile(imageFilepath);
+        loadVariants(variantsFile);
     }
 
     connect(
@@ -161,7 +160,7 @@ void ReleaseManager::downloadMetadata() {
     const QList<QString> section_urls =
     []() {
         QList<QString> out;
-        for (const auto sectionFile : sectionFiles()) {
+        for (const auto sectionFile : sectionsFilenames()) {
             const QString url = GETALT_SECTIONS_URL + sectionFile;
             out.append(url);
             qDebug() << "Section url:" << url;
@@ -173,7 +172,7 @@ void ReleaseManager::downloadMetadata() {
     []() {
         QList<QString> out;
 
-        for (const auto imageFile : imageFiles()) {
+        for (const auto imageFile : imagesFilenames()) {
             const QString url = GETALT_IMAGES_URL + imageFile;
             out.append(url);
             qDebug() << "Image url:" << url;
@@ -254,14 +253,14 @@ void ReleaseManager::downloadMetadata() {
                     qDebug() << "Using built-in version instead";
 
                     const QString builtin_file_path = QString(":/%1/%2").arg(type_string, file_name);
-                    return fileToString(builtin_file_path);
+                    return readFile(builtin_file_path);
                 }
             }();
 
             url_to_file[url] = contents;
         }
 
-        const QList<QString> sections =
+        const QList<QString> sectionsFiles =
         [section_urls, url_to_file]() {
             QList<QString> out;
             for (const auto section_url : section_urls) {
@@ -272,10 +271,10 @@ void ReleaseManager::downloadMetadata() {
         }();
 
         m_sourceModel->deleteLater();
-        m_sourceModel = new ReleaseListModel(sections, this);
+        m_sourceModel = new ReleaseListModel(sectionsFiles, this);
         setSourceModel(m_sourceModel);
 
-        const QList<QString> images =
+        const QList<QString> imagesFiles =
         [image_urls, url_to_file]() {
             QList<QString> out;
             for (const auto image_url : image_urls) {
@@ -285,8 +284,8 @@ void ReleaseManager::downloadMetadata() {
             return out;
         }();
 
-        for (auto image : images) {
-            loadReleaseFile(image);
+        for (auto imagesFile : imagesFiles) {
+            loadVariants(imagesFile);
         }
 
         for (auto reply : replies.values()) {
@@ -397,26 +396,30 @@ Variant *ReleaseManager::variant() {
     }
 }
 
-void ReleaseManager::loadReleaseFile(const QString &fileContents) {
-    YAML::Node file = YAML::Load(fileContents.toStdString());
+void ReleaseManager::loadVariants(const QString &variantsFile) {
+    YAML::Node variants = YAML::Load(variantsFile.toStdString());
 
-    for (auto e : file["entries"]) {
-        const QString url = ymlToQString(e["link"]);
+    if (!variants["entries"]) {
+        return;
+    }
+
+    for (auto variantData : variants["entries"]) {
+        const QString url = ymlToQString(variantData["link"]);
         if (url.isEmpty()) {
             qDebug() << "Invalid url for" << url;
             continue;
         }
 
-        const QString name = ymlToQString(e["solution"]);
+        const QString name = ymlToQString(variantData["solution"]);
         if (name.isEmpty()) {
             qDebug() << "Invalid name for" << url;
             continue;
         }
 
         Architecture *arch =
-        [e, url]() -> Architecture * {
-            if (e["arch"]) {
-                const QString arch_abbreviation = ymlToQString(e["arch"]);
+        [variantData, url]() -> Architecture * {
+            if (variantData["arch"]) {
+                const QString arch_abbreviation = ymlToQString(variantData["arch"]);
                 return Architecture::fromAbbreviation(arch_abbreviation);
             } else {
                 return Architecture::fromFilename(url);
@@ -429,9 +432,9 @@ void ReleaseManager::loadReleaseFile(const QString &fileContents) {
 
         // NOTE: yml file doesn't define "board" for pc32/pc64
         const QString board =
-        [e]() -> QString {
-            if (e["board"]) {
-                return ymlToQString(e["board"]);
+        [variantData]() -> QString {
+            if (variantData["board"]) {
+                return ymlToQString(variantData["board"]);
             } else {
                 return "PC";
             }
@@ -538,19 +541,17 @@ QVariant ReleaseListModel::data(const QModelIndex &index, int role) const {
     return QVariant();
 }
 
-ReleaseListModel::ReleaseListModel(const QList<QString> &sections, ReleaseManager *parent)
+ReleaseListModel::ReleaseListModel(const QList<QString> &sectionsFiles, ReleaseManager *parent)
 : QAbstractListModel(parent)
 {
     qDebug() << "Creating ReleaseListModel";
 
-    for (auto section : sections) {
-        // If section is empty, fall back to 
-
-        const YAML::Node sectionsFile = YAML::Load(section.toStdString());
+    for (auto sectionFile : sectionsFiles) {
+        const YAML::Node section = YAML::Load(sectionFile.toStdString());
         
-        for (unsigned int i = 0; i < sectionsFile["members"].size(); i++) {
-            const YAML::Node release_yml = sectionsFile["members"][i];
-            const QString name = ymlToQString(release_yml["code"]);
+        for (unsigned int i = 0; i < section["members"].size(); i++) {
+            const YAML::Node releaseData = section["members"][i];
+            const QString name = ymlToQString(releaseData["code"]);
 
             qDebug() << "Loading section: " << name;
 
@@ -559,16 +560,16 @@ ReleaseListModel::ReleaseListModel(const QList<QString> &sections, ReleaseManage
                 lang = "_ru";
             }
             
-            const QString display_name = ymlToQString(release_yml["name" + lang]);
-            const QString summary = ymlToQString(release_yml["descr" + lang]);
+            const QString display_name = ymlToQString(releaseData["name" + lang]);
+            const QString summary = ymlToQString(releaseData["descr" + lang]);
 
-            QString description = ymlToQString(release_yml["descr_full" + lang]);
+            QString description = ymlToQString(releaseData["descr_full" + lang]);
 
             // NOTE: currently no screenshots
             const QStringList screenshots;
             
             // Check that icon file exists
-            const QString icon_name = ymlToQString(release_yml["img"]);
+            const QString icon_name = ymlToQString(releaseData["img"]);
             const QString icon_path_test = ":/logo/" + icon_name;
             const QFile icon_file(icon_path_test);
             if (!icon_file.exists()) {

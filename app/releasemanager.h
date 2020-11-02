@@ -127,7 +127,7 @@ private:
     int m_selectedIndex { 0 };
     bool m_beingUpdated = true;
 
-    void loadReleaseFile(const QString &fileContents);
+    void loadVariants(const QString &variantsFile);
     void setBeingUpdated(const bool value);
     void downloadMetadata();
 };
@@ -141,7 +141,7 @@ private:
 class ReleaseListModel : public QAbstractListModel {
     Q_OBJECT
 public:
-    explicit ReleaseListModel(const QList<QString> &sections, ReleaseManager *parent);
+    explicit ReleaseListModel(const QList<QString> &sectionsFiles, ReleaseManager *parent);
     ReleaseManager *manager();
 
     Q_INVOKABLE Release *get(int index);
