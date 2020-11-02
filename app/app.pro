@@ -25,6 +25,7 @@ HEADERS += \
     progress.h \
     image_type.h \
     architecture.h \
+    release.h \
     variant.h
 
 SOURCES += main.cpp \
@@ -36,6 +37,7 @@ SOURCES += main.cpp \
     progress.cpp \
     image_type.cpp \
     architecture.cpp \
+    release.cpp \
     variant.cpp
 
 RESOURCES += qml.qrc \

@@ -18,6 +18,7 @@
  */
 
 #include "variant.h"
+#include "release.h"
 #include "image_download.h"
 #include "image_type.h"
 #include "architecture.h"
