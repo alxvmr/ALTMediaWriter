@@ -57,7 +57,7 @@ QString getHelperPath() {
     const QList<QString> possiblePaths = {
         appPath + "/" + executable,
         #ifdef __linux__
-        LIBEXECDIR + "/" + executable,
+        QString(LIBEXECDIR) + "/" + executable,
         #endif // __linux__
         appPath + "/../helper/" + platform + "/" + executable,
         appPath + "/../../helper/" + platform + "/release/" + executable,

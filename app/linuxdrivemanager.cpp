@@ -263,7 +263,7 @@ void LinuxDrive::restore() {
     } else {
         qWarning() << "Couldn't find the helper binary.";
         setRestoreStatus(RESTORE_ERROR);
-        return false;
+        return;
     }
     
     QStringList args;
