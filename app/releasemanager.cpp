@@ -452,6 +452,8 @@ void ReleaseManager::loadReleaseFile(const QString &fileContents) {
             Release *release = get(i);
 
             if (release->name().toLower().contains(name)) {
+                // Select first release to get a valid variant to avoid null selected variant
+                m_selectedIndex = i;
                 release->updateUrl(url, arch, imageType, board);
             }
         }
@@ -695,8 +697,8 @@ void Release::updateUrl(const QString &url, Architecture *architecture, ImageTyp
     emit variantsChanged();
     
     // Select first variant by default
-    // TODO: use setSelectedVariantIndex()? Need to avoid checking for (if changed) condition in there then
     if (m_variants.count() == 1) {
+        m_selectedVariant = 0;
         emit selectedVariantChanged();
     }
 }
