@@ -86,7 +86,12 @@ QString yml_get(const YAML::Node &node, const QString &key) {
 
 ReleaseManager::ReleaseManager(QObject *parent)
 : QSortFilterProxyModel(parent)
+, m_sourceModel(new ReleaseListModel(this))
 {
+    setSourceModel(m_sourceModel);
+
+    setSelectedIndex(0);
+
     qDebug() << this->metaObject()->className() << "construction";
 
     qmlRegisterUncreatableType<Release>("MediaWriter", 1, 0, "Release", "");
@@ -94,32 +99,6 @@ ReleaseManager::ReleaseManager(QObject *parent)
     qmlRegisterUncreatableType<Architecture>("MediaWriter", 1, 0, "Architecture", "");
     qmlRegisterUncreatableType<ImageType>("MediaWriter", 1, 0, "ImageType", "");
     qmlRegisterUncreatableType<Progress>("MediaWriter", 1, 0, "Progress", "");
-
-    // Load built-in metadata to display something while 
-    // up-to-date metadata is downloading
-
-    // Load sections metadata
-    const QList<QString> sectionsFiles =
-    []() {
-        QList<QString> out;
-
-        for (auto sectionFilename : sectionsFilenames()) {
-            const QString sectionFilepath = ":/sections/" + sectionFilename;
-            const QString sectionFile = readFile(sectionFilepath);
-            out.append(sectionFile);
-        }
-
-        return out;
-    }();
-    m_sourceModel = new ReleaseListModel(sectionsFiles, this);
-    setSourceModel(m_sourceModel);
-
-    // Load images metadata
-    for (auto imagesFilename : imagesFilenames()) {
-        const QString imageFilepath = ":/images/" + imagesFilename;
-        const QString variantsFile = readFile(imageFilepath);
-        loadVariants(variantsFile);
-    }
 
     // Download releases from getalt.org
     QTimer::singleShot(0, this, &ReleaseManager::downloadMetadata);
@@ -274,9 +253,7 @@ void ReleaseManager::downloadMetadata() {
             return out;
         }();
 
-        m_sourceModel->deleteLater();
-        m_sourceModel = new ReleaseListModel(sectionsFiles, this);
-        setSourceModel(m_sourceModel);
+        m_sourceModel->loadReleases(sectionsFiles);
 
         const QList<QString> imagesFiles =
         [image_urls, url_to_file]() {
@@ -296,6 +273,7 @@ void ReleaseManager::downloadMetadata() {
             reply->deleteLater();
         }
 
+        invalidateFilter();
         setBeingUpdated(false);
     };
 
@@ -368,8 +346,9 @@ void ReleaseManager::setFilterArchitecture(int o) {
 }
 
 Release *ReleaseManager::selected() const {
-    if (m_selectedIndex >= 0 && m_selectedIndex < m_sourceModel->rowCount())
+    if (m_selectedIndex >= 0 && m_selectedIndex < m_sourceModel->rowCount()) {
         return m_sourceModel->get(m_selectedIndex);
+    }
     return nullptr;
 }
 
@@ -450,9 +429,7 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
         for (int i = 0; i < m_sourceModel->rowCount(); i++) {
             Release *release = get(i);
 
-            if (release->name().toLower().contains(name)) {
-                // Select first release to get a valid variant to avoid null selected variant
-                m_selectedIndex = i;
+            if (release->name() == name) {
                 release->updateUrl(url, arch, imageType, board, live);
             }
         }
@@ -536,10 +513,18 @@ QVariant ReleaseListModel::data(const QModelIndex &index, int role) const {
     return QVariant();
 }
 
-ReleaseListModel::ReleaseListModel(const QList<QString> &sectionsFiles, QObject *parent)
+ReleaseListModel::ReleaseListModel(QObject *parent)
 : QAbstractListModel(parent)
 {
     qDebug() << "Creating ReleaseListModel";
+
+    // Add custom release to first position
+    auto customRelease = Release::custom(this);
+    m_releases.append(customRelease);
+}
+
+void ReleaseListModel::loadReleases(const QList<QString> &sectionsFiles) {
+    qDebug() << "Loading releases";
 
     for (auto sectionFile : sectionsFiles) {
         const YAML::Node section = YAML::Load(sectionFile.toStdString());
@@ -553,7 +538,7 @@ ReleaseListModel::ReleaseListModel(const QList<QString> &sectionsFiles, QObject 
 
             const QString name = yml_get(releaseData, "code");
 
-            qDebug() << "Loading section: " << name;
+            qDebug() << "Loading release: " << name;
 
             const QString language =
             []() {
@@ -586,9 +571,9 @@ ReleaseListModel::ReleaseListModel(const QList<QString> &sectionsFiles, QObject 
 
             // Reorder releases because default order in
             // sections files is not good. Try to put
-            // workstation first and server second, so that they
-            // are both on the frontpage.
-            // NOTE: this will break if names change in sections files, in that case the order will be the default one
+            // workstation first after custom release and
+            // server second, so that they are both on the
+            // frontpage.
             const int index =
             [this, release]() {
                 const QString release_name = release->name();
@@ -596,19 +581,22 @@ ReleaseListModel::ReleaseListModel(const QList<QString> &sectionsFiles, QObject 
                 const bool is_server = (release_name == "alt-server");
 
                 if (is_workstation) {
-                    return 0;
-                } else if (is_server) {
                     return 1;
+                } else if (is_server) {
+                    return 2;
                 } else {
                     return m_releases.size();
                 }
             }();
+            
+            // NOTE: do model calls to notify parent model about changes
+            beginInsertRows(QModelIndex(), index, index);
             m_releases.insert(index, release);
+            endInsertRows();
         }
     }
 
-    auto customRelease = Release::custom(this);
-    m_releases.insert(FRONTPAGE_ROW_COUNT - 1, customRelease);
+    qDebug() << "Loaded" << (m_releases.count() - 1 ) << "releases";
 }
 
 Release *ReleaseListModel::get(int index) {

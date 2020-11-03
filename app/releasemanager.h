@@ -112,11 +112,11 @@ signals:
     void selectedChanged();
 
 private:
-    ReleaseListModel *m_sourceModel { nullptr };
+    ReleaseListModel *m_sourceModel;
     bool m_frontPage { true };
     QString m_filterText {};
     int m_filterArchitecture { 0 };
-    int m_selectedIndex { 0 };
+    int m_selectedIndex;
     bool m_beingUpdated = true;
 
     void loadVariants(const QString &variantsFile);
@@ -133,7 +133,9 @@ private:
 class ReleaseListModel : public QAbstractListModel {
     Q_OBJECT
 public:
-    explicit ReleaseListModel(const QList<QString> &sectionsFiles, QObject *parent);
+    ReleaseListModel(QObject *parent);
+
+    void loadReleases(const QList<QString> &sectionsFiles);
 
     Q_INVOKABLE Release *get(int index);
 

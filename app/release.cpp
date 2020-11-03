@@ -59,7 +59,9 @@ void Release::updateUrl(const QString &url, Architecture *architecture, ImageTyp
         return nullptr;
     }();
     if (variant_in_list != nullptr) {
-        qDebug() << "Variant already loaded, only updating url";
+        qDebug() << "Variant already loaded, only updating url:";
+        qDebug() << "\told=" << variant_in_list->url();
+        qDebug() << "\tnew=" << url;
 
         variant_in_list->updateUrl(url);
         return;
