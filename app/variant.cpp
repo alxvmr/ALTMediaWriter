@@ -20,7 +20,7 @@
 #include "variant.h"
 #include "release.h"
 #include "image_download.h"
-#include "image_type.h"
+#include "file_type.h"
 #include "architecture.h"
 #include "network.h"
 #include "progress.h"
@@ -31,11 +31,11 @@
 #include <QStandardPaths>
 #include <QDir>
 
-Variant::Variant(QString url, const QString &releaseName_arg, Architecture *arch, ImageType *imageType, QString board, const bool live, QObject *parent)
+Variant::Variant(QString url, const QString &releaseName_arg, Architecture *arch, FileType *fileType, QString board, const bool live, QObject *parent)
 : QObject(parent)
 , releaseName(releaseName_arg)
 , m_arch(arch)
-, m_image_type(imageType)
+, m_fileType(fileType)
 , m_board(board)
 , m_live(live)
 , m_url(url)
@@ -46,12 +46,12 @@ Variant::Variant(QString url, const QString &releaseName_arg, Architecture *arch
 
 Variant *Variant::custom(const QString &path, QObject *parent) {
     const QString releaseName = tr("Custom");
-    ImageType *image_type = ImageType::fromFilename(path);
+    FileType *file_type = FileType::fromFilename(path);
     Architecture *arch = Architecture::fromId(Architecture::UNKNOWN);
     const QString board = QString();
     const bool live = false;
 
-    auto variant = new Variant(path, releaseName, arch, image_type, board, live, parent);
+    auto variant = new Variant(path, releaseName, arch, file_type, board, live, parent);
     // NOTE: start out in ready because don't need to download
     variant->setStatus(Variant::READY);
 
@@ -62,8 +62,8 @@ Architecture *Variant::arch() const {
     return m_arch;
 }
 
-ImageType *Variant::imageType() const {
-    return (ImageType *)m_image_type;
+FileType *Variant::fileType() const {
+    return (FileType *)m_fileType;
 }
 
 QString Variant::board() const {

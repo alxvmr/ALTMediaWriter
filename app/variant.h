@@ -26,7 +26,7 @@
 #include <QString>
 
 class Progress;
-class ImageType;
+class FileType;
 class Architecture;
 
 /**
@@ -38,7 +38,7 @@ class Architecture;
  * @property board the name of supported hardware of the image
  * @property url the URL pointing to the image
  * @property image the path to the image on the drive
- * @property imageType the type of the image on the drive
+ * @property fileType the type of the image on the drive
  * @property size the size of the image in bytes
  * @property progress the progress object of the image - reports the progress of download
  * @property status status of the variant - if it's downloading, being written, etc.
@@ -48,7 +48,7 @@ class Architecture;
 class Variant final : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString name READ name CONSTANT)
-    Q_PROPERTY(ImageType *imageType READ imageType CONSTANT)
+    Q_PROPERTY(FileType *fileType READ fileType CONSTANT)
 
     Q_PROPERTY(QString file READ file NOTIFY fileChanged)
     Q_PROPERTY(qreal size READ size NOTIFY sizeChanged)
@@ -57,8 +57,6 @@ class Variant final : public QObject {
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(QString statusString READ statusString NOTIFY statusChanged)
     Q_PROPERTY(QString errorString READ errorString WRITE setErrorString NOTIFY errorStringChanged)
-    
-    Q_PROPERTY(bool delayedWrite WRITE setDelayedWrite)
 public:
     Q_ENUMS(Type)
     enum Status {
@@ -90,12 +88,14 @@ public:
         tr("Error")
     };
 
-    Variant(QString url, const QString &releaseName_arg, Architecture *arch, ImageType *imageType, QString board, const bool live, QObject *parent);
+    Variant(QString url, const QString &releaseName_arg, Architecture *arch, FileType *fileType, QString board, const bool live, QObject *parent);
 
     static Variant *custom(const QString &path, QObject *parent);
 
+    Q_INVOKABLE void setDelayedWrite(const bool value);
+
     Architecture *arch() const;
-    ImageType *imageType() const;
+    FileType *fileType() const;
     QString name() const;
     QString fullName();
     QString board() const;
@@ -105,8 +105,6 @@ public:
     QString file() const;
     qreal size() const;
     Progress *progress();
-
-    void setDelayedWrite(const bool value);
 
     Status status() const;
     QString statusString() const;
@@ -133,7 +131,7 @@ private:
     const QString releaseName;
     QString m_file {};
     Architecture *m_arch;
-    ImageType *m_image_type;
+    FileType *m_fileType;
     QString m_board {};
     bool m_live;
     QString m_url {};

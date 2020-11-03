@@ -23,7 +23,7 @@ HEADERS += \
     notifications.h \
     image_download.h \
     progress.h \
-    image_type.h \
+    file_type.h \
     architecture.h \
     release.h \
     variant.h
@@ -35,7 +35,7 @@ SOURCES += main.cpp \
     notifications.cpp \
     image_download.cpp \
     progress.cpp \
-    image_type.cpp \
+    file_type.cpp \
     architecture.cpp \
     release.cpp \
     variant.cpp

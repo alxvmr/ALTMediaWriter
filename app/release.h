@@ -22,7 +22,7 @@
 
 class Variant;
 class Architecture;
-class ImageType;
+class FileType;
 
 #include <QQmlListProperty>
 

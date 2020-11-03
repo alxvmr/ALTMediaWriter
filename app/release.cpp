@@ -19,7 +19,6 @@
 
 #include "release.h"
 #include "releasemanager.h"
-#include "image_type.h"
 #include "architecture.h"
 #include "variant.h"
 
@@ -52,10 +51,10 @@ void Release::addVariant(Variant *variant) {
     [=]() -> Variant * {
         for (auto current : m_variants) {
             const bool arch_equals = (current->arch() == variant->arch());
-            const bool imageType_equals = (current->imageType() == variant->imageType());
+            const bool fileType_equals = (current->fileType() == variant->fileType());
             const bool board_equals = (current->board() == variant->board());
             const bool live_equals = (current->live() == variant->live());
-            if (arch_equals && imageType_equals && board_equals && live_equals) {
+            if (arch_equals && fileType_equals && board_equals && live_equals) {
                 return current;
             }
         }

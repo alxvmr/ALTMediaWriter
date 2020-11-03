@@ -29,7 +29,7 @@ class ReleaseListModel;
 class Release;
 class Variant;
 class Architecture;
-class ImageType;
+class FileType;
 
 /*
  * Architecture - singleton (x86, x86_64, etc)

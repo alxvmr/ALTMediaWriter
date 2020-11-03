@@ -19,7 +19,7 @@
 
 #include "releasemanager.h"
 #include "release.h"
-#include "image_type.h"
+#include "file_type.h"
 #include "architecture.h"
 #include "variant.h"
 #include "network.h"
@@ -97,7 +97,7 @@ ReleaseManager::ReleaseManager(QObject *parent)
     qmlRegisterUncreatableType<Release>("MediaWriter", 1, 0, "Release", "");
     qmlRegisterUncreatableType<Variant>("MediaWriter", 1, 0, "Variant", "");
     qmlRegisterUncreatableType<Architecture>("MediaWriter", 1, 0, "Architecture", "");
-    qmlRegisterUncreatableType<ImageType>("MediaWriter", 1, 0, "ImageType", "");
+    qmlRegisterUncreatableType<FileType>("MediaWriter", 1, 0, "FileType", "");
     qmlRegisterUncreatableType<Progress>("MediaWriter", 1, 0, "Progress", "");
 
     // Download releases from getalt.org
@@ -408,8 +408,8 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
             }
         }();
 
-        ImageType *imageType = ImageType::fromFilename(url);
-        if (!imageType->isValid()) {
+        FileType *fileType = FileType::fromFilename(url);
+        if (!fileType->isValid()) {
             qDebug() << "Invalid image type for" << url;
             continue;
         }
@@ -424,7 +424,7 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
             }
         }();
 
-        qDebug() << "Loading variant:" << name << arch->abbreviation().first() << board << imageType->abbreviation().first() << QUrl(url).fileName();
+        qDebug() << "Loading variant:" << name << arch->abbreviation().first() << board << fileType->abbreviation().first() << QUrl(url).fileName();
 
         // Find a release that has the same name as this variant
         Release *release =
@@ -440,7 +440,7 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
         }();
 
         if (release != nullptr) {
-            Variant *variant = new Variant(url, release->displayName(), arch, imageType, board, live, this);
+            Variant *variant = new Variant(url, release->displayName(), arch, fileType, board, live, this);
             release->addVariant(variant);
         } else {
             qWarning() << "Failed to find a release for this variant!";
@@ -453,10 +453,10 @@ QStringList ReleaseManager::architectures() const {
 }
 
 QStringList ReleaseManager::fileNameFilters() const {
-    const QList<ImageType *> imageTypes = ImageType::all();
+    const QList<FileType *> fileTypes = FileType::all();
 
     QStringList filters;
-    for (const auto type : imageTypes) {
+    for (const auto type : fileTypes) {
         const QString extensions =
         [type]() {
             const QStringList abbreviation = type->abbreviation();

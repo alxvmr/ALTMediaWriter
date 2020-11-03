@@ -344,7 +344,7 @@ sudo alt-rootfs-installer --rootfs=%1 --media=%2 --target=%3</translation>
     </message>
 </context>
 <context>
-    <name>ImageType</name>
+    <name>FileType</name>
     <message>
         <source>ISO DVD</source>
         <translation></translation>
