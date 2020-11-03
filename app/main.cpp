@@ -54,6 +54,11 @@ Q_IMPORT_PLUGIN(QmlFolderListModelPlugin);
 Q_IMPORT_PLUGIN(QmlSettingsPlugin);
 #endif
 
+void myMessageOutput(QtMsgType, const QMessageLogContext &, const QString &msg) {
+    printf("%s\n", qPrintable(msg));
+    fflush(stdout);
+}
+
 int main(int argc, char **argv)
 {
 #ifdef __linux
@@ -73,6 +78,8 @@ int main(int argc, char **argv)
     if (QX11Info::isPlatformX11())
 #endif
         QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+
+    qInstallMessageHandler(myMessageOutput);
 
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     QApplication app(argc, argv);
