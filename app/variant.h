@@ -95,8 +95,6 @@ public:
 
     static Variant *custom(const QString &path, QObject *parent);
 
-    bool updateUrl(const QString &url);
-
     Architecture *arch() const;
     ImageType *imageType() const;
     QString name() const;

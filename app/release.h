@@ -64,7 +64,7 @@ public:
 
     static Release *custom(QObject *parent);
 
-    void updateUrl(const QString &url, Architecture *architecture, ImageType *imageType, const QString &board, const bool live);
+    void addVariant(Variant *variant);
 
     Q_INVOKABLE void setLocalFile(const QString &path);
 

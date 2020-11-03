@@ -58,17 +58,6 @@ Variant *Variant::custom(const QString &path, QObject *parent) {
     return variant;
 }
 
-bool Variant::updateUrl(const QString &url) {
-    bool changed = false;
-    if (!url.isEmpty() && m_url.toUtf8().trimmed() != url.toUtf8().trimmed()) {
-        // qWarning() << "Url" << m_url << "changed to" << url;
-        m_url = url;
-        emit urlChanged();
-        changed = true;
-    }
-    return changed;
-}
-
 Architecture *Variant::arch() const {
     return m_arch;
 }

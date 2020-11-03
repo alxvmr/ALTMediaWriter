@@ -46,36 +46,38 @@ Release *Release::custom(QObject *parent) {
     return customRelease;
 }
 
-void Release::updateUrl(const QString &url, Architecture *architecture, ImageType *imageType, const QString &board, const bool live) {
-    // If variant already exists, update it
+void Release::addVariant(Variant *variant) {
+    // Check if variant already exists for debugging purposes
     Variant *variant_in_list =
     [=]() -> Variant * {
-        for (auto variant : m_variants) {
-            // TODO: equals?
-            if (variant->arch() == architecture && variant->imageType() == imageType && variant->board() == board && variant->live() == live) {
-                return variant;
+        for (auto current : m_variants) {
+            const bool arch_equals = (current->arch() == variant->arch());
+            const bool imageType_equals = (current->imageType() == variant->imageType());
+            const bool board_equals = (current->board() == variant->board());
+            const bool live_equals = (current->live() == variant->live());
+            if (arch_equals && imageType_equals && board_equals && live_equals) {
+                return current;
             }
         }
         return nullptr;
     }();
     if (variant_in_list != nullptr) {
-        qDebug() << "Variant already loaded, only updating url:";
-        qDebug() << "\told=" << variant_in_list->url();
-        qDebug() << "\tnew=" << url;
+        qWarning() << "Duplicate variant for release" << m_name;
+        qWarning() << "\tcurrent=" << variant_in_list->url();
+        qWarning() << "\tnew=" << variant->url();
 
-        variant_in_list->updateUrl(url);
         return;
     }
 
-    // Otherwise make a new variant
+    // Otherwise add this variant
 
     // NOTE: preserve the order from the Architecture::Id enum (to not have ARM first, etc.)
     const int insert_index =
-    [this, architecture]() {
+    [this, variant]() {
         int out = 0;
-        for (auto variant : m_variants) {
+        for (auto current : m_variants) {
             // NOTE: doing pointer comparison because architectures are a singleton pointers
-            if (variant->arch() > architecture) {
+            if (current->arch() > variant->arch()) {
                 return out;
             }
 
@@ -83,11 +85,10 @@ void Release::updateUrl(const QString &url, Architecture *architecture, ImageTyp
         }
         return out;
     }();
-    auto new_variant = new Variant(url, m_displayName, architecture, imageType, board, live, this);
 
-    m_variants.insert(insert_index, new_variant);
+    m_variants.insert(insert_index, variant);
     emit variantsChanged();
-    
+
     // Select first variant by default
     if (m_variants.count() == 1) {
         m_selectedVariant = 0;

@@ -426,12 +426,24 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
 
         qDebug() << "Loading variant:" << name << arch->abbreviation().first() << board << imageType->abbreviation().first() << QUrl(url).fileName();
 
-        for (int i = 0; i < m_sourceModel->rowCount(); i++) {
-            Release *release = get(i);
+        // Find a release that has the same name as this variant
+        Release *release =
+        [this, name]() -> Release *{
+            for (int i = 0; i < m_sourceModel->rowCount(); i++) {
+                Release *release = get(i);
 
-            if (release->name() == name) {
-                release->updateUrl(url, arch, imageType, board, live);
+                if (release->name() == name) {
+                    return release;
+                }
             }
+            return nullptr;
+        }();
+
+        if (release != nullptr) {
+            Variant *variant = new Variant(url, release->displayName(), arch, imageType, board, live, this);
+            release->addVariant(variant);
+        } else {
+            qWarning() << "Failed to find a release for this variant!";
         }
     }
 }
