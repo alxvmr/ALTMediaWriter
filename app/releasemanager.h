@@ -60,7 +60,7 @@ class ImageType;
  * It is a QSortFilterProxyModel - that means the actual release data has to be provided first by the @ref ReleaseListModel .
  *
  * @property frontPage is true if the application is on the front page
- * @property beingUpdated is true when the background data update is still running (waiting for data)
+ * @property downloadingMetadata is true while downloading metadata and false once it's finished
  * @property filterArchitecture index of the currently selected architecture
  * @property filterText user-entered text filter
  * @property selected the currently selected release
@@ -71,7 +71,7 @@ class ImageType;
 class ReleaseManager : public QSortFilterProxyModel {
     Q_OBJECT
     Q_PROPERTY(bool frontPage READ frontPage WRITE setFrontPage NOTIFY frontPageChanged)
-    Q_PROPERTY(bool beingUpdated READ beingUpdated NOTIFY beingUpdatedChanged)
+    Q_PROPERTY(bool downloadingMetadata READ downloadingMetadata NOTIFY downloadingMetadataChanged)
 
     Q_PROPERTY(int filterArchitecture READ filterArchitecture WRITE setFilterArchitecture NOTIFY filterArchitectureChanged)
     Q_PROPERTY(QString filterText READ filterText WRITE setFilterText NOTIFY filterTextChanged)
@@ -87,7 +87,7 @@ public:
 
     Q_INVOKABLE Release *get(int index) const;
 
-    bool beingUpdated() const;
+    bool downloadingMetadata() const;
 
     bool frontPage() const;
     void setFrontPage(bool o);
@@ -105,7 +105,7 @@ public:
     void setSelectedIndex(int o);
 
 signals:
-    void beingUpdatedChanged();
+    void downloadingMetadataChanged();
     void frontPageChanged();
     void filterTextChanged();
     void filterArchitectureChanged();
@@ -117,10 +117,10 @@ private:
     QString m_filterText {};
     int m_filterArchitecture { 0 };
     int m_selectedIndex;
-    bool m_beingUpdated = true;
+    bool m_downloadingMetadata = true;
 
     void loadVariants(const QString &variantsFile);
-    void setBeingUpdated(const bool value);
+    void setDownloadingMetadata(const bool value);
     void downloadMetadata();
 };
 

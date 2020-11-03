@@ -138,7 +138,7 @@ Release *ReleaseManager::get(int index) const {
 void ReleaseManager::downloadMetadata() {
     qDebug() << "Downloading metadata";
     
-    setBeingUpdated(true);
+    setDownloadingMetadata(true);
 
     const QList<QString> section_urls =
     []() {
@@ -274,7 +274,7 @@ void ReleaseManager::downloadMetadata() {
         }
 
         invalidateFilter();
-        setBeingUpdated(false);
+        setDownloadingMetadata(false);
     };
 
     for (const auto reply : replies) {
@@ -284,13 +284,13 @@ void ReleaseManager::downloadMetadata() {
     }
 }
 
-void ReleaseManager::setBeingUpdated(const bool value) {
-    m_beingUpdated = value;
-    emit beingUpdatedChanged();
+void ReleaseManager::setDownloadingMetadata(const bool value) {
+    m_downloadingMetadata = value;
+    emit downloadingMetadataChanged();
 }
 
-bool ReleaseManager::beingUpdated() const {
-    return m_beingUpdated;
+bool ReleaseManager::downloadingMetadata() const {
+    return m_downloadingMetadata;
 }
 
 bool ReleaseManager::frontPage() const {

@@ -182,8 +182,8 @@ FocusScope {
                 z: -1
 
                 // Disable and hide footer until releases are loaded and then fade it in.
-                enabled: !releases.beingUpdated
-                opacity: releases.beingUpdated ? 0.0 : 1.0
+                enabled: !releases.downloadingMetadata
+                opacity: releases.downloadingMetadata ? 0.0 : 1.0
                 Behavior on opacity {
                     NumberAnimation {
                         duration: 600
@@ -323,21 +323,6 @@ FocusScope {
                         Text {
                             width: parent.width
                             wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                            visible: releases.beingUpdated
-                            text: qsTr("ALT Media Writer is now checking for new releases")
-                            font.pointSize: 9
-                            BusyIndicator {
-                                anchors.right: parent.left
-                                anchors.rightMargin: 3
-                                anchors.verticalCenter: parent.verticalCenter
-                                height: parent.height - 3
-                                width: height
-                            }
-                            color: palette.text
-                        }
-                        Text {
-                            width: parent.width
-                            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                             text: qsTr("Please report bugs or your suggestions on %1").arg("<a href=\"https://github.com/altlinux/MediaWriter/issues\">https://github.com/altlinux/MediaWriter/</a>")
                             textFormat: Text.RichText
                             font.pointSize: 9
@@ -449,7 +434,7 @@ FocusScope {
             right: parent.right
             rightMargin: mainWindow.margin + 5
         }
-        opacity: releases.beingUpdated ? 0.8 : 0.0
+        opacity: releases.downloadingMetadata ? 0.8 : 0.0
         visible: releases.frontPage && (opacity > 0.01)
         z: 1
         spacing: 3
@@ -457,12 +442,12 @@ FocusScope {
 
         BusyIndicator {
             anchors.verticalCenter: parent.verticalCenter
-            height: checkingForUpdatesText.height * 0.8
+            height: downloadingNotification.height * 0.8
             width: height
         }
         Text {
-            id: checkingForUpdatesText
-            text: qsTr("Checking for new releases")
+            id: downloadingNotification
+            text: qsTr("Downloading releases info")
             font.pointSize: 9
             color: "#7a7a7a"
         }
