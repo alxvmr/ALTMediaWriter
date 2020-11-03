@@ -33,9 +33,11 @@
 #include <QApplication>
 #include <QAbstractEventDispatcher>
 
-#define GETALT_IMAGES_URL "http://getalt.org/_data/images/"
-#define GETALT_SECTIONS_URL "http://getalt.org/_data/sections/"
 #define FRONTPAGE_ROW_COUNT 3
+
+QList<QString> load_list_from_file(const QString &filepath);
+QList<QString> get_sections_urls();
+QList<QString> get_images_urls();
 
 QString readFile(const QString &filename) {
     QFile file(filename);
@@ -49,18 +51,6 @@ QString readFile(const QString &filename) {
     QString str = fileStream.readAll();
     file.close();
     return str;
-}
-
-QList<QString> imagesFilenames() {
-    const QDir dir(":/images");
-    const QList<QString> files = dir.entryList();
-    return files;
-}
-
-QList<QString> sectionsFilenames() {
-    const QDir dir(":/sections");
-    const QList<QString> files = dir.entryList();
-    return files;
 }
 
 QString yml_get(const YAML::Node &node, const QString &key) {
@@ -88,6 +78,8 @@ ReleaseManager::ReleaseManager(QObject *parent)
 : QSortFilterProxyModel(parent)
 , m_sourceModel(new ReleaseListModel(this))
 {
+
+
     setSourceModel(m_sourceModel);
 
     setSelectedIndex(0);
@@ -140,29 +132,11 @@ void ReleaseManager::downloadMetadata() {
     
     setDownloadingMetadata(true);
 
-    const QList<QString> section_urls =
-    []() {
-        QList<QString> out;
-        for (const auto sectionFile : sectionsFilenames()) {
-            const QString url = GETALT_SECTIONS_URL + sectionFile;
-            out.append(url);
-            qDebug() << "Section url:" << url;
-        }
-        return out;
-    }();
+    const QList<QString> section_urls = get_sections_urls();
+    qDebug() << "section_urls = " << section_urls;
 
-    const QList<QString> image_urls =
-    []() {
-        QList<QString> out;
-
-        for (const auto imageFile : imagesFilenames()) {
-            const QString url = GETALT_IMAGES_URL + imageFile;
-            out.append(url);
-            qDebug() << "Image url:" << url;
-        }
-
-        return out;
-    }();
+    const QList<QString> image_urls = get_images_urls();
+    qDebug() << "image_urls = " << image_urls;
 
     // Create requests to download all release files and
     // collect the replies
@@ -615,4 +589,32 @@ Release *ReleaseListModel::get(int index) {
     if (index >= 0 && index < m_releases.count())
         return m_releases[index];
     return nullptr;
+}
+
+QList<QString> load_list_from_file(const QString &filepath) {
+    QFile file(filepath);
+
+    const bool open_success = file.open(QIODevice::ReadOnly);
+    if (!open_success) {
+        qWarning() << "Failed to open" << filepath;
+        return QList<QString>();
+    }
+
+    const QString contents = file.readAll();
+    QList<QString> list = contents.split("\n");
+    list.removeAll(QString());
+
+    return list;
+}
+
+QList<QString> get_sections_urls() {
+    static QList<QString> sections_urls = load_list_from_file(":/sections_urls.txt");
+
+    return sections_urls;
+}
+
+QList<QString> get_images_urls() {
+    static QList<QString> images_urls = load_list_from_file(":/images_urls.txt");
+
+    return images_urls;
 }

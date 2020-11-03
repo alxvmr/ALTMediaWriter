@@ -1,14 +1,14 @@
-# How to update assets to match getalt
+# How to update assets
 
-## Copy files
+## Update urls
 
-Copy assets from getalt to appropriate locations in assets folder. The directory structure is similar to the one in getalt.
+Update URLs in "sections_urls.txt" and "images_urls.txt". Make sure to delete any removed urls.
 
-Required files: logos from "i/logos", sections file from "_data/sections" directory, images files from "_data/images" directory.
+## Update logos
 
-## Update assets.qrc
+Update "i/logo" folder to match the same folder from getalt.
 
-Add/update/remove entries in the qrc file so that all needed files are present there. In general, file aliases must match filenames, but logo filenames must match the "img" attribute of release in the sections files. This *could* be different from the filename!
+Also update logo paths in "assets.qrc". Add/update/remove entries in the qrc file so that all needed files are present there. "file alias" must match the "img" attribute of the release in the sections file. In general, that would be the same as the filename but currently there's an exception for "alt-server" having a logo named "arm" because of an error in the sections file.
 
 ## Troubleshooting
 Run the app. Check for any errors or warnings to make sure that assets are setup correctly.

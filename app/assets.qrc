@@ -12,21 +12,7 @@
 
     <qresource>
         <file alias="focusRect">assets/focusrect.png</file>
-    </qresource>
-
-    <qresource prefix="/sections">
-        <file alias="1-client.yml">assets/_data/sections/1-client.yml</file>
-        <file alias="2-server.yml">assets/_data/sections/2-server.yml</file>
-        <file alias="3-eduhome.yml">assets/_data/sections/3-eduhome.yml</file>
-        <file alias="4-community.yml">assets/_data/sections/4-community.yml</file>
-    </qresource>
-
-    <qresource prefix="/images">
-        <file alias="p9-education.yml">assets/_data/images/p9-education.yml</file>
-        <file alias="p9-server-v.yml">assets/_data/images/p9-server-v.yml</file>
-        <file alias="p9-server.yml">assets/_data/images/p9-server.yml</file>
-        <file alias="p9-simply.yml">assets/_data/images/p9-simply.yml</file>
-        <file alias="p9-workstation.yml">assets/_data/images/p9-workstation.yml</file>
-        <file alias="p9-kworkstation.yml">assets/_data/images/p9-kworkstation.yml</file>
+        <file alias="sections_urls.txt">assets/sections_urls.txt</file>
+        <file alias="images_urls.txt">assets/images_urls.txt</file>
     </qresource>
 </RCC>
