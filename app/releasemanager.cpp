@@ -86,10 +86,15 @@ bool ReleaseManager::filterAcceptsRow(int source_row, const QModelIndex &source_
 
 Release *ReleaseManager::get(int index) const {
     QStandardItem *item = m_sourceModel->item(index);
-    QVariant variant = item->data();
-    Release *release = variant.value<Release *>();
+    
+    if (item != nullptr) {
+        QVariant variant = item->data();
+        Release *release = variant.value<Release *>();
 
-    return release;
+        return release;
+    } else {
+        return nullptr;
+    }
 }
 
 void ReleaseManager::downloadMetadata() {
