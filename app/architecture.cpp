@@ -20,6 +20,7 @@
 #include "architecture.h"
 
 Architecture Architecture::m_all[] = {
+    {{"All"}, QT_TR_NOOP("All")},
     {{"x86-64"}, QT_TR_NOOP("AMD 64bit")},
     {{"x86", "i386", "i586", "i686"}, QT_TR_NOOP("Intel 32bit")},
     {{"armv7hl", "armhfp", "armh"}, QT_TR_NOOP("ARM v7")},
@@ -40,7 +41,7 @@ Architecture::Architecture(const QStringList &abbreviation, const char *descript
 Architecture *Architecture::fromId(Architecture::Id id) {
     if (id >= 0 && id < _ARCHCOUNT)
         return &m_all[id];
-    return nullptr;
+    return &m_all[Architecture::UNKNOWN];
 }
 
 Architecture *Architecture::fromAbbreviation(const QString &abbr) {
@@ -48,7 +49,7 @@ Architecture *Architecture::fromAbbreviation(const QString &abbr) {
         if (m_all[i].abbreviation().contains(abbr, Qt::CaseInsensitive))
             return &m_all[i];
     }
-    return nullptr;
+    return &m_all[Architecture::UNKNOWN];
 }
 
 Architecture *Architecture::fromFilename(const QString &filename) {
@@ -59,20 +60,15 @@ Architecture *Architecture::fromFilename(const QString &filename) {
                 return &m_all[i];
         }
     }
-    return nullptr;
-}
-
-QList<Architecture *> Architecture::listAll() {
-    QList<Architecture *> ret;
-    for (int i = 0; i < _ARCHCOUNT; i++) {
-        ret.append(&m_all[i]);
-    }
-    return ret;
+    return &m_all[Architecture::UNKNOWN];
 }
 
 QStringList Architecture::listAllDescriptions() {
     QStringList ret;
     for (int i = 0; i < _ARCHCOUNT; i++) {
+        if (i == UNKNOWN) {
+            continue;
+        }
         ret.append(m_all[i].description());
     }
     return ret;

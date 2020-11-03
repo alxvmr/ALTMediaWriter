@@ -26,7 +26,8 @@
 
 class Release;
 class ReleaseModel;
-class QStandardItemModel;
+class ReleaseFilterModel;
+class Architecture;
 
 /*
  * Architecture - singleton (x86, x86_64, etc)
@@ -65,54 +66,39 @@ class QStandardItemModel;
  * @property architectures the list of the available architectures
  * @property fileNameFilters image type filters for file dialog
  */
-class ReleaseManager : public QSortFilterProxyModel {
-    Q_OBJECT
-    Q_PROPERTY(bool frontPage READ frontPage WRITE setFrontPage NOTIFY frontPageChanged)
+class ReleaseManager : public QObject {
+Q_OBJECT
     Q_PROPERTY(bool downloadingMetadata READ downloadingMetadata NOTIFY downloadingMetadataChanged)
-
-    Q_PROPERTY(int filterArchitecture READ filterArchitecture WRITE setFilterArchitecture NOTIFY filterArchitectureChanged)
-    Q_PROPERTY(QString filterText READ filterText WRITE setFilterText NOTIFY filterTextChanged)
 
     Q_PROPERTY(Release* selected READ selected NOTIFY selectedChanged)
     Q_PROPERTY(int selectedIndex READ selectedIndex WRITE setSelectedIndex NOTIFY selectedChanged)
 
     Q_PROPERTY(QStringList architectures READ architectures CONSTANT)
     Q_PROPERTY(QStringList fileNameFilters READ fileNameFilters CONSTANT)
+
+    Q_PROPERTY(ReleaseFilterModel* filter READ getFilterModel CONSTANT)
+
 public:
     explicit ReleaseManager(QObject *parent = 0);
-    bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override;
-
-    Q_INVOKABLE Release *get(int index) const;
 
     bool downloadingMetadata() const;
 
-    bool frontPage() const;
-    void setFrontPage(bool o);
-
-    QString filterText() const;
-    void setFilterText(const QString &o);
-
     QStringList architectures() const;
     QStringList fileNameFilters() const;
-    int filterArchitecture() const;
-    void setFilterArchitecture(int o);
 
     Release *selected() const;
     int selectedIndex() const;
     void setSelectedIndex(int o);
 
+    ReleaseFilterModel *getFilterModel() const;
+
 signals:
     void downloadingMetadataChanged();
-    void frontPageChanged();
-    void filterTextChanged();
-    void filterArchitectureChanged();
     void selectedChanged();
 
 private:
-    ReleaseModel *m_sourceModel;
-    bool m_frontPage;
-    QString m_filterText;
-    int m_filterArchitecture;
+    ReleaseModel *sourceModel;
+    ReleaseFilterModel *filterModel;
     int m_selectedIndex;
     bool m_downloadingMetadata;
 
@@ -124,10 +110,38 @@ private:
 };
 
 class ReleaseModel final : public QStandardItemModel {
+Q_OBJECT
+    
 public:
     using QStandardItemModel::QStandardItemModel;
 
+    Release *get(const int index) const;
     QHash<int, QByteArray> roleNames() const override;
+};
+
+class ReleaseFilterModel final : public QSortFilterProxyModel {
+Q_OBJECT
+    Q_PROPERTY(bool frontPage READ getFrontPage NOTIFY frontPageChanged)
+
+public:
+    ReleaseFilterModel(ReleaseModel *model_arg, QObject *parent);
+
+    bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override;
+    void invalidateCustom();
+
+    bool getFrontPage() const;
+    Q_INVOKABLE void leaveFrontPage();
+    Q_INVOKABLE void setFilterArch(const int index);
+    Q_INVOKABLE void setFilterText(const QString &text);
+
+signals:
+    void frontPageChanged();
+
+private:
+    ReleaseModel *model;
+    bool frontPage;
+    QString filterText;
+    Architecture *filterArch;
 };
 
 #endif // RELEASEMANAGER_H

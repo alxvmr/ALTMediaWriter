@@ -38,15 +38,13 @@ QList<QString> get_images_urls();
 QString yml_get(const YAML::Node &node, const QString &key);
 
 ReleaseManager::ReleaseManager(QObject *parent)
-: QSortFilterProxyModel(parent)
-, m_sourceModel(new ReleaseModel(this))
-, m_frontPage(true)
-, m_filterArchitecture(0)
+: QObject(parent)
 , m_downloadingMetadata(true)
 {
     qDebug() << this->metaObject()->className() << "construction";
 
-    setSourceModel(m_sourceModel);
+    sourceModel = new ReleaseModel(this);
+    filterModel = new ReleaseFilterModel(sourceModel, this);
 
     // Add custom release to first position
     auto customRelease = Release::custom(this);
@@ -54,48 +52,6 @@ ReleaseManager::ReleaseManager(QObject *parent)
     setSelectedIndex(0);
 
     QTimer::singleShot(0, this, &ReleaseManager::downloadMetadata);
-}
-
-bool ReleaseManager::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const {
-    Q_UNUSED(source_parent)
-    auto release = get(source_row);
-    
-    if (m_frontPage) {
-        // Don't filter when on front page, just show 3 releases
-        const bool on_front_page = (source_row < FRONTPAGE_ROW_COUNT);
-        return on_front_page;
-    } else if (release->isCustom()) {
-        // Always show local release
-        return true;
-    } else {
-        // Otherwise filter by arch
-        const bool releaseHasVariantWithArch =
-        [this, release]() {
-            for (auto variant : release->variantList()) {
-                if (variant->arch()->index() == m_filterArchitecture) {
-                    return true;
-                }
-            }
-            return false;
-        }();
-
-        const bool releaseMatchesName = release->name().contains(m_filterText, Qt::CaseInsensitive);
-
-        return releaseHasVariantWithArch && releaseMatchesName;
-    }
-}
-
-Release *ReleaseManager::get(int index) const {
-    QStandardItem *item = m_sourceModel->item(index);
-    
-    if (item != nullptr) {
-        QVariant variant = item->data();
-        Release *release = variant.value<Release *>();
-
-        return release;
-    } else {
-        return nullptr;
-    }
 }
 
 void ReleaseManager::downloadMetadata() {
@@ -197,7 +153,6 @@ void ReleaseManager::downloadMetadata() {
             reply->deleteLater();
         }
 
-        invalidateFilter();
         setDownloadingMetadata(false);
     };
 
@@ -217,53 +172,8 @@ bool ReleaseManager::downloadingMetadata() const {
     return m_downloadingMetadata;
 }
 
-bool ReleaseManager::frontPage() const {
-    return m_frontPage;
-}
-
-void ReleaseManager::setFrontPage(bool o) {
-    if (m_frontPage != o) {
-        m_frontPage = o;
-        emit frontPageChanged();
-        invalidateFilter();
-    }
-}
-
-QString ReleaseManager::filterText() const {
-    return m_filterText;
-}
-
-void ReleaseManager::setFilterText(const QString &o) {
-    if (m_filterText != o) {
-        m_filterText = o;
-        emit filterTextChanged();
-        invalidateFilter();
-    }
-}
-
-int ReleaseManager::filterArchitecture() const {
-    return m_filterArchitecture;
-}
-
-void ReleaseManager::setFilterArchitecture(int o) {
-    if (m_filterArchitecture != o && m_filterArchitecture >= 0 && m_filterArchitecture < Architecture::_ARCHCOUNT) {
-        m_filterArchitecture = o;
-        emit filterArchitectureChanged();
-
-        // Select custom variant so there's a selected release
-        // even if no releases are shown for this arch
-        setSelectedIndex(0);
-
-        invalidateFilter();
-    }
-}
-
 Release *ReleaseManager::selected() const {
-    if (m_selectedIndex >= 0 && m_selectedIndex < m_sourceModel->rowCount()) {
-        return get(m_selectedIndex);
-    }
-
-    return nullptr;
+    return sourceModel->get(m_selectedIndex);
 }
 
 int ReleaseManager::selectedIndex() const {
@@ -275,6 +185,10 @@ void ReleaseManager::setSelectedIndex(int o) {
         m_selectedIndex = o;
         emit selectedChanged();
     }
+}
+
+ReleaseFilterModel *ReleaseManager::getFilterModel() const {
+    return filterModel;
 }
 
 void ReleaseManager::loadVariants(const QString &variantsFile) {
@@ -306,8 +220,8 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
                 return Architecture::fromFilename(url);
             }
         }();
-        if (arch == nullptr) {
-            qDebug() << "Invalid arch for" << url;
+        if (arch->index() == Architecture::UNKNOWN) {
+            qDebug() << "Unknown arch for" << url;
             continue;
         }
 
@@ -343,8 +257,8 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
         // Find a release that has the same name as this variant
         Release *release =
         [this, name]() -> Release *{
-            for (int i = 0; i < m_sourceModel->rowCount(); i++) {
-                Release *release = get(i);
+            for (int i = 0; i < sourceModel->rowCount(); i++) {
+                Release *release = sourceModel->get(i);
 
                 if (release->name() == name) {
                     return release;
@@ -471,13 +385,15 @@ void ReleaseManager::loadReleases(const QList<QString> &sectionsFiles) {
                 } else if (is_server) {
                     return 2;
                 } else {
-                    return m_sourceModel->rowCount();
+                    return sourceModel->rowCount();
                 }
             }();
             
             addReleaseToModel(index, release);
         }
     }
+
+    filterModel->invalidateCustom();
 }
 
 void ReleaseManager::addReleaseToModel(const int index, Release *release) {
@@ -487,7 +403,7 @@ void ReleaseManager::addReleaseToModel(const int index, Release *release) {
     QStandardItem *item = new QStandardItem();
     item->setData(variant);
 
-    m_sourceModel->insertRow(index, item);
+    sourceModel->insertRow(index, item);
 }
 
 QList<QString> load_list_from_file(const QString &filepath) {
@@ -539,6 +455,19 @@ QString yml_get(const YAML::Node &node, const QString &key) {
     }
 }
 
+Release *ReleaseModel::get(const int index) const {
+    QStandardItem *the_item = item(index);
+    
+    if (the_item != nullptr) {
+        QVariant variant = the_item->data();
+        Release *release = variant.value<Release *>();
+
+        return release;
+    } else {
+        return nullptr;
+    }
+}
+
 // NOTE: this is a very roundabout way of making the Release
 // pointer stored inside the item available in the qml
 // delegate as "release". (Qt::UserRole + 1 is the default
@@ -549,4 +478,93 @@ QHash<int, QByteArray> ReleaseModel::roleNames() const {
     };
 
     return names;
+}
+
+ReleaseFilterModel::ReleaseFilterModel(ReleaseModel *model_arg, QObject *parent)
+: QSortFilterProxyModel(parent)
+{
+    model = model_arg;
+    frontPage = true;
+    filterArch = Architecture::fromId(Architecture::ALL);
+
+    setSourceModel(model_arg);
+}
+
+bool ReleaseFilterModel::filterAcceptsRow(int source_row, const QModelIndex &) const {
+
+    Release *release = model->get(source_row);
+    if (release == nullptr) {
+        return false;
+    }
+    
+    if (frontPage) {
+        // Don't filter when on front page, just show 3 releases
+        const bool on_front_page = (source_row < FRONTPAGE_ROW_COUNT);
+
+        return on_front_page;
+    } else if (release->isCustom()) {
+        // Always show local release
+        return true;
+    } else {
+        const bool releaseMatchesName = release->displayName().contains(filterText, Qt::CaseInsensitive);
+
+        // Exit early if don't match name to skip checking
+        // for arch because that takes a long time
+        // TODO: cache that somehow?
+        if (!releaseMatchesName) {
+            return false;
+        }
+
+        // Otherwise filter by arch
+        const bool releaseHasVariantWithArch =
+        [this, release]() {
+            // If filtering for all, accept all architectures
+            if (filterArch->index() == Architecture::ALL) {
+                return true;
+            }
+
+            for (auto variant : release->variantList()) {
+                if (variant->arch() == filterArch) {
+                    return true;
+                }
+            }
+            return false;
+        }();
+
+        if (!releaseHasVariantWithArch) {
+            return false;
+        }
+
+        return true;
+    }
+}
+
+bool ReleaseFilterModel::getFrontPage() const {
+    return frontPage;
+}
+
+void ReleaseFilterModel::leaveFrontPage() {
+    frontPage = false;
+
+    invalidateFilter();
+
+    emit frontPageChanged();
+}
+
+void ReleaseFilterModel::setFilterText(const QString &text) {
+    filterText = text;
+
+    invalidateFilter();
+}
+
+void ReleaseFilterModel::setFilterArch(const int index) {
+    Architecture *newFilterArch = Architecture::fromId((Architecture::Id) index);
+    if (newFilterArch->index() != Architecture::UNKNOWN) {
+        filterArch = newFilterArch;
+        invalidateFilter();
+    }
+}
+
+void ReleaseFilterModel::invalidateCustom() {
+    invalidateFilter();
 }

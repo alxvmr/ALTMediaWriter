@@ -76,6 +76,7 @@ int main(int argc, char **argv)
 
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     QApplication app(argc, argv);
+    qputenv("QMLSCENE_DEVICE", "softwarecontext");
 
     qDebug() << "Application constructed";
 
@@ -89,6 +90,7 @@ int main(int argc, char **argv)
     engine.rootContext()->setContextProperty("releases", new ReleaseManager());
     engine.rootContext()->setContextProperty("mediawriterVersion", MEDIAWRITER_VERSION);
 
+    qmlRegisterUncreatableType<ReleaseFilterModel>("MediaWriter", 1, 0, "ReleaseFilterModel", "");
     qmlRegisterUncreatableType<Release>("MediaWriter", 1, 0, "Release", "");
     qmlRegisterUncreatableType<Variant>("MediaWriter", 1, 0, "Variant", "");
     qmlRegisterUncreatableType<Architecture>("MediaWriter", 1, 0, "Architecture", "");

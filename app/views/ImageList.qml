@@ -56,7 +56,7 @@ FocusScope {
             width: listView.width
             height: searchBarHeight
             z: 2
-            enabled: !releases.frontPage
+            enabled: !releases.filter.frontPage
             visible: enabled
             opacity: enabled ? 1.0 : 0.0
             Behavior on opacity {
@@ -142,8 +142,7 @@ FocusScope {
                         verticalAlignment: Text.AlignVCenter
                     }
                     verticalAlignment: TextInput.AlignVCenter
-                    text: releases.filterText
-                    onTextChanged: releases.filterText = text
+                    onTextChanged: releases.filter.setFilterText(text)
                     clip: true
                     color: palette.text
                 }
@@ -158,7 +157,7 @@ FocusScope {
                 activeFocusOnTab: visible
                 model: releases.architectures
                 onCurrentIndexChanged:  {
-                    releases.filterArchitecture = currentIndex
+                    releases.filter.setFilterArch(currentIndex)
                 }
             }
         
@@ -256,7 +255,7 @@ FocusScope {
                         }
                     }
                     function action() {
-                        releases.frontPage = false
+                        releases.filter.leaveFrontPage()
                         listView.state = "full"
                     }
                     onClicked: {
@@ -354,7 +353,7 @@ FocusScope {
                 rightMargin: mainWindow.margin
             }
 
-            model: releases
+            model: releases.filter
             footer: listExpander
             headerPositioning: ListView.OverlayHeader
             // NOTE: searchBar has to be assigned from the start and hidden because adding it dynamically when entering "full" state is not handled well by the scrollview
@@ -394,7 +393,7 @@ FocusScope {
                 NumberAnimation { properties: "x,y"; duration: 300 }
             }
             add: Transition {
-                NumberAnimation { properties: releases.frontPage ? "y" : "x"; from: releases.frontPage ? 0 : -width; duration: 300 }
+                NumberAnimation { properties: releases.filter.frontPage ? "y" : "x"; from: releases.filter.frontPage ? 0 : -width; duration: 300 }
             }
             addDisplaced: Transition {
                 NumberAnimation { properties: "x,y"; duration: 300 }
@@ -435,7 +434,7 @@ FocusScope {
             rightMargin: mainWindow.margin + 5
         }
         opacity: releases.downloadingMetadata ? 0.8 : 0.0
-        visible: releases.frontPage && (opacity > 0.01)
+        visible: releases.filter.frontPage && (opacity > 0.01)
         z: 1
         spacing: 3
         Behavior on opacity { NumberAnimation { } }

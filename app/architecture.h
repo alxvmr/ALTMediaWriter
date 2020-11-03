@@ -38,7 +38,8 @@ class Architecture final : public QObject {
     Q_PROPERTY(QString description READ description CONSTANT)
 public:
     enum Id {
-        X86_64 = 0,
+        ALL,
+        X86_64,
         X86,
         ARM,
         AARCH64,
@@ -54,7 +55,6 @@ public:
     static Architecture *fromId(Id id);
     static Architecture *fromAbbreviation(const QString &abbr);
     static Architecture *fromFilename(const QString &filename);
-    static QList<Architecture *> listAll();
     static QStringList listAllDescriptions();
 
     QStringList abbreviation() const;
