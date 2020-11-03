@@ -171,6 +171,7 @@ FocusScope {
         Column {
             Rectangle {
                 id: frontFooter
+
                 
                 clip: true
                 activeFocusOnTab: true
@@ -179,6 +180,15 @@ FocusScope {
                 width: listView.width
                 height: 32
                 z: -1
+
+                // Disable and hide footer until releases are loaded and then fade it in.
+                enabled: !releases.beingUpdated
+                opacity: releases.beingUpdated ? 0.0 : 1.0
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 600
+                    }
+                }
 
                 Rectangle {
                     anchors.fill: parent
