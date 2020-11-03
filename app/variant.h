@@ -48,17 +48,16 @@ class Architecture;
 class Variant final : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString name READ name CONSTANT)
-    Q_PROPERTY(QString board READ board CONSTANT)
-
-    Q_PROPERTY(QString url READ url NOTIFY urlChanged)
-    Q_PROPERTY(QString image READ image NOTIFY imageChanged)
     Q_PROPERTY(ImageType *imageType READ imageType CONSTANT)
+
+    Q_PROPERTY(QString file READ file NOTIFY fileChanged)
     Q_PROPERTY(qreal size READ size NOTIFY sizeChanged)
     Q_PROPERTY(Progress* progress READ progress CONSTANT)
 
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(QString statusString READ statusString NOTIFY statusChanged)
     Q_PROPERTY(QString errorString READ errorString WRITE setErrorString NOTIFY errorStringChanged)
+    
     Q_PROPERTY(bool delayedWrite WRITE setDelayedWrite)
 public:
     Q_ENUMS(Type)
@@ -103,7 +102,7 @@ public:
     bool live() const;
 
     QString url() const;
-    QString image() const;
+    QString file() const;
     qreal size() const;
     Progress *progress();
 
@@ -118,10 +117,9 @@ public:
     Q_INVOKABLE bool erase();
 
 signals:
-    void imageChanged();
+    void fileChanged();
     void statusChanged();
     void errorStringChanged();
-    void urlChanged();
     void sizeChanged();
     void cancelledDownload();
 
@@ -133,7 +131,7 @@ public slots:
 
 private:
     const QString releaseName;
-    QString m_image {};
+    QString m_file {};
     Architecture *m_arch;
     ImageType *m_image_type;
     QString m_board {};

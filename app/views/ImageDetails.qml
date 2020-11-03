@@ -93,7 +93,7 @@ Item {
                             dlDialog.visible = true
                             releases.selected.variant.download()
                         }
-                        enabled: !releases.selected.isCustom || releases.selected.variant.image
+                        enabled: !releases.selected.isCustom || releases.selected.variant.file
                     }
                 }
 

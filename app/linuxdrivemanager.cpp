@@ -179,20 +179,20 @@ LinuxDrive::LinuxDrive(LinuxDriveProvider *parent, QString device, QString name,
 }
 
 LinuxDrive::~LinuxDrive() {
-    if (m_image && m_image->status() == Variant::WRITING) {
-        m_image->setErrorString(tr("The drive was removed while it was written to."));
-        m_image->setStatus(Variant::FAILED);
+    if (m_variant && m_variant->status() == Variant::WRITING) {
+        m_variant->setErrorString(tr("The drive was removed while it was written to."));
+        m_variant->setStatus(Variant::FAILED);
     }
 }
 
-bool LinuxDrive::write(Variant *data) {
-    qDebug() << this->metaObject()->className() << "Will now write" << data->image() << "to" << this->m_device;
+bool LinuxDrive::write(Variant *variant) {
+    qDebug() << this->metaObject()->className() << "Will now write" << variant->file() << "to" << this->m_device;
 
-    if (!Drive::write(data))
+    if (!Drive::write(variant))
         return false;
 
-    if (m_image->status() == Variant::READY || m_image->status() == Variant::FAILED || m_image->status() == Variant::FINISHED)
-        m_image->setStatus(Variant::WRITING);
+    if (m_variant->status() == Variant::READY || m_variant->status() == Variant::FAILED || m_variant->status() == Variant::FINISHED)
+        m_variant->setStatus(Variant::WRITING);
 
     if (!m_process)
         m_process = new QProcess(this);
@@ -201,14 +201,14 @@ bool LinuxDrive::write(Variant *data) {
     if (!helperPath.isEmpty()) {
         m_process->setProgram(helperPath);
     } else {
-        data->setErrorString(tr("Could not find the helper binary. Check your installation."));
-        data->setStatus(Variant::FAILED);
+        variant->setErrorString(tr("Could not find the helper binary. Check your installation."));
+        variant->setStatus(Variant::FAILED);
         return false;
     }
 
     QStringList args;
     args << "write";
-    args << data->image();
+    args << variant->file();
     args << m_device;
 
     qDebug() << this->metaObject()->className() << "Helper command will be" << args;
@@ -231,14 +231,14 @@ void LinuxDrive::cancel() {
     static bool beingCancelled = false;
     if (m_process != nullptr && !beingCancelled) {
         beingCancelled = true;
-        if (m_image) {
-            if (m_image->status() == Variant::WRITE_VERIFYING) {
-                m_image->setStatus(Variant::FINISHED);
+        if (m_variant) {
+            if (m_variant->status() == Variant::WRITE_VERIFYING) {
+                m_variant->setStatus(Variant::FINISHED);
             }
-            else if (m_image->status() != Variant::DOWNLOADING &&
-                     m_image->status() != Variant::DOWNLOAD_VERIFYING) {
-                m_image->setErrorString(tr("Stopped before writing has finished."));
-                m_image->setStatus(Variant::FAILED);
+            else if (m_variant->status() != Variant::DOWNLOADING &&
+                     m_variant->status() != Variant::DOWNLOAD_VERIFYING) {
+                m_variant->setErrorString(tr("Stopped before writing has finished."));
+                m_variant->setStatus(Variant::FAILED);
             }
         }
         m_process->kill();
@@ -282,22 +282,22 @@ void LinuxDrive::onReadyRead() {
     if (!m_process)
         return;
 
-    m_progress->setMax(m_image->size());
+    m_progress->setMax(m_variant->size());
     m_progress->setCurrent(NAN);
 
-    if (m_image->status() != Variant::WRITE_VERIFYING && m_image->status() != Variant::WRITING)
-        m_image->setStatus(Variant::WRITING);
+    if (m_variant->status() != Variant::WRITE_VERIFYING && m_variant->status() != Variant::WRITING)
+        m_variant->setStatus(Variant::WRITING);
 
     while (m_process->bytesAvailable() > 0) {
         QString line = m_process->readLine().trimmed();
         if (line == "WRITE") {
             m_progress->setCurrent(0);
-            m_image->setStatus(Variant::WRITING);
+            m_variant->setStatus(Variant::WRITING);
         }
         else if (line == "DONE") {
-            m_progress->setCurrent(m_image->size());
-            m_image->setStatus(Variant::FINISHED);
-            Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_image->fullName()));
+            m_progress->setCurrent(m_variant->size());
+            m_variant->setStatus(Variant::FINISHED);
+            Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_variant->fullName()));
         }
         else {
             bool ok = false;
@@ -317,20 +317,20 @@ void LinuxDrive::onFinished(int exitCode, QProcess::ExitStatus status) {
     if (exitCode != 0) {
         QString errorMessage = m_process->readAllStandardError();
         qWarning() << "Writing failed:" << errorMessage;
-        Notifications::notify(tr("Error"), tr("Writing %1 failed").arg(m_image->fullName()));
-        if (m_image->status() == Variant::WRITING) {
-            m_image->setErrorString(errorMessage);
-            m_image->setStatus(Variant::FAILED);
+        Notifications::notify(tr("Error"), tr("Writing %1 failed").arg(m_variant->fullName()));
+        if (m_variant->status() == Variant::WRITING) {
+            m_variant->setErrorString(errorMessage);
+            m_variant->setStatus(Variant::FAILED);
         }
     }
     else {
-        Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_image->fullName()));
-        m_image->setStatus(Variant::FINISHED);
+        Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_variant->fullName()));
+        m_variant->setStatus(Variant::FINISHED);
     }
     if (m_process) {
         m_process->deleteLater();
         m_process = nullptr;
-        m_image = nullptr;
+        m_variant = nullptr;
     }
 }
 
@@ -361,11 +361,11 @@ void LinuxDrive::onErrorOccurred(QProcess::ProcessError e) {
 
     QString errorMessage = m_process->errorString();
     qWarning() << "Restoring failed:" << errorMessage;
-    m_image->setErrorString(errorMessage);
+    m_variant->setErrorString(errorMessage);
     m_process->deleteLater();
     m_process = nullptr;
-    m_image->setStatus(Variant::FAILED);
-    m_image = nullptr;
+    m_variant->setStatus(Variant::FAILED);
+    m_variant = nullptr;
 }
 
 QString LinuxDrive::devicePath() const {

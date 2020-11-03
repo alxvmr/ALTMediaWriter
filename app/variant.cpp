@@ -92,8 +92,8 @@ QString Variant::url() const {
     return m_url;
 }
 
-QString Variant::image() const {
-    return m_image;
+QString Variant::file() const {
+    return m_file;
 }
 
 qreal Variant::size() const {
@@ -126,14 +126,14 @@ void Variant::onImageDownloadFinished() {
         case ImageDownload::Success: {
             const QString download_dir_path = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
             const QDir download_dir(download_dir_path);
-            m_image = download_dir.filePath(QUrl(m_url).fileName());;
+            m_file = download_dir.filePath(QUrl(m_url).fileName());;
 
-            emit imageChanged();
+            emit fileChanged();
 
             qDebug() << this->metaObject()->className() << "Image is ready";
             setStatus(READY);
 
-            setSize(QFile(m_image).size());
+            setSize(QFile(m_file).size());
 
             if (delayedWrite) {
                 Drive *drive = DriveManager::instance()->selected();
@@ -165,7 +165,7 @@ void Variant::onImageDownloadFinished() {
 }
 
 void Variant::download() {
-    if (url().isEmpty() && !image().isEmpty()) {
+    if (m_url.isEmpty() && !m_file.isEmpty()) {
         setStatus(READY);
 
         return;
@@ -183,13 +183,13 @@ void Variant::download() {
 
     if (already_downloaded) {
         // Already downloaded so skip download step
-        m_image = filePath;
-        emit imageChanged();
+        m_file = filePath;
+        emit fileChanged();
 
-        qDebug() << this->metaObject()->className() << m_image << "is already downloaded";
+        qDebug() << this->metaObject()->className() << m_file << "is already downloaded";
         setStatus(READY);
 
-        setSize(QFile(m_image).size());
+        setSize(QFile(m_file).size());
     } else {
         // Download image
         auto download = new ImageDownload(QUrl(m_url));
@@ -237,7 +237,7 @@ void Variant::cancelDownload() {
 }
 
 void Variant::resetStatus() {
-    if (!m_image.isEmpty()) {
+    if (!m_file.isEmpty()) {
         setStatus(READY);
     } else {
         setStatus(PREPARING);
@@ -249,14 +249,14 @@ void Variant::resetStatus() {
 }
 
 bool Variant::erase() {
-    if (QFile(m_image).remove()) {
-        qDebug() << this->metaObject()->className() << "Deleted" << m_image;
-        m_image = QString();
-        emit imageChanged();
+    if (QFile(m_file).remove()) {
+        qDebug() << this->metaObject()->className() << "Deleted" << m_file;
+        m_file = QString();
+        emit fileChanged();
         return true;
     }
     else {
-        qWarning() << this->metaObject()->className() << "An attempt to delete" << m_image << "failed!";
+        qWarning() << this->metaObject()->className() << "An attempt to delete" << m_file << "failed!";
         return false;
     }
 }

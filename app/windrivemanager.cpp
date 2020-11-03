@@ -246,9 +246,9 @@ WinDrive::~WinDrive() {
         m_child->kill();
 }
 
-bool WinDrive::write(Variant *data) {
-    qDebug() << this->metaObject()->className() << "Preparing to write" << data->fullName() << "to drive" << m_device;
-    if (!Drive::write(data))
+bool WinDrive::write(Variant *variant) {
+    qDebug() << this->metaObject()->className() << "Preparing to write" << variant->fullName() << "to drive" << m_device;
+    if (!Drive::write(variant))
         return false;
 
     if (m_child) {
@@ -259,20 +259,20 @@ bool WinDrive::write(Variant *data) {
     connect(m_child, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), this, &WinDrive::onFinished);
     connect(m_child, &QProcess::readyRead, this, &WinDrive::onReadyRead);
 
-    if (data->status() != Variant::DOWNLOADING)
-        m_image->setStatus(Variant::WRITING);
+    if (variant->status() != Variant::DOWNLOADING)
+        m_variant->setStatus(Variant::WRITING);
 
     const QString helperPath = getHelperPath();
     if (!helperPath.isEmpty()) {
         m_child->setProgram(helperPath);
     } else {
-        data->setErrorString(tr("Could not find the helper binary. Check your installation."));
+        variant->setErrorString(tr("Could not find the helper binary. Check your installation."));
         return false;
     }
 
     QStringList args;
     args << "write";
-    args << data->image();
+    args << variant->file();
     args << QString("%1").arg(m_device);
     m_child->setArguments(args);
 
@@ -337,12 +337,12 @@ void WinDrive::onFinished(int exitCode, QProcess::ExitStatus exitStatus) {
     qDebug() << m_child->errorString();
 
     if (exitCode == 0) {
-        m_image->setStatus(Variant::FINISHED);
-        Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_image->fullName()));
+        m_variant->setStatus(Variant::FINISHED);
+        Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_variant->fullName()));
     }
     else {
-        m_image->setErrorString(m_child->readAllStandardError().trimmed());
-        m_image->setStatus(Variant::FAILED);
+        m_variant->setErrorString(m_child->readAllStandardError().trimmed());
+        m_variant->setStatus(Variant::FAILED);
     }
 
     m_child->deleteLater();
@@ -370,22 +370,22 @@ void WinDrive::onReadyRead() {
     if (!m_child)
         return;
 
-    m_progress->setMax(m_image->size());
+    m_progress->setMax(m_variant->size());
     m_progress->setCurrent(NAN);
 
-    if (m_image->status() != Variant::WRITE_VERIFYING && m_image->status() != Variant::WRITING)
-        m_image->setStatus(Variant::WRITING);
+    if (m_variant->status() != Variant::WRITE_VERIFYING && m_variant->status() != Variant::WRITING)
+        m_variant->setStatus(Variant::WRITING);
 
     while (m_child->bytesAvailable() > 0) {
         QString line = m_child->readLine().trimmed();
         if (line == "WRITE") {
             m_progress->setCurrent(0);
-            m_image->setStatus(Variant::WRITING);
+            m_variant->setStatus(Variant::WRITING);
         }
         else if (line == "DONE") {
-            m_progress->setCurrent(m_image->size());
-            m_image->setStatus(Variant::FINISHED);
-            Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_image->fullName()));
+            m_progress->setCurrent(m_variant->size());
+            m_variant->setStatus(Variant::FINISHED);
+            Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_variant->fullName()));
         }
         else {
             bool ok;

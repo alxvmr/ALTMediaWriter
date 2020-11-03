@@ -286,18 +286,12 @@ Drive::RestoreStatus Drive::restoreStatus() {
     return m_restoreStatus;
 }
 
-void Drive::setImage(Variant *data) {
-    m_image = data;
-    if (m_image)
-        m_image->setErrorString(QString());
-}
+bool Drive::write(Variant *variant) {
+    m_variant = variant;
+    m_variant->setErrorString(QString());
 
-bool Drive::write(Variant *data) {
-    m_image = data;
-    m_image->setErrorString(QString());
-
-    if (data->size() > size()) {
-        m_image->setErrorString(tr("This drive is not large enough."));
+    if (variant->size() > size()) {
+        m_variant->setErrorString(tr("This drive is not large enough."));
         cancel();
         return false;
     }
