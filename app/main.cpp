@@ -17,6 +17,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#include "releasemanager.h"
+#include "release.h"
+#include "variant.h"
+#include "architecture.h"
+#include "file_type.h"
+#include "progress.h"
+#include "drivemanager.h"
+
 #include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
@@ -28,9 +36,6 @@
 #ifdef __linux
 #include <QX11Info>
 #endif
-
-#include "drivemanager.h"
-#include "releasemanager.h"
 
 #if QT_VERSION < 0x050300
 # error "Minimum supported Qt version is 5.3.0"
@@ -83,6 +88,14 @@ int main(int argc, char **argv)
     engine.rootContext()->setContextProperty("drives", DriveManager::instance());
     engine.rootContext()->setContextProperty("releases", new ReleaseManager());
     engine.rootContext()->setContextProperty("mediawriterVersion", MEDIAWRITER_VERSION);
+
+    qmlRegisterUncreatableType<Release>("MediaWriter", 1, 0, "Release", "");
+    qmlRegisterUncreatableType<Variant>("MediaWriter", 1, 0, "Variant", "");
+    qmlRegisterUncreatableType<Architecture>("MediaWriter", 1, 0, "Architecture", "");
+    qmlRegisterUncreatableType<FileType>("MediaWriter", 1, 0, "FileType", "");
+    qmlRegisterUncreatableType<Progress>("MediaWriter", 1, 0, "Progress", "");
+    qmlRegisterUncreatableType<Drive>("MediaWriter", 1, 0, "Drive", "");
+
     qDebug() << "Loading the QML source code";
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 

@@ -20,16 +20,11 @@
 #ifndef RELEASEMANAGER_H
 #define RELEASEMANAGER_H
 
-#include <QAbstractListModel>
 #include <QSortFilterProxyModel>
 #include <QQmlListProperty>
 
-class ReleaseManager;
-class ReleaseListModel;
 class Release;
-class Variant;
-class Architecture;
-class FileType;
+class QStandardItemModel;
 
 /*
  * Architecture - singleton (x86, x86_64, etc)
@@ -112,7 +107,7 @@ signals:
     void selectedChanged();
 
 private:
-    ReleaseListModel *m_sourceModel;
+    QStandardItemModel *m_sourceModel;
     bool m_frontPage;
     QString m_filterText;
     int m_filterArchitecture;
@@ -122,28 +117,8 @@ private:
     void loadVariants(const QString &variantsFile);
     void setDownloadingMetadata(const bool value);
     void downloadMetadata();
-};
-
-
-/**
- * @brief The ReleaseListModel class
- *
- * The list model containing all available releases without filtering.
- */
-class ReleaseListModel : public QAbstractListModel {
-    Q_OBJECT
-public:
-    ReleaseListModel(QObject *parent);
-
     void loadReleases(const QList<QString> &sectionsFiles);
-    Q_INVOKABLE Release *get(int index);
-
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
-    QHash<int, QByteArray> roleNames() const override;
-    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
-private:
-    QList<Release*> m_releases;
+    void addReleaseToModel(const int index, Release *release);
 };
 
 #endif // RELEASEMANAGER_H

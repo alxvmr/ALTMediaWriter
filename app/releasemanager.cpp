@@ -23,15 +23,13 @@
 #include "architecture.h"
 #include "variant.h"
 #include "network.h"
-#include "progress.h"
 
 #include <yaml-cpp/yaml.h>
-
-#include <fstream>
 
 #include <QtQml>
 #include <QApplication>
 #include <QAbstractEventDispatcher>
+#include <QStandardItemModel>
 
 #define FRONTPAGE_ROW_COUNT 3
 
@@ -42,24 +40,20 @@ QString yml_get(const YAML::Node &node, const QString &key);
 
 ReleaseManager::ReleaseManager(QObject *parent)
 : QSortFilterProxyModel(parent)
-, m_sourceModel(new ReleaseListModel(this))
+, m_sourceModel(new QStandardItemModel(this))
 , m_frontPage(true)
 , m_filterArchitecture(0)
 , m_downloadingMetadata(true)
 {
-    setSourceModel(m_sourceModel);
-
-    setSelectedIndex(0);
-
     qDebug() << this->metaObject()->className() << "construction";
 
-    qmlRegisterUncreatableType<Release>("MediaWriter", 1, 0, "Release", "");
-    qmlRegisterUncreatableType<Variant>("MediaWriter", 1, 0, "Variant", "");
-    qmlRegisterUncreatableType<Architecture>("MediaWriter", 1, 0, "Architecture", "");
-    qmlRegisterUncreatableType<FileType>("MediaWriter", 1, 0, "FileType", "");
-    qmlRegisterUncreatableType<Progress>("MediaWriter", 1, 0, "Progress", "");
+    setSourceModel(m_sourceModel);
 
-    // Download releases from getalt.org
+    // Add custom release to first position
+    auto customRelease = Release::custom(this);
+    addReleaseToModel(0, customRelease);
+    setSelectedIndex(0);
+
     QTimer::singleShot(0, this, &ReleaseManager::downloadMetadata);
 }
 
@@ -91,7 +85,11 @@ bool ReleaseManager::filterAcceptsRow(int source_row, const QModelIndex &source_
 }
 
 Release *ReleaseManager::get(int index) const {
-    return m_sourceModel->get(index);
+    QStandardItem *item = m_sourceModel->item(index);
+    QVariant variant = item->data();
+    Release *release = variant.value<Release *>();
+
+    return release;
 }
 
 void ReleaseManager::downloadMetadata() {
@@ -173,7 +171,7 @@ void ReleaseManager::downloadMetadata() {
             return out;
         }();
 
-        m_sourceModel->loadReleases(sectionsFiles);
+        loadReleases(sectionsFiles);
 
         const QList<QString> imagesFiles =
         [image_urls, url_to_file]() {
@@ -267,8 +265,9 @@ void ReleaseManager::setFilterArchitecture(int o) {
 
 Release *ReleaseManager::selected() const {
     if (m_selectedIndex >= 0 && m_selectedIndex < m_sourceModel->rowCount()) {
-        return m_sourceModel->get(m_selectedIndex);
+        return get(m_selectedIndex);
     }
+
     return nullptr;
 }
 
@@ -415,17 +414,7 @@ QStringList ReleaseManager::fileNameFilters() const {
     return filters;
 }
 
-ReleaseListModel::ReleaseListModel(QObject *parent)
-: QAbstractListModel(parent)
-{
-    qDebug() << "Creating ReleaseListModel";
-
-    // Add custom release to first position
-    auto customRelease = Release::custom(this);
-    m_releases.append(customRelease);
-}
-
-void ReleaseListModel::loadReleases(const QList<QString> &sectionsFiles) {
+void ReleaseManager::loadReleases(const QList<QString> &sectionsFiles) {
     qDebug() << "Loading releases";
 
     for (auto sectionFile : sectionsFiles) {
@@ -487,54 +476,23 @@ void ReleaseListModel::loadReleases(const QList<QString> &sectionsFiles) {
                 } else if (is_server) {
                     return 2;
                 } else {
-                    return m_releases.size();
+                    return m_sourceModel->rowCount();
                 }
             }();
             
-            // NOTE: do model calls to notify parent model about changes
-            beginInsertRows(QModelIndex(), index, index);
-            m_releases.insert(index, release);
-            endInsertRows();
+            addReleaseToModel(index, release);
         }
     }
-
-    qDebug() << "Loaded" << (m_releases.count() - 1 ) << "releases";
 }
 
-Release *ReleaseListModel::get(int index) {
-    if (index >= 0 && index < m_releases.count())
-        return m_releases[index];
-    return nullptr;
-}
+void ReleaseManager::addReleaseToModel(const int index, Release *release) {
+    QVariant variant;
+    variant.setValue(release);
 
-QVariant ReleaseListModel::headerData(int section, Qt::Orientation orientation, int role) const {
-    Q_UNUSED(section); Q_UNUSED(orientation);
+    QStandardItem *item = new QStandardItem();
+    item->setData(variant);
 
-    if (role == Qt::UserRole + 1)
-        return "release";
-
-    return QVariant();
-}
-
-QHash<int, QByteArray> ReleaseListModel::roleNames() const {
-    QHash<int, QByteArray> ret;
-    ret.insert(Qt::UserRole + 1, "release");
-    return ret;
-}
-
-int ReleaseListModel::rowCount(const QModelIndex &parent) const {
-    Q_UNUSED(parent)
-    return m_releases.count();
-}
-
-QVariant ReleaseListModel::data(const QModelIndex &index, int role) const {
-    if (!index.isValid())
-        return QVariant();
-
-    if (role == Qt::UserRole + 1)
-        return QVariant::fromValue(m_releases[index.row()]);
-
-    return QVariant();
+    m_sourceModel->insertRow(index, item);
 }
 
 QList<QString> load_list_from_file(const QString &filepath) {

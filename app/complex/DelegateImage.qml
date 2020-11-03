@@ -58,7 +58,7 @@ Item {
             width: height
             IndicatedImage {
                 fillMode: Image.PreserveAspectFit
-                source: release.icon
+                source: releases.get(index).icon
                 sourceSize.height: parent.height
                 sourceSize.width: parent.width
             }
@@ -78,7 +78,7 @@ Item {
                 Text {
                     verticalAlignment: Text.AlignBottom
                     font.pointSize: 9
-                    text: release.displayName
+                    text: releases.get(index).displayName
                     color: palette.text
                 }
                 Item {
@@ -90,7 +90,7 @@ Item {
                 Layout.fillWidth: true
                 verticalAlignment: Text.AlignTop
                 font.pointSize: 9
-                text: release.summary
+                text: releases.get(index).summary
                 wrapMode: Text.Wrap
                 elide: Text.ElideRight
                 maximumLineCount: 2
@@ -99,7 +99,7 @@ Item {
         }
         Arrow {
             id: arrow
-            visible: !release.isCustom
+            visible: !releases.get(index).isCustom
             anchors {
                 verticalCenter: parent.verticalCenter
                 right: parent.right
@@ -146,7 +146,7 @@ Item {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         function action() {
-            if (release.isCustom) {
+            if (releases.get(index).isCustom) {
                 releases.selectedIndex = index
                 fileDialog.visible = true
             } else {
