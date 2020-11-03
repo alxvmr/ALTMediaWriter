@@ -91,9 +91,9 @@ Item {
                             deviceNotification.open = false
                             archPopover.open = false
                             dlDialog.visible = true
-                            releases.variant.download()
+                            releases.selected.variant.download()
                         }
-                        enabled: !releases.selected.isCustom || releases.variant.image
+                        enabled: !releases.selected.isCustom || releases.selected.variant.image
                     }
                 }
 
@@ -125,7 +125,7 @@ Item {
                             }
                             Text {
                                 font.pointSize: 12
-                                property double size: releases.variant.size
+                                property double size: releases.selected.variant.size
                                 text: size <= 0 ? "" :
                                       (size < 1024) ? (size + " B") :
                                       (size < (1024 * 1024)) ? ((size / 1024).toFixed(1) + " KB") :
@@ -143,13 +143,13 @@ Item {
                                 font.pointSize: 10
                                 color: mixColors(palette.window, palette.windowText, 0.3)
                                 visible: releases.selected.variant
-                                text: releases.variant.name
+                                text: releases.selected.variant.name
                             }
                             Text {
                                 font.pointSize: 8
                                 color: mixColors(palette.window, palette.windowText, 0.3)
-                                visible: releases.variant
-                                text: releases.variant && releases.variant.imageType.name
+                                visible: releases.selected.variant
+                                text: releases.selected.variant && releases.selected.variant.imageType.name
                             }
                             RowLayout {
                                 spacing: 0

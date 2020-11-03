@@ -28,7 +28,6 @@
 class Progress;
 class ImageType;
 class Architecture;
-class Release;
 
 /**
  * @brief The Variant class
@@ -92,12 +91,11 @@ public:
         tr("Error")
     };
 
-    Variant(QString url, Architecture *arch, ImageType *imageType, QString board, const bool live, Release *parent);
+    Variant(QString url, const QString &releaseName_arg, Architecture *arch, ImageType *imageType, QString board, const bool live, QObject *parent);
+
+    static Variant *custom(const QString &path, QObject *parent);
 
     bool updateUrl(const QString &url);
-
-    Release *release();
-    const Release *release() const;
 
     Architecture *arch() const;
     ImageType *imageType() const;
@@ -136,6 +134,7 @@ public slots:
     void onImageDownloadFinished();
 
 private:
+    const QString releaseName;
     QString m_image {};
     Architecture *m_arch;
     ImageType *m_image_type;

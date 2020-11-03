@@ -79,8 +79,6 @@ class ReleaseManager : public QSortFilterProxyModel {
     Q_PROPERTY(Release* selected READ selected NOTIFY selectedChanged)
     Q_PROPERTY(int selectedIndex READ selectedIndex WRITE setSelectedIndex NOTIFY selectedChanged)
 
-    Q_PROPERTY(Variant* variant READ variant NOTIFY variantChanged)
-
     Q_PROPERTY(QStringList architectures READ architectures CONSTANT)
     Q_PROPERTY(QStringList fileNameFilters READ fileNameFilters CONSTANT)
 public:
@@ -106,18 +104,12 @@ public:
     int selectedIndex() const;
     void setSelectedIndex(int o);
 
-    Variant *variant();
-
-public slots:
-    void variantChangedFilter();
-
 signals:
     void beingUpdatedChanged();
     void frontPageChanged();
     void filterTextChanged();
     void filterArchitectureChanged();
     void selectedChanged();
-    void variantChanged();
 
 private:
     ReleaseListModel *m_sourceModel { nullptr };
@@ -141,8 +133,7 @@ private:
 class ReleaseListModel : public QAbstractListModel {
     Q_OBJECT
 public:
-    explicit ReleaseListModel(const QList<QString> &sectionsFiles, ReleaseManager *parent);
-    ReleaseManager *manager();
+    explicit ReleaseListModel(const QList<QString> &sectionsFiles, QObject *parent);
 
     Q_INVOKABLE Release *get(int index);
 

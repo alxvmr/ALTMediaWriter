@@ -25,7 +25,7 @@
 
 #include <QDebug>
 
-Release::Release(ReleaseManager *parent, const QString &name, const QString &display_name, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots)
+Release::Release(const QString &name, const QString &display_name, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots, QObject *parent)
 : QObject(parent)
 , m_name(name)
 , m_displayName(display_name)
@@ -35,14 +35,11 @@ Release::Release(ReleaseManager *parent, const QString &name, const QString &dis
 , m_screenshots(screenshots)
 , m_isCustom(false)
 {
-    // TODO: connect to release's signal in parent, not the other way around, won't need to have parent be releasemanager then
-    connect(
-        this, &Release::selectedVariantChanged,
-        parent, &ReleaseManager::variantChangedFilter);
+
 }
 
-Release *Release::custom(ReleaseManager *parent) {
-    auto customRelease = new Release(parent, QString(), tr("Custom image"), QT_TRANSLATE_NOOP("Release", "Pick a file from your drive(s)"), { QT_TRANSLATE_NOOP("Release", "<p>Here you can choose a OS image from your hard drive to be written to your flash disk</p><p>Currently it is only supported to write raw disk images (.iso or .bin)</p>") }, "qrc:/logo/custom", {});
+Release *Release::custom(QObject *parent) {
+    auto customRelease = new Release(QString(), tr("Custom image"), QT_TRANSLATE_NOOP("Release", "Pick a file from your drive(s)"), { QT_TRANSLATE_NOOP("Release", "<p>Here you can choose a OS image from your hard drive to be written to your flash disk</p><p>Currently it is only supported to write raw disk images (.iso or .bin)</p>") }, "qrc:/logo/custom", {}, parent);
     customRelease->m_isCustom = true;
     customRelease->setLocalFile(QString());
 
@@ -84,7 +81,7 @@ void Release::updateUrl(const QString &url, Architecture *architecture, ImageTyp
         }
         return out;
     }();
-    auto new_variant = new Variant(url, architecture, imageType, board, live, this);
+    auto new_variant = new Variant(url, m_displayName, architecture, imageType, board, live, this);
 
     m_variants.insert(insert_index, new_variant);
     emit variantsChanged();
@@ -97,17 +94,14 @@ void Release::updateUrl(const QString &url, Architecture *architecture, ImageTyp
 }
 
 void Release::setLocalFile(const QString &path) {
-    // Delete old custom variant (there's only one, but iterate anyway)
+    // Delete old custom variant (there's really only one, but iterate anyway)
     for (auto variant : m_variants) {
         variant->deleteLater();
     }
     m_variants.clear();
 
     // Add new variant
-    ImageType *image_type = ImageType::fromFilename(path);
-    auto customVariant = new Variant(path, Architecture::fromId(Architecture::UNKNOWN), image_type, QString(), false, this);
-    // NOTE: start out in ready because don't need to download
-    customVariant->setStatus(Variant::READY);
+    auto customVariant = Variant::custom(path, this);
     m_variants.append(customVariant);
     
     emit variantsChanged();

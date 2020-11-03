@@ -20,9 +20,6 @@
 #ifndef RELEASE_H
 #define RELEASE_H
 
-
-class ReleaseManager;
-class Release;
 class Variant;
 class Architecture;
 class ImageType;
@@ -63,12 +60,11 @@ class Release : public QObject {
     Q_PROPERTY(Variant* variant READ selectedVariant NOTIFY selectedVariantChanged)
     Q_PROPERTY(int variantIndex READ selectedVariantIndex WRITE setSelectedVariantIndex NOTIFY selectedVariantChanged)
 public:
-    Release(ReleaseManager *parent, const QString &name, const QString &displayName, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots);
+    Release(const QString &name, const QString &displayName, const QString &summary, const QString &description, const QString &icon, const QStringList &screenshots, QObject *parent);
 
-    static Release *custom(ReleaseManager *parent);
+    static Release *custom(QObject *parent);
 
     void updateUrl(const QString &url, Architecture *architecture, ImageType *imageType, const QString &board, const bool live);
-    ReleaseManager *manager();
 
     Q_INVOKABLE void setLocalFile(const QString &path);
 

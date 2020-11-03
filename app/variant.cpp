@@ -31,8 +31,9 @@
 #include <QStandardPaths>
 #include <QDir>
 
-Variant::Variant(QString url, Architecture *arch, ImageType *imageType, QString board, const bool live, Release *parent)
+Variant::Variant(QString url, const QString &releaseName_arg, Architecture *arch, ImageType *imageType, QString board, const bool live, QObject *parent)
 : QObject(parent)
+, releaseName(releaseName_arg)
 , m_arch(arch)
 , m_image_type(imageType)
 , m_board(board)
@@ -41,6 +42,20 @@ Variant::Variant(QString url, Architecture *arch, ImageType *imageType, QString 
 , m_progress(new Progress(this))
 {
 
+}
+
+Variant *Variant::custom(const QString &path, QObject *parent) {
+    const QString releaseName = tr("Custom");
+    ImageType *image_type = ImageType::fromFilename(path);
+    Architecture *arch = Architecture::fromId(Architecture::UNKNOWN);
+    const QString board = QString();
+    const bool live = false;
+
+    auto variant = new Variant(path, releaseName, arch, image_type, board, live, parent);
+    // NOTE: start out in ready because don't need to download
+    variant->setStatus(Variant::READY);
+
+    return variant;
 }
 
 bool Variant::updateUrl(const QString &url) {
@@ -52,14 +67,6 @@ bool Variant::updateUrl(const QString &url) {
         changed = true;
     }
     return changed;
-}
-
-Release *Variant::release() {
-    return qobject_cast<Release*>(parent());
-}
-
-const Release *Variant::release() const {
-    return qobject_cast<const Release*>(parent());
 }
 
 Architecture *Variant::arch() const {
@@ -89,10 +96,7 @@ QString Variant::name() const {
 }
 
 QString Variant::fullName() {
-    if (release()->isCustom())
-        return QFileInfo(image()).fileName();
-    else
-        return QString("%1 %2").arg(release()->displayName(), name());
+    return QString("%1 %2").arg(releaseName, name());
 }
 
 QString Variant::url() const {

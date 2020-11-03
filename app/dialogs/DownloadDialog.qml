@@ -46,8 +46,8 @@ Dialog {
         if (!visible) {
             if (drives.selected)
                 drives.selected.cancel()
-            releases.variant.cancelDownload()
-            releases.variant.resetStatus()
+            releases.selected.variant.cancelDownload()
+            releases.selected.variant.resetStatus()
         }
         reset()
     }
@@ -61,7 +61,7 @@ Dialog {
         states: [
             State {
                 name: "preparing"
-                when: releases.variant.status === Variant.PREPARING
+                when: releases.selected.variant.status === Variant.PREPARING
                 PropertyChanges {
                     target: progressBar;
                     value: 0.0/0.0
@@ -69,19 +69,19 @@ Dialog {
             },
             State {
                 name: "downloading"
-                when: releases.variant.status === Variant.DOWNLOADING
+                when: releases.selected.variant.status === Variant.DOWNLOADING
                 PropertyChanges {
                     target: messageDownload
                     visible: true
                 }
                 PropertyChanges {
                     target: progressBar;
-                    value: releases.variant.progress.ratio
+                    value: releases.selected.variant.progress.ratio
                 }
             },
             State {
                 name: "resuming"
-                when: releases.variant.status === Variant.DOWNLOAD_RESUMING
+                when: releases.selected.variant.status === Variant.DOWNLOAD_RESUMING
                 PropertyChanges {
                     target: progressBar;
                     value: 0.0/0.0
@@ -89,38 +89,38 @@ Dialog {
             },
             State {
                 name: "download_verifying"
-                when: releases.variant.status === Variant.DOWNLOAD_VERIFYING
+                when: releases.selected.variant.status === Variant.DOWNLOAD_VERIFYING
                 PropertyChanges {
                     target: messageDownload
                     visible: true
                 }
                 PropertyChanges {
                     target: progressBar;
-                    value: releases.variant.progress.ratio;
+                    value: releases.selected.variant.progress.ratio;
                     progressColor: Qt.lighter("green")
                 }
             },
             State {
                 name: "ready_no_drives"
-                when: releases.variant.status === Variant.READY && drives.length <= 0
+                when: releases.selected.variant.status === Variant.READY && drives.length <= 0
             },
             State {
                 name: "ready"
-                when: releases.variant.status === Variant.READY && drives.length > 0
+                when: releases.selected.variant.status === Variant.READY && drives.length > 0
                 PropertyChanges {
                     target: messageLoseData;
                     visible: true
                 }
                 PropertyChanges {
                     target: rightButton;
-                    enabled: releases.variant.imageType.canWrite;
+                    enabled: releases.selected.variant.imageType.canWrite;
                     color: "red";
-                    onClicked: drives.selected.write(releases.variant)
+                    onClicked: drives.selected.write(releases.selected.variant)
                 }
             },
             State {
                 name: "writing_not_possible"
-                when: releases.variant.status === Variant.WRITING_NOT_POSSIBLE
+                when: releases.selected.variant.status === Variant.WRITING_NOT_POSSIBLE
                 PropertyChanges {
                     target: driveCombo;
                     enabled: false;
@@ -129,7 +129,7 @@ Dialog {
             },
             State {
                 name: "writing"
-                when: releases.variant.status === Variant.WRITING
+                when: releases.selected.variant.status === Variant.WRITING
                 PropertyChanges {
                     target: messageDriveSize
                     enabled: false
@@ -150,7 +150,7 @@ Dialog {
             },
             State {
                 name: "write_verifying"
-                when: releases.variant.status === Variant.WRITE_VERIFYING
+                when: releases.selected.variant.status === Variant.WRITE_VERIFYING
                 PropertyChanges {
                     target: messageDriveSize
                     enabled: false
@@ -171,7 +171,7 @@ Dialog {
             },
             State {
                 name: "finished"
-                when: releases.variant.status === Variant.FINISHED
+                when: releases.selected.variant.status === Variant.FINISHED
                 PropertyChanges {
                     target: messageDriveSize
                     enabled: false
@@ -192,7 +192,7 @@ Dialog {
             },
             State {
                 name: "failed_download"
-                when: releases.variant.status === Variant.FAILED_DOWNLOAD
+                when: releases.selected.variant.status === Variant.FAILED_DOWNLOAD
                 PropertyChanges {
                     target: driveCombo;
                     enabled: false
@@ -202,23 +202,23 @@ Dialog {
                     text: qsTr("Retry");
                     enabled: true;
                     color: "#628fcf";
-                    onClicked: releases.variant.download()
+                    onClicked: releases.selected.variant.download()
                 }
             },
             State {
                 name: "failed_no_drives"
-                when: releases.variant.status === Variant.FAILED && drives.length <= 0
+                when: releases.selected.variant.status === Variant.FAILED && drives.length <= 0
                 PropertyChanges {
                     target: rightButton;
                     text: qsTr("Retry");
                     enabled: false;
                     color: "red";
-                    onClicked: drives.selected.write(releases.variant)
+                    onClicked: drives.selected.write(releases.selected.variant)
                 }
             },
             State {
                 name: "failed"
-                when: releases.variant.status === Variant.FAILED && drives.length > 0
+                when: releases.selected.variant.status === Variant.FAILED && drives.length > 0
                 PropertyChanges {
                     target: messageLoseData;
                     visible: true
@@ -228,13 +228,13 @@ Dialog {
                     text: qsTr("Retry");
                     enabled: true;
                     color: "red";
-                    onClicked: drives.selected.write(releases.variant)
+                    onClicked: drives.selected.write(releases.selected.variant)
                 }
             }
         ]
 
         Keys.onEscapePressed: {
-            if ([Variant.WRITING, Variant.WRITE_VERIFYING].indexOf(releases.variant.status) < 0)
+            if ([Variant.WRITING, Variant.WRITE_VERIFYING].indexOf(releases.selected.variant.status) < 0)
                 dialog.visible = false
         }
 
@@ -288,7 +288,7 @@ Dialog {
                             id: messageSelectedImage
                             width: infoColumn.width
                             visible: releases.selected.isCustom
-                            text: "<font color=\"gray\">" + qsTr("Selected:") + "</font> " + (releases.variant.image ? (((String)(releases.variant.image)).split("/").slice(-1)[0]) : ("<font color=\"gray\">" + qsTr("None") + "</font>"))
+                            text: "<font color=\"gray\">" + qsTr("Selected:") + "</font> " + (releases.selected.variant.image ? (((String)(releases.selected.variant.image)).split("/").slice(-1)[0]) : ("<font color=\"gray\">" + qsTr("None") + "</font>"))
                         }
 
                         InfoMessage {
@@ -302,8 +302,8 @@ Dialog {
                         InfoMessage {
                             error: true
                             width: infoColumn.width
-                            visible: releases.variant && releases.variant.errorString.length > 0
-                            text: releases.variant ? releases.variant.errorString : ""
+                            visible: releases.selected.variant && releases.selected.variant.errorString.length > 0
+                            text: releases.selected.variant ? releases.selected.variant.errorString : ""
                         }
                     }
 
@@ -323,13 +323,13 @@ Dialog {
                             Layout.fillHeight: true
                             horizontalAlignment: Text.AlignHCenter
                             font.pointSize: 9
-                            property double leftSize: releases.variant.progress.leftSize
+                            property double leftSize: releases.selected.variant.progress.leftSize
                             property string leftStr:  leftSize <= 0                    ? "" :
                                                      (leftSize < 1024)                 ? qsTr("(%1 B left)").arg(leftSize) :
                                                      (leftSize < (1024 * 1024))        ? qsTr("(%1 KB left)").arg((leftSize / 1024).toFixed(1)) :
                                                      (leftSize < (1024 * 1024 * 1024)) ? qsTr("(%1 MB left)").arg((leftSize / 1024 / 1024).toFixed(1)) :
                                                                                          qsTr("(%1 GB left)").arg((leftSize / 1024 / 1024 / 1024).toFixed(1))
-                            text: releases.variant.statusString + (releases.variant.status == Variant.DOWNLOADING ? (" " + leftStr) : "")
+                            text: releases.selected.variant.statusString + (releases.selected.variant.status == Variant.DOWNLOADING ? (" " + leftStr) : "")
                             color: palette.windowText
                         }
                         Item {
@@ -344,11 +344,11 @@ Dialog {
                         }
                         AdwaitaCheckBox {
                             text: qsTr("Write the image after downloading")
-                            enabled: drives.selected && ((releases.variant.status == Variant.DOWNLOADING) || (releases.variant.status == Variant.DOWNLOAD_RESUMING)) && releases.variant.imageType.canWrite
+                            enabled: drives.selected && ((releases.selected.variant.status == Variant.DOWNLOADING) || (releases.selected.variant.status == Variant.DOWNLOAD_RESUMING)) && releases.selected.variant.imageType.canWrite
                             visible: enabled
 
                             onCheckedChanged: {
-                                releases.variant.delayedWrite = checked
+                                releases.selected.variant.delayedWrite = checked
                             }
                         }
                     }
@@ -369,10 +369,10 @@ Dialog {
                             Layout.alignment : Qt.AlignVCenter
                             scale: 1.4
                             SequentialAnimation {
-                                running: releases.variant.status == Variant.WRITING
+                                running: releases.selected.variant.status == Variant.WRITING
                                 loops: -1
                                 onStopped: {
-                                    if (releases.variant.status == Variant.FINISHED)
+                                    if (releases.selected.variant.status == Variant.FINISHED)
                                         writeArrow.color = "#00dd00"
                                     else
                                         writeArrow.color = palette.text
@@ -409,8 +409,8 @@ Dialog {
                                 value: driveCombo.currentIndex
                             }
                             onActivated: {
-                                if ([Variant.FINISHED, Variant.FAILED].indexOf(releases.variant.status) >= 0)
-                                    releases.variant.resetStatus()
+                                if ([Variant.FINISHED, Variant.FAILED].indexOf(releases.selected.variant.status) >= 0)
+                                    releases.selected.variant.resetStatus()
                             }
                             placeholderText: qsTr("There are no portable drives connected")
                         }
@@ -425,7 +425,7 @@ Dialog {
                             width: 1
                         }
                         Text {
-                            visible: !releases.variant.imageType.canWrite
+                            visible: !releases.selected.variant.imageType.canWrite
                             font.pointSize: 10
                             Layout.fillWidth: true
                             width: Layout.width

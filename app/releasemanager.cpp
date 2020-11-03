@@ -121,10 +121,6 @@ ReleaseManager::ReleaseManager(QObject *parent)
         loadVariants(variantsFile);
     }
 
-    connect(
-        this, &ReleaseManager::selectedChanged,
-        this, &ReleaseManager::variantChangedFilter);
-
     // Download releases from getalt.org
     QTimer::singleShot(0, this, &ReleaseManager::downloadMetadata);
 }
@@ -315,12 +311,6 @@ void ReleaseManager::setBeingUpdated(const bool value) {
     emit beingUpdatedChanged();
 }
 
-void ReleaseManager::variantChangedFilter() {
-    // TODO here we could add some filters to help signal/slot performance
-    // TODO otherwise this can just go away and connections can be directly to the signal
-    emit variantChanged();
-}
-
 bool ReleaseManager::beingUpdated() const {
     return m_beingUpdated;
 }
@@ -391,16 +381,6 @@ void ReleaseManager::setSelectedIndex(int o) {
     if (m_selectedIndex != o) {
         m_selectedIndex = o;
         emit selectedChanged();
-    }
-}
-
-Variant *ReleaseManager::variant() {
-    Release *release = selected();
-
-    if (release != nullptr) {
-        return release->selectedVariant();
-    } else {
-        return nullptr;
     }
 }
 
@@ -556,7 +536,7 @@ QVariant ReleaseListModel::data(const QModelIndex &index, int role) const {
     return QVariant();
 }
 
-ReleaseListModel::ReleaseListModel(const QList<QString> &sectionsFiles, ReleaseManager *parent)
+ReleaseListModel::ReleaseListModel(const QList<QString> &sectionsFiles, QObject *parent)
 : QAbstractListModel(parent)
 {
     qDebug() << "Creating ReleaseListModel";
@@ -602,7 +582,7 @@ ReleaseListModel::ReleaseListModel(const QList<QString> &sectionsFiles, ReleaseM
             // NOTE: icon_path is consumed by QML, so it needs to begin with "qrc:/" not ":/"
             const QString icon_path = "qrc" + icon_path_test;
 
-            const auto release = new Release(manager(), name, display_name, summary, description, icon_path, screenshots);
+            const auto release = new Release(name, display_name, summary, description, icon_path, screenshots, this);
 
             // Reorder releases because default order in
             // sections files is not good. Try to put
@@ -627,12 +607,8 @@ ReleaseListModel::ReleaseListModel(const QList<QString> &sectionsFiles, ReleaseM
         }
     }
 
-    auto customRelease = Release::custom(manager());
+    auto customRelease = Release::custom(this);
     m_releases.insert(FRONTPAGE_ROW_COUNT - 1, customRelease);
-}
-
-ReleaseManager *ReleaseListModel::manager() {
-    return qobject_cast<ReleaseManager*>(parent());
 }
 
 Release *ReleaseListModel::get(int index) {
