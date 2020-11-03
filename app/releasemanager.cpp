@@ -38,48 +38,15 @@
 QList<QString> load_list_from_file(const QString &filepath);
 QList<QString> get_sections_urls();
 QList<QString> get_images_urls();
-
-QString readFile(const QString &filename) {
-    QFile file(filename);
-    if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        qDebug() << "readFile(): Failed to open file " << filename;
-        return "";
-    }
-    QTextStream fileStream(&file);
-    // NOTE: set codec manually, default codec is no good for cyrillic
-    fileStream.setCodec("UTF8");
-    QString str = fileStream.readAll();
-    file.close();
-    return str;
-}
-
-QString yml_get(const YAML::Node &node, const QString &key) {
-    const std::string key_std = key.toStdString();
-    const bool node_has_key = node[key_std];
-
-    if (node_has_key) {
-        const YAML::Node value_yml = node[key_std];
-        const std::string value_std = value_yml.as<std::string>();
-        QString value = QString::fromStdString(value_std);
-
-        // Remove HTML character entities that don't render in Qt
-        value.replace("&colon;", ":");
-        value.replace("&nbsp;", " ");
-        // Remove newlines because text will have wordwrap
-        value.replace("\n", " ");
-
-        return value;
-    } else {
-        return QString();
-    }
-}
+QString yml_get(const YAML::Node &node, const QString &key);
 
 ReleaseManager::ReleaseManager(QObject *parent)
 : QSortFilterProxyModel(parent)
 , m_sourceModel(new ReleaseListModel(this))
+, m_frontPage(true)
+, m_filterArchitecture(0)
+, m_downloadingMetadata(true)
 {
-
-
     setSourceModel(m_sourceModel);
 
     setSelectedIndex(0);
@@ -188,33 +155,12 @@ void ReleaseManager::downloadMetadata() {
         for (auto url : replies.keys()) {
             QNetworkReply *reply = replies[url];
 
-            const QString contents =
-            [reply, url, image_urls, section_urls]() {
-                if (reply->bytesAvailable() > 0) {
-                    const QByteArray bytes = reply->readAll();
-
-                    return QString(bytes);
-                } else {
-                    // If file failed to download for whatever reason, load built-in metadata
-                    const QString file_name = QUrl(url).fileName();
-                    const QString type_string =
-                    [url, image_urls, section_urls]() {
-                        if (image_urls.contains(url)) {
-                            return "images";
-                        } else {
-                            return "sections";
-                        }
-                    }();
-
-                    qDebug() << "Failed to download metadata from" << url;
-                    qDebug() << "Using built-in version instead";
-
-                    const QString builtin_file_path = QString(":/%1/%2").arg(type_string, file_name);
-                    return readFile(builtin_file_path);
-                }
-            }();
-
-            url_to_file[url] = contents;
+            if (reply->bytesAvailable() > 0) {
+                const QByteArray bytes = reply->readAll();
+                url_to_file[url] = QString(bytes);
+            } else {
+                qWarning() << "Failed to download metadata from" << url;
+            }
         }
 
         const QList<QString> sectionsFiles =
@@ -469,36 +415,6 @@ QStringList ReleaseManager::fileNameFilters() const {
     return filters;
 }
 
-QVariant ReleaseListModel::headerData(int section, Qt::Orientation orientation, int role) const {
-    Q_UNUSED(section); Q_UNUSED(orientation);
-
-    if (role == Qt::UserRole + 1)
-        return "release";
-
-    return QVariant();
-}
-
-QHash<int, QByteArray> ReleaseListModel::roleNames() const {
-    QHash<int, QByteArray> ret;
-    ret.insert(Qt::UserRole + 1, "release");
-    return ret;
-}
-
-int ReleaseListModel::rowCount(const QModelIndex &parent) const {
-    Q_UNUSED(parent)
-    return m_releases.count();
-}
-
-QVariant ReleaseListModel::data(const QModelIndex &index, int role) const {
-    if (!index.isValid())
-        return QVariant();
-
-    if (role == Qt::UserRole + 1)
-        return QVariant::fromValue(m_releases[index.row()]);
-
-    return QVariant();
-}
-
 ReleaseListModel::ReleaseListModel(QObject *parent)
 : QAbstractListModel(parent)
 {
@@ -591,6 +507,36 @@ Release *ReleaseListModel::get(int index) {
     return nullptr;
 }
 
+QVariant ReleaseListModel::headerData(int section, Qt::Orientation orientation, int role) const {
+    Q_UNUSED(section); Q_UNUSED(orientation);
+
+    if (role == Qt::UserRole + 1)
+        return "release";
+
+    return QVariant();
+}
+
+QHash<int, QByteArray> ReleaseListModel::roleNames() const {
+    QHash<int, QByteArray> ret;
+    ret.insert(Qt::UserRole + 1, "release");
+    return ret;
+}
+
+int ReleaseListModel::rowCount(const QModelIndex &parent) const {
+    Q_UNUSED(parent)
+    return m_releases.count();
+}
+
+QVariant ReleaseListModel::data(const QModelIndex &index, int role) const {
+    if (!index.isValid())
+        return QVariant();
+
+    if (role == Qt::UserRole + 1)
+        return QVariant::fromValue(m_releases[index.row()]);
+
+    return QVariant();
+}
+
 QList<QString> load_list_from_file(const QString &filepath) {
     QFile file(filepath);
 
@@ -617,4 +563,25 @@ QList<QString> get_images_urls() {
     static QList<QString> images_urls = load_list_from_file(":/images_urls.txt");
 
     return images_urls;
+}
+
+QString yml_get(const YAML::Node &node, const QString &key) {
+    const std::string key_std = key.toStdString();
+    const bool node_has_key = node[key_std];
+
+    if (node_has_key) {
+        const YAML::Node value_yml = node[key_std];
+        const std::string value_std = value_yml.as<std::string>();
+        QString value = QString::fromStdString(value_std);
+
+        // Remove HTML character entities that don't render in Qt
+        value.replace("&colon;", ":");
+        value.replace("&nbsp;", " ");
+        // Remove newlines because text will have wordwrap
+        value.replace("\n", " ");
+
+        return value;
+    } else {
+        return QString();
+    }
 }

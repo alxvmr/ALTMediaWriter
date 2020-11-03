@@ -113,11 +113,11 @@ signals:
 
 private:
     ReleaseListModel *m_sourceModel;
-    bool m_frontPage { true };
-    QString m_filterText {};
-    int m_filterArchitecture { 0 };
+    bool m_frontPage;
+    QString m_filterText;
+    int m_filterArchitecture;
     int m_selectedIndex;
-    bool m_downloadingMetadata = true;
+    bool m_downloadingMetadata;
 
     void loadVariants(const QString &variantsFile);
     void setDownloadingMetadata(const bool value);
@@ -136,7 +136,6 @@ public:
     ReleaseListModel(QObject *parent);
 
     void loadReleases(const QList<QString> &sectionsFiles);
-
     Q_INVOKABLE Release *get(int index);
 
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
@@ -144,9 +143,7 @@ public:
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 private:
-    bool loadRelease(const QString &name, const QString &sectionFileName);
-
-    QList<Release*> m_releases {};
+    QList<Release*> m_releases;
 };
 
 #endif // RELEASEMANAGER_H
