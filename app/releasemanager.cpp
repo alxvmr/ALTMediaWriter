@@ -29,7 +29,6 @@
 #include <QtQml>
 #include <QApplication>
 #include <QAbstractEventDispatcher>
-#include <QStandardItemModel>
 
 #define FRONTPAGE_ROW_COUNT 3
 
@@ -40,7 +39,7 @@ QString yml_get(const YAML::Node &node, const QString &key);
 
 ReleaseManager::ReleaseManager(QObject *parent)
 : QSortFilterProxyModel(parent)
-, m_sourceModel(new QStandardItemModel(this))
+, m_sourceModel(new ReleaseModel(this))
 , m_frontPage(true)
 , m_filterArchitecture(0)
 , m_downloadingMetadata(true)
@@ -538,4 +537,16 @@ QString yml_get(const YAML::Node &node, const QString &key) {
     } else {
         return QString();
     }
+}
+
+// NOTE: this is a very roundabout way of making the Release
+// pointer stored inside the item available in the qml
+// delegate as "release". (Qt::UserRole + 1 is the default
+// data role)
+QHash<int, QByteArray> ReleaseModel::roleNames() const {
+    static const QHash<int, QByteArray> names = {
+        {Qt::UserRole + 1, "release"}
+    };
+
+    return names;
 }

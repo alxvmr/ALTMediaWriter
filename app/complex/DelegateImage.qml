@@ -29,6 +29,10 @@ Item {
     height: 84
     activeFocusOnTab: true
 
+    // NOTE: "release" var is obtained from the item data's
+    // UserRole which is named as "release" in
+    // ReleaseModel::roleNames()
+
     readonly property bool isTop: (index == 0)
 
     property color color: delegateMouse.containsPress ? Qt.darker(palette.button, 1.2) : delegateMouse.containsMouse ? palette.button : palette.background
@@ -58,7 +62,7 @@ Item {
             width: height
             IndicatedImage {
                 fillMode: Image.PreserveAspectFit
-                source: releases.get(index).icon
+                source: release.icon
                 sourceSize.height: parent.height
                 sourceSize.width: parent.width
             }
@@ -78,7 +82,7 @@ Item {
                 Text {
                     verticalAlignment: Text.AlignBottom
                     font.pointSize: 9
-                    text: releases.get(index).displayName
+                    text: release.displayName
                     color: palette.text
                 }
                 Item {
@@ -90,7 +94,7 @@ Item {
                 Layout.fillWidth: true
                 verticalAlignment: Text.AlignTop
                 font.pointSize: 9
-                text: releases.get(index).summary
+                text: release.summary
                 wrapMode: Text.Wrap
                 elide: Text.ElideRight
                 maximumLineCount: 2
@@ -99,7 +103,7 @@ Item {
         }
         Arrow {
             id: arrow
-            visible: !releases.get(index).isCustom
+            visible: !release.isCustom
             anchors {
                 verticalCenter: parent.verticalCenter
                 right: parent.right
@@ -146,7 +150,7 @@ Item {
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
         function action() {
-            if (releases.get(index).isCustom) {
+            if (release.isCustom) {
                 releases.selectedIndex = index
                 fileDialog.visible = true
             } else {

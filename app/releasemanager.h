@@ -21,9 +21,11 @@
 #define RELEASEMANAGER_H
 
 #include <QSortFilterProxyModel>
+#include <QStandardItemModel>
 #include <QQmlListProperty>
 
 class Release;
+class ReleaseModel;
 class QStandardItemModel;
 
 /*
@@ -107,7 +109,7 @@ signals:
     void selectedChanged();
 
 private:
-    QStandardItemModel *m_sourceModel;
+    ReleaseModel *m_sourceModel;
     bool m_frontPage;
     QString m_filterText;
     int m_filterArchitecture;
@@ -119,6 +121,13 @@ private:
     void downloadMetadata();
     void loadReleases(const QList<QString> &sectionsFiles);
     void addReleaseToModel(const int index, Release *release);
+};
+
+class ReleaseModel final : public QStandardItemModel {
+public:
+    using QStandardItemModel::QStandardItemModel;
+
+    QHash<int, QByteArray> roleNames() const override;
 };
 
 #endif // RELEASEMANAGER_H
