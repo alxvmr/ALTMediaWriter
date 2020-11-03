@@ -2,6 +2,49 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="ru" sourcelanguage="en">
 <context>
+    <name>Architecture</name>
+    <message>
+        <source>Elbrus</source>
+        <translation>Эльбрус </translation>
+    </message>
+    <message>
+        <source>Unknown architecture</source>
+        <translation type="vanished">Неизвестная архитектура</translation>
+    </message>
+    <message>
+        <source>AMD 64bit</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Intel 32bit</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>ARM v7</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>AArch64</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>MIPS</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>RiscV64</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>PowerPC</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Unknown</source>
+        <translation></translation>
+    </message>
+</context>
+<context>
     <name>BackButton</name>
     <message>
         <source>Back</source>
@@ -19,19 +62,19 @@
     <name>Download</name>
     <message>
         <source>Unable to fetch the requested image.</source>
-        <translation>Не удается получить требуемый образ.</translation>
+        <translation type="vanished">Не удается получить требуемый образ.</translation>
     </message>
     <message>
         <source>You ran out of space in your Downloads folder.</source>
-        <translation>Может кончиться место в папке Загрузки.</translation>
+        <translation type="vanished">Может кончиться место в папке Загрузки.</translation>
     </message>
     <message>
         <source>The download file is not writable.</source>
-        <translation>Файл для загрузки недоступен для записи.</translation>
+        <translation type="vanished">Файл для загрузки недоступен для записи.</translation>
     </message>
     <message>
         <source>Connection timed out</source>
-        <translation>Время ожидания соединения истекло.</translation>
+        <translation type="vanished">Время ожидания соединения истекло.</translation>
     </message>
 </context>
 <context>
@@ -94,7 +137,7 @@
     </message>
     <message>
         <source>Write the image immediately when the download is finished</source>
-        <translation>Записать образ сразу после завершения загрузки</translation>
+        <translation type="vanished">Записать образ сразу после завершения загрузки</translation>
     </message>
     <message>
         <source>There are no portable drives connected</source>
@@ -102,7 +145,7 @@
     </message>
     <message>
         <source>It was not possible to delete the file</source>
-        <translation>Не удалось удалить&lt;br&gt;\&quot;&lt;a href=\&quot;%1\&quot;&gt;%2&lt;/a&gt;\&quot;.</translation>
+        <translation type="vanished">Не удалось удалить&lt;br&gt;\&quot;&lt;a href=\&quot;%1\&quot;&gt;%2&lt;/a&gt;\&quot;.</translation>
     </message>
     <message>
         <source>Cancel</source>
@@ -119,12 +162,16 @@
     <message>
         <source>Writing this image type is not supported here but you can write it using rootfs:
 sudo alt-rootfs-installer --rootfs=%1 --media=%2 --target=%3</source>
-        <translation>Запись этого типа образа не поддерживается, но вы можете написать его используя rootfs:
+        <translation type="vanished">Запись этого типа образа не поддерживается, но вы можете написать его используя rootfs:
 sudo alt-rootfs-installer --rootfs=%1 --media=%2 --target=%3</translation>
     </message>
     <message>
         <source>Writing this image type is not supported here but you can write it using rootfs. Insert a drive to get a formatted command.</source>
-        <translation>Запись этого типа образа не поддерживается, но вы можете написать его используя rootfs.</translation>
+        <translation type="vanished">Запись этого типа образа не поддерживается, но вы можете написать его используя rootfs.</translation>
+    </message>
+    <message>
+        <source>Write the image after downloading</source>
+        <translation>Записать образ после загрузки</translation>
     </message>
 </context>
 <context>
@@ -132,6 +179,41 @@ sudo alt-rootfs-installer --rootfs=%1 --media=%2 --target=%3</translation>
     <message>
         <source>This drive is not large enough.</source>
         <translation>Диск недостаточно большой.</translation>
+    </message>
+</context>
+<context>
+    <name>FileType</name>
+    <message>
+        <source>ISO DVD</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>GZIP TAR Archive</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>LZMA TAR Archive</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>IMG</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>GZIP IMG</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>LZMA IMG</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Recovery TAR Archive</source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Unknown</source>
+        <translation></translation>
     </message>
 </context>
 <context>
@@ -143,23 +225,46 @@ sudo alt-rootfs-installer --rootfs=%1 --media=%2 --target=%3</translation>
     <message>
         <source>(%1 after writing)</source>
         <extracomment>The downloaded image is compressed, this refers to the size which it will take after being decompressed and written to the drive</extracomment>
-        <translation>(%1 после записи)</translation>
+        <translation type="vanished">(%1 после записи)</translation>
     </message>
     <message>
         <source>Version %1</source>
-        <translation>Версия %1</translation>
+        <translation type="vanished">Версия %1</translation>
     </message>
     <message>
         <source>ALT %1 was released! Check it out!&lt;br&gt;If you want a stable, finished system, it&apos;s better to stay at version %2.</source>
-        <translation>Вышла ALT %1! Проверьте ее!&lt;br&gt;Если вам нужна стабильная, законченная система, лучше оставаться на версии %2.</translation>
+        <translation type="vanished">Вышла ALT %1! Проверьте ее!&lt;br&gt;Если вам нужна стабильная, законченная система, лучше оставаться на версии %2.</translation>
     </message>
     <message>
         <source>, released on %1</source>
-        <translation>, выпущено на %1</translation>
+        <translation type="vanished">, выпущено на %1</translation>
     </message>
     <message>
         <source>Other variants...</source>
         <translation>Другие варианты...</translation>
+    </message>
+</context>
+<context>
+    <name>ImageDownload</name>
+    <message>
+        <source>You ran out of space in your Downloads folder.</source>
+        <translation>Закончилось место в папке Загрузки.</translation>
+    </message>
+    <message>
+        <source>The download file is not writable.</source>
+        <translation type="vanished">Загруженный файл недоступен для записи.</translation>
+    </message>
+    <message>
+        <source>Failed to read from file while verifying</source>
+        <translation>Не удалось прочитать файла при проверке</translation>
+    </message>
+    <message>
+        <source>Unable to rename the temporary file.</source>
+        <translation>Не удается переименовать временный файл.</translation>
+    </message>
+    <message>
+        <source>The downloaded file is not writable.</source>
+        <translation>Загруженный файл недоступен для записи.</translation>
     </message>
 </context>
 <context>
@@ -170,7 +275,7 @@ sudo alt-rootfs-installer --rootfs=%1 --media=%2 --target=%3</translation>
     </message>
     <message>
         <source>Checking for new releases</source>
-        <translation>Проверка наличия новых версий</translation>
+        <translation type="vanished">Проверка наличия новых версий</translation>
     </message>
     <message>
         <source>About ALT Media Writer</source>
@@ -182,7 +287,7 @@ sudo alt-rootfs-installer --rootfs=%1 --media=%2 --target=%3</translation>
     </message>
     <message>
         <source>ALT Media Writer is now checking for new releases</source>
-        <translation>Сейчас ALT Media Writer проверяет наличие новых версий</translation>
+        <translation type="vanished">Сейчас ALT Media Writer проверяет наличие новых версий</translation>
     </message>
     <message>
         <source>Please report bugs or your suggestions on %1</source>
@@ -191,6 +296,10 @@ sudo alt-rootfs-installer --rootfs=%1 --media=%2 --target=%3</translation>
     <message>
         <source>Display additional ALT flavors</source>
         <translation>Показать дополнительные разновидности ALT</translation>
+    </message>
+    <message>
+        <source>Downloading releases info</source>
+        <translation>Загрузка информации об образах</translation>
     </message>
 </context>
 <context>
@@ -235,23 +344,23 @@ sudo alt-rootfs-installer --rootfs=%1 --media=%2 --target=%3</translation>
     <name>MacDrive</name>
     <message>
         <source>Could not find the helper binary. Check your installation.</source>
-        <translation>Не удалось найти файл helper. Проверьте установку.</translation>
+        <translation type="vanished">Не удалось найти файл helper. Проверьте установку.</translation>
     </message>
     <message>
         <source>Error</source>
-        <translation>Ошибка</translation>
+        <translation type="vanished">Ошибка</translation>
     </message>
     <message>
         <source>Writing %1 failed</source>
-        <translation>Ошибка записи %1</translation>
+        <translation type="vanished">Ошибка записи %1</translation>
     </message>
     <message>
         <source>Finished!</source>
-        <translation>Закончено!</translation>
+        <translation type="vanished">Закончено!</translation>
     </message>
     <message>
         <source>Writing %1 was successful</source>
-        <translation>Успешная запись %1</translation>
+        <translation type="vanished">Успешная запись %1</translation>
     </message>
 </context>
 <context>
@@ -264,223 +373,42 @@ sudo alt-rootfs-installer --rootfs=%1 --media=%2 --target=%3</translation>
         <source>&lt;p&gt;Here you can choose a OS image from your hard drive to be written to your flash disk&lt;/p&gt;&lt;p&gt;Currently it is only supported to write raw disk images (.iso or .bin)&lt;/p&gt;</source>
         <translation>&lt;p&gt;Здесь можно выбрать образ ОС с жесткого диска для записи на флэш-накопитель&lt;/p&gt;&lt;p&gt;В настоящее время поддерживается только запись raw-образов диска (.iso или .bin)&lt;/p&gt;</translation>
     </message>
-</context>
-<context>
-    <name>Architecture</name>
-    <message>
-        <source>AMD 64bit</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>Intel 32bit</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>ARM v7</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>AArch64</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>MIPS</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>RiscV</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>Elbrus</source>
-        <translation>Эльбрус </translation>
-    </message>
-    <message>
-        <source>PowerPC</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>Unknown architecture</source>
-        <translation>Неизвестная архитектура</translation>
-    </message>
-</context>
-<context>
-    <name>ReleaseBoard</name>
-    <message>
-        <source>Unknown board</source>
-        <translation>Неизвестная архитектура</translation>
-    </message>
-    <message>
-        <source>Intel, AMD and other compatible PCs (64-bit)</source>
-        <translation>Intel, AMD и другие совместимые PC (64-bit)</translation>
-    </message>
-    <message>
-        <source>Legacy Intel, AMD and other compatible PCs (32-bit)</source>
-        <translation>Legacy Intel, AMD и другие совместимые PC (32-bit)</translation>
-    </message>
-    <message>
-        <source>Tavolga Terminal (MIPSel)</source>
-        <translation>Таволга терминал (MIPSel)</translation>
-    </message>
-    <message>
-        <source>RaspberryPi 3</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>RaspberryPi 4</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>Power8/9</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>ARM64 UEFI</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>Jetson Nano</source>
-        <translation></translation>
-    </message>
-</context>
-<context>
-    <name>FileType</name>
-    <message>
-        <source>ISO DVD</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>ISO format image</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>TAR Archive</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>tar archive of rootfs</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>GZip TAR Archive</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>GNU Zip compressed tar archive of rootfs</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>LZMA TAR Archive</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>LZMA-compressed tar archive of rootfs</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>Raw image</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>raw image</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>GNU Zip compressed raw image</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>LZMA-compressed raw image</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>Recovery TAR Archive</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>Special recovery archive for Tavolga Terminal</source>
-        <translation></translation>
-    </message>
-</context>
-<context>
-    <name>ReleaseListModel</name>
     <message>
         <source>Custom image</source>
         <translation>Другой образ</translation>
     </message>
 </context>
 <context>
-    <name>Variant</name>
+    <name>ReleaseBoard</name>
     <message>
-        <source>The downloaded image is corrupted</source>
-        <translation>Загруженный образ поврежден</translation>
+        <source>Unknown board</source>
+        <translation type="vanished">Неизвестная архитектура</translation>
     </message>
     <message>
-        <source>The downloaded file is not readable.</source>
-        <translation>Загруженный файл не читается.</translation>
+        <source>Intel, AMD and other compatible PCs (64-bit)</source>
+        <translation type="vanished">Intel, AMD и другие совместимые PC (64-bit)</translation>
     </message>
     <message>
-        <source>Unable to rename the temporary file.</source>
-        <translation>Не удается переименовать временный файл.</translation>
+        <source>Legacy Intel, AMD and other compatible PCs (32-bit)</source>
+        <translation type="vanished">Legacy Intel, AMD и другие совместимые PC (32-bit)</translation>
     </message>
     <message>
-        <source>Preparing</source>
-        <translation>Подготовка</translation>
-    </message>
-    <message>
-        <source>Downloading</source>
-        <translation>Загрузка</translation>
-    </message>
-    <message>
-        <source>Checking the download</source>
-        <translation>Проверка загрузки</translation>
-    </message>
-    <message>
-        <source>Ready to write</source>
-        <translation>Готово для записи</translation>
-    </message>
-    <message>
-        <source>Image file was saved to your downloads folder. Writing is not possible</source>
-        <translation>Файл образа сохранен в вашу папку для загрузок. Запись невозможна</translation>
-    </message>
-    <message>
-        <source>Writing</source>
-        <translation>Запись</translation>
-    </message>
-    <message>
-        <source>Checking the written data</source>
-        <translation>Проверка записанных данных</translation>
-    </message>
-    <message>
-        <source>Finished!</source>
-        <translation>Закончено!</translation>
-    </message>
-    <message>
-        <source>The written data is corrupted</source>
-        <translation>Загруженные данные повреждены</translation>
-    </message>
-    <message>
-        <source>Download failed</source>
-        <translation>Ошибка загрузки</translation>
-    </message>
-    <message>
-        <source>Error</source>
-        <translation>Ошибка</translation>
+        <source>Tavolga Terminal (MIPSel)</source>
+        <translation type="vanished">Таволга терминал (MIPSel)</translation>
     </message>
 </context>
 <context>
-    <name>ReleaseVersion</name>
+    <name>ReleaseListModel</name>
     <message>
-        <source>%1 Alpha</source>
-        <translation></translation>
+        <source>Custom image</source>
+        <translation type="vanished">Другой образ</translation>
     </message>
+</context>
+<context>
+    <name>ReleaseManager</name>
     <message>
-        <source>%1 Beta</source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>%1 Release Candidate</source>
-        <translation></translation>
+        <source>All files</source>
+        <translation>Все файлы</translation>
     </message>
 </context>
 <context>
@@ -538,6 +466,77 @@ sudo alt-rootfs-installer --rootfs=%1 --media=%2 --target=%3</translation>
     </message>
 </context>
 <context>
+    <name>Variant</name>
+    <message>
+        <source>The downloaded image is corrupted</source>
+        <translation>Загруженный образ поврежден</translation>
+    </message>
+    <message>
+        <source>The downloaded file is not readable.</source>
+        <translation type="vanished">Загруженный файл не читается.</translation>
+    </message>
+    <message>
+        <source>Unable to rename the temporary file.</source>
+        <translation type="vanished">Не удается переименовать временный файл.</translation>
+    </message>
+    <message>
+        <source>Preparing</source>
+        <translation>Подготовка</translation>
+    </message>
+    <message>
+        <source>Downloading</source>
+        <translation>Загрузка</translation>
+    </message>
+    <message>
+        <source>Checking the download</source>
+        <translation>Проверка загрузки</translation>
+    </message>
+    <message>
+        <source>Ready to write</source>
+        <translation>Готово для записи</translation>
+    </message>
+    <message>
+        <source>Image file was saved to your downloads folder. Writing is not possible</source>
+        <translation>Файл образа сохранен в вашу папку для загрузок. Запись невозможна</translation>
+    </message>
+    <message>
+        <source>Writing</source>
+        <translation>Запись</translation>
+    </message>
+    <message>
+        <source>Checking the written data</source>
+        <translation>Проверка записанных данных</translation>
+    </message>
+    <message>
+        <source>Finished!</source>
+        <translation>Закончено!</translation>
+    </message>
+    <message>
+        <source>The written data is corrupted</source>
+        <translation>Загруженные данные повреждены</translation>
+    </message>
+    <message>
+        <source>Download failed</source>
+        <translation>Ошибка загрузки</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation>Ошибка</translation>
+    </message>
+    <message>
+        <source>Custom</source>
+        <translation>Другой</translation>
+    </message>
+    <message>
+        <source>Connection was interrupted, attempting to resume</source>
+        <translation>Подключение было прервано, попытка возобновить</translation>
+    </message>
+    <message>
+        <source>Resuming download</source>
+        <translation>Возобновление загрузки</translation>
+    </message>
+</context>
+<context>
     <name>WinDrive</name>
     <message>
         <source>Could not find the helper binary. Check your installation.</source>
@@ -584,11 +583,11 @@ sudo alt-rootfs-installer --rootfs=%1 --media=%2 --target=%3</translation>
     </message>
     <message>
         <source>Your drive is probably damaged.</source>
-        <translation>Ваш диск вероятно поврежден.</translation>
+        <translation type="vanished">Ваш диск вероятно поврежден.</translation>
     </message>
     <message>
         <source>Unexpected error occurred during media check.</source>
-        <translation>Во время проверки носителя произошла непредвиденная ошибка.</translation>
+        <translation type="vanished">Во время проверки носителя произошла непредвиденная ошибка.</translation>
     </message>
     <message>
         <source>Couldn&apos;t open the drive for writing</source>
@@ -619,23 +618,23 @@ sudo alt-rootfs-installer --rootfs=%1 --media=%2 --target=%3</translation>
     </message>
     <message>
         <source>ALT Media Writer %1 Released</source>
-        <translation>ALT Media Writer %1 Released</translation>
+        <translation type="vanished">ALT Media Writer %1 Released</translation>
     </message>
     <message>
         <source>Update for great new features and bugfixes!</source>
-        <translation>Обновите для получения новых функций и исправлений ошибок!</translation>
+        <translation type="vanished">Обновите для получения новых функций и исправлений ошибок!</translation>
     </message>
     <message>
         <source>Open Browser</source>
-        <translation>Открыть браузер</translation>
+        <translation type="vanished">Открыть браузер</translation>
     </message>
     <message>
         <source>Image files</source>
-        <translation>Файлы образов</translation>
+        <translation type="vanished">Файлы образов</translation>
     </message>
     <message>
         <source>All files (*)</source>
-        <translation>Все файлы (*)</translation>
+        <translation type="vanished">Все файлы (*)</translation>
     </message>
     <message>
         <source>%1&lt;br&gt;Writing images will not be possible.&lt;br&gt;You can still view ALT flavors and download images to your hard drive.</source>

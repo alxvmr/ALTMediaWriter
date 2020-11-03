@@ -101,7 +101,7 @@ void ImageDownload::onImageDownloadReadyRead() {
                 if (storage.bytesAvailable() < 5L * 1024L * 1024L) {
                     return tr("You ran out of space in your Downloads folder.");
                 } else {
-                    return tr("The download file is not writable.");
+                    return tr("The downloaded file is not writable.");
                 }
             }();
 
