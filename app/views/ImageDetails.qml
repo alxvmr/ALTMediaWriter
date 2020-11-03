@@ -37,7 +37,7 @@ Item {
     enabled: focused
 
     function toMainScreen() {
-        archPopover.open = false
+        otherVariantsPopover.open = false
         canGoBack = false
         contentList.currentIndex--
     }
@@ -89,7 +89,7 @@ Item {
                             if (dlDialog.visible)
                                 return
                             deviceNotification.open = false
-                            archPopover.open = false
+                            otherVariantsPopover.open = false
                             dlDialog.visible = true
                             releases.selected.variant.download()
                         }
@@ -159,16 +159,16 @@ Item {
                                     visible: releases.selected.variants.length > 1
                                     text: qsTr("Other variants...")
                                     font.pointSize: 8
-                                    color: archMouse.containsPress ? Qt.lighter("#1d61bf", 1.7) : archMouse.containsMouse ? Qt.darker("#1d61bf", 1.5) : "#1d61bf"
+                                    color: otherVariantsMouseArea.containsPress ? Qt.lighter("#1d61bf", 1.7) : otherVariantsMouseArea.containsMouse ? Qt.darker("#1d61bf", 1.5) : "#1d61bf"
                                     Behavior on color { ColorAnimation { duration: 100 } }
                                     MouseArea {
-                                        id: archMouse
+                                        id: otherVariantsMouseArea
                                         activeFocusOnTab: parent.visible
                                         anchors.fill: parent
                                         hoverEnabled: true
                                         cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
                                         function action() {
-                                            archPopover.open = !archPopover.open
+                                            otherVariantsPopover.open = !otherVariantsPopover.open
                                         }
                                         Keys.onSpacePressed: action()
                                         onClicked: {
@@ -193,7 +193,7 @@ Item {
                                     }
 
                                     AdwaitaPopOver {
-                                        id: archPopover
+                                        id: otherVariantsPopover
                                         z: 2
                                         anchors {
                                             horizontalCenter: parent.horizontalCenter
@@ -204,19 +204,19 @@ Item {
                                         ColumnLayout {
                                             spacing: 9
                                             ExclusiveGroup {
-                                                id: archEG
+                                                id: otherVariantsExclusiveGroup
                                             }
                                             Repeater {
                                                 model: releases.selected.variants
                                                 AdwaitaRadioButton {
                                                     text: name
                                                     Layout.alignment: Qt.AlignVCenter
-                                                    exclusiveGroup: archEG
+                                                    exclusiveGroup: otherVariantsExclusiveGroup
                                                     checked: index == releases.selected.variantIndex
                                                     onCheckedChanged: {
                                                         if (checked)
                                                             releases.selected.variantIndex = index
-                                                        archPopover.open = false
+                                                        otherVariantsPopover.open = false
                                                     }
                                                 }
                                             }

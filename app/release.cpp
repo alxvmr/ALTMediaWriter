@@ -68,9 +68,7 @@ void Release::addVariant(Variant *variant) {
         return;
     }
 
-    // Otherwise add this variant
-
-    // NOTE: preserve the order from the Architecture::Id enum (to not have ARM first, etc.)
+    // Sort variants by architecture
     const int insert_index =
     [this, variant]() {
         int out = 0;
