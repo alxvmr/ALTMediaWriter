@@ -115,11 +115,12 @@ void ReleaseManager::downloadMetadata() {
         for (auto url : replies.keys()) {
             QNetworkReply *reply = replies[url];
 
-            if (reply->bytesAvailable() > 0) {
+            if (reply->error() == QNetworkReply::NoError) {
                 const QByteArray bytes = reply->readAll();
                 url_to_file[url] = QString(bytes);
             } else {
                 qWarning() << "Failed to download metadata from" << url;
+                qWarning() << "Error:" << reply->error();
             }
         }
 
@@ -409,7 +410,7 @@ void ReleaseManager::addReleaseToModel(const int index, Release *release) {
 QList<QString> load_list_from_file(const QString &filepath) {
     QFile file(filepath);
 
-    const bool open_success = file.open(QIODevice::ReadOnly);
+    const bool open_success = file.open(QIODevice::ReadOnly | QIODevice::Text);
     if (!open_success) {
         qWarning() << "Failed to open" << filepath;
         return QList<QString>();
