@@ -80,7 +80,9 @@ bool ReleaseManager::filterAcceptsRow(int source_row, const QModelIndex &source_
             return false;
         }();
 
-        return releaseHasVariantWithArch;
+        const bool releaseMatchesName = release->name().contains(m_filterText, Qt::CaseInsensitive);
+
+        return releaseHasVariantWithArch && releaseMatchesName;
     }
 }
 
@@ -249,20 +251,9 @@ void ReleaseManager::setFilterArchitecture(int o) {
         m_filterArchitecture = o;
         emit filterArchitectureChanged();
 
-        // Select first variant with this arch
-        // TODO: needed? probably something goes wrong in qml if don't do this
-        for (int i = 0; i < m_sourceModel->rowCount(); i++) {
-            Release *release = get(i);
-
-            for (auto variant : release->variantList()) {
-                if (variant->arch()->index() == o) {
-                    const int index = release->variantList().indexOf(variant);
-                    release->setSelectedVariantIndex(index);
-
-                    break;
-                }
-            }
-        }
+        // Select custom variant so there's a selected release
+        // even if no releases are shown for this arch
+        setSelectedIndex(0);
 
         invalidateFilter();
     }
