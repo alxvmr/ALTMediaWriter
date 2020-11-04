@@ -38,6 +38,7 @@ class FileType final : public QObject {
 public:
     enum Id {
         ISO,
+        TAR,
         TAR_GZ,
         TAR_XZ,
         IMG,

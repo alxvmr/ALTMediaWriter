@@ -18,17 +18,24 @@ QList<FileType *> FileType::all() {
 }
 
 FileType *FileType::fromFilename(const QString &filename) {
-    for (int i = 0; i < COUNT; i++) {
-        FileType *type = all()[i];
+    FileType *matching_type = all()[UNKNOWN];
+    QString matching_abbreviation = QString();
 
+    for (auto type : all()) {
         const QStringList abbreviations = type->abbreviation();
         for (const QString abbreviation : abbreviations) {
-            if (filename.endsWith(abbreviation, Qt::CaseInsensitive)) {
-                return type;
+            // NOTE: need to select the longest abbreviation for cases like ".tar" and "recovery.tar"
+            const bool abbreviation_matches = filename.endsWith(abbreviation, Qt::CaseInsensitive);
+            const bool this_abbreviation_is_longer = (abbreviation.length() > matching_abbreviation.length());
+
+            if (abbreviation_matches && this_abbreviation_is_longer) {
+                matching_type = type;
+                matching_abbreviation = abbreviation;
             }
         }
     }
-    return all()[UNKNOWN];
+
+    return matching_type;
 }
 
 bool FileType::isValid() const {
@@ -38,6 +45,7 @@ bool FileType::isValid() const {
 QStringList FileType::abbreviation() const {
     switch (m_id) {
         case ISO: return {"iso", "dvd"};
+        case TAR: return {"tar"};
         case TAR_GZ: return {"tgz", "tar.gz"};
         case TAR_XZ: return {"archive", "tar.xz"};
         case IMG: return {"img"};
@@ -53,6 +61,7 @@ QStringList FileType::abbreviation() const {
 QString FileType::name() const {
     switch (m_id) {
         case ISO: return tr("ISO DVD");
+        case TAR: return {"TAR Archive"};
         case TAR_GZ: return tr("GZIP TAR Archive");
         case TAR_XZ: return tr("LZMA TAR Archive");
         case IMG: return tr("IMG");
