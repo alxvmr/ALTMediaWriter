@@ -18,6 +18,7 @@
  */
 
 #include "releasemanager.h"
+#include "release_model.h"
 #include "release.h"
 #include "file_type.h"
 #include "architecture.h"
@@ -29,8 +30,6 @@
 #include <QtQml>
 #include <QApplication>
 #include <QAbstractEventDispatcher>
-
-#define FRONTPAGE_ROW_COUNT 3
 
 QList<QString> load_list_from_file(const QString &filepath);
 QList<QString> get_sections_urls();
@@ -461,115 +460,4 @@ QString yml_get(const YAML::Node &node, const QString &key) {
     } else {
         return QString();
     }
-}
-
-Release *ReleaseModel::get(const int index) const {
-    QStandardItem *the_item = item(index);
-    
-    if (the_item != nullptr) {
-        QVariant variant = the_item->data();
-        Release *release = variant.value<Release *>();
-
-        return release;
-    } else {
-        return nullptr;
-    }
-}
-
-// NOTE: this is a very roundabout way of making the Release
-// pointer stored inside the item available in the qml
-// delegate as "release". (Qt::UserRole + 1 is the default
-// data role)
-QHash<int, QByteArray> ReleaseModel::roleNames() const {
-    static const QHash<int, QByteArray> names = {
-        {Qt::UserRole + 1, "release"}
-    };
-
-    return names;
-}
-
-ReleaseFilterModel::ReleaseFilterModel(ReleaseModel *model_arg, QObject *parent)
-: QSortFilterProxyModel(parent)
-{
-    model = model_arg;
-    frontPage = true;
-    filterArch = Architecture_ALL;
-
-    setSourceModel(model_arg);
-}
-
-bool ReleaseFilterModel::filterAcceptsRow(int source_row, const QModelIndex &) const {
-
-    Release *release = model->get(source_row);
-    if (release == nullptr) {
-        return false;
-    }
-    
-    if (frontPage) {
-        // Don't filter when on front page, just show 3 releases
-        const bool on_front_page = (source_row < FRONTPAGE_ROW_COUNT);
-
-        return on_front_page;
-    } else if (release->isCustom()) {
-        // Always show local release
-        return true;
-    } else {
-        const bool releaseMatchesName = release->displayName().contains(filterText, Qt::CaseInsensitive);
-
-        // Exit early if don't match name to skip checking
-        // for arch because that takes a long time
-        // TODO: cache that somehow?
-        if (!releaseMatchesName) {
-            return false;
-        }
-
-        // Otherwise filter by arch
-        const bool releaseHasVariantWithArch =
-        [this, release]() {
-            // If filtering for all, accept all architectures
-            if (filterArch == Architecture_ALL) {
-                return true;
-            }
-
-            for (auto variant : release->variantList()) {
-                if (variant->arch() == filterArch) {
-                    return true;
-                }
-            }
-            return false;
-        }();
-
-        if (!releaseHasVariantWithArch) {
-            return false;
-        }
-
-        return true;
-    }
-}
-
-bool ReleaseFilterModel::getFrontPage() const {
-    return frontPage;
-}
-
-void ReleaseFilterModel::leaveFrontPage() {
-    frontPage = false;
-
-    invalidateFilter();
-
-    emit frontPageChanged();
-}
-
-void ReleaseFilterModel::setFilterText(const QString &text) {
-    filterText = text;
-
-    invalidateFilter();
-}
-
-void ReleaseFilterModel::setFilterArch(const int index) {
-    filterArch = (Architecture) index;
-    invalidateFilter();
-}
-
-void ReleaseFilterModel::invalidateCustom() {
-    invalidateFilter();
 }

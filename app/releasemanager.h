@@ -20,18 +20,16 @@
 #ifndef RELEASEMANAGER_H
 #define RELEASEMANAGER_H
 
-#include "architecture.h"
+/*
+ * ReleaseManager - a singleton that provides access to releases in
+ * the qml portion of the app.
+ */
 
-#include <QSortFilterProxyModel>
-#include <QStandardItemModel>
+#include <QObject>
 
 class Release;
 class ReleaseModel;
 class ReleaseFilterModel;
-
-/*
- * ReleaseManager stores releases in the ReleaseModel, which is filtered by ReleaseFilterModel.
- */
 
 class ReleaseManager : public QObject {
 Q_OBJECT
@@ -74,41 +72,6 @@ private:
     void downloadMetadata();
     void loadReleases(const QList<QString> &sectionsFiles);
     void addReleaseToModel(const int index, Release *release);
-};
-
-class ReleaseModel final : public QStandardItemModel {
-Q_OBJECT
-    
-public:
-    using QStandardItemModel::QStandardItemModel;
-
-    Release *get(const int index) const;
-    QHash<int, QByteArray> roleNames() const override;
-};
-
-class ReleaseFilterModel final : public QSortFilterProxyModel {
-Q_OBJECT
-    Q_PROPERTY(bool frontPage READ getFrontPage NOTIFY frontPageChanged)
-
-public:
-    ReleaseFilterModel(ReleaseModel *model_arg, QObject *parent);
-
-    bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override;
-    void invalidateCustom();
-
-    bool getFrontPage() const;
-    Q_INVOKABLE void leaveFrontPage();
-    Q_INVOKABLE void setFilterArch(const int index);
-    Q_INVOKABLE void setFilterText(const QString &text);
-
-signals:
-    void frontPageChanged();
-
-private:
-    ReleaseModel *model;
-    bool frontPage;
-    QString filterText;
-    Architecture filterArch;
 };
 
 #endif // RELEASEMANAGER_H

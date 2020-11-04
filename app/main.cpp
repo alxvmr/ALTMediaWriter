@@ -18,6 +18,7 @@
  */
 
 #include "releasemanager.h"
+#include "release_model.h"
 #include "release.h"
 #include "variant.h"
 #include "progress.h"
