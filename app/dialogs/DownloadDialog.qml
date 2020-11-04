@@ -102,11 +102,11 @@ Dialog {
             },
             State {
                 name: "ready_no_drives"
-                when: releases.selected.variant.status === Variant.READY && drives.length <= 0
+                when: releases.selected.variant.status === Variant.READY_FOR_WRITING && drives.length <= 0
             },
             State {
                 name: "ready"
-                when: releases.selected.variant.status === Variant.READY && drives.length > 0
+                when: releases.selected.variant.status === Variant.READY_FOR_WRITING && drives.length > 0
                 PropertyChanges {
                     target: messageLoseData;
                     visible: true
@@ -171,7 +171,7 @@ Dialog {
             },
             State {
                 name: "finished"
-                when: releases.selected.variant.status === Variant.FINISHED
+                when: releases.selected.variant.status === Variant.WRITING_FINISHED
                 PropertyChanges {
                     target: messageDriveSize
                     enabled: false
@@ -192,7 +192,7 @@ Dialog {
             },
             State {
                 name: "failed_download"
-                when: releases.selected.variant.status === Variant.FAILED_DOWNLOAD
+                when: releases.selected.variant.status === Variant.DOWNLOAD_FAILED
                 PropertyChanges {
                     target: driveCombo;
                     enabled: false
@@ -207,7 +207,7 @@ Dialog {
             },
             State {
                 name: "failed_no_drives"
-                when: releases.selected.variant.status === Variant.FAILED && drives.length <= 0
+                when: releases.selected.variant.status === Variant.WRITING_FAILED && drives.length <= 0
                 PropertyChanges {
                     target: rightButton;
                     text: qsTr("Retry");
@@ -218,7 +218,7 @@ Dialog {
             },
             State {
                 name: "failed"
-                when: releases.selected.variant.status === Variant.FAILED && drives.length > 0
+                when: releases.selected.variant.status === Variant.WRITING_FAILED && drives.length > 0
                 PropertyChanges {
                     target: messageLoseData;
                     visible: true
@@ -371,7 +371,7 @@ Dialog {
                                 running: releases.selected.variant.status == Variant.WRITING
                                 loops: -1
                                 onStopped: {
-                                    if (releases.selected.variant.status == Variant.FINISHED)
+                                    if (releases.selected.variant.status == Variant.WRITING_FINISHED)
                                         writeArrow.color = "#00dd00"
                                     else
                                         writeArrow.color = palette.text
@@ -408,7 +408,7 @@ Dialog {
                                 value: driveCombo.currentIndex
                             }
                             onActivated: {
-                                if ([Variant.FINISHED, Variant.FAILED].indexOf(releases.selected.variant.status) >= 0)
+                                if ([Variant.WRITING_FINISHED, Variant.WRITING_FAILED].indexOf(releases.selected.variant.status) >= 0)
                                     releases.selected.variant.resetStatus()
                             }
                             placeholderText: qsTr("There are no portable drives connected")

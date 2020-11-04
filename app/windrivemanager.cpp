@@ -334,12 +334,12 @@ void WinDrive::onFinished(int exitCode, QProcess::ExitStatus exitStatus) {
     qDebug() << m_child->errorString();
 
     if (exitCode == 0) {
-        m_variant->setStatus(Variant::FINISHED);
+        m_variant->setStatus(Variant::WRITING_FINISHED);
         Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_variant->fileName()));
     }
     else {
         m_variant->setErrorString(m_child->readAllStandardError().trimmed());
-        m_variant->setStatus(Variant::FAILED);
+        m_variant->setStatus(Variant::WRITING_FAILED);
     }
 
     m_child->deleteLater();
@@ -377,7 +377,7 @@ void WinDrive::onReadyRead() {
             m_progress->setCurrent(0);
         }
         else if (line == "DONE") {
-            m_variant->setStatus(Variant::FINISHED);
+            m_variant->setStatus(Variant::WRITING_FINISHED);
             Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_variant->fileName()));
         }
         else {

@@ -64,12 +64,12 @@ public:
         DOWNLOADING,
         DOWNLOAD_RESUMING,
         DOWNLOAD_VERIFYING,
-        READY,
+        DOWNLOAD_FAILED,
         WRITING_NOT_POSSIBLE,
+        READY_FOR_WRITING,
         WRITING,
-        FINISHED,
-        FAILED_DOWNLOAD,
-        FAILED
+        WRITING_FINISHED,
+        WRITING_FAILED
     };
     Q_ENUMS(Status)
     const QHash<Status, QString> m_statusStrings = {
@@ -77,12 +77,12 @@ public:
         {DOWNLOADING, tr("Downloading")},
         {DOWNLOAD_RESUMING, tr("Resuming download")},
         {DOWNLOAD_VERIFYING, tr("Checking the download")},
-        {READY, tr("Ready to write")},
+        {DOWNLOAD_FAILED, tr("Download failed")},
         {WRITING_NOT_POSSIBLE, tr("Image file was saved to your downloads folder. Writing is not possible")},
+        {READY_FOR_WRITING, tr("Ready to write")},
         {WRITING, tr("Writing")},
-        {FINISHED, tr("Finished!")},
-        {FAILED_DOWNLOAD, tr("Download failed")},
-        {FAILED, tr("Error")},
+        {WRITING_FINISHED, tr("Finished!")},
+        {WRITING_FAILED, tr("Error")},
     };
 
     Variant(QString url, Architecture *arch, FileType *fileType, QString board, const bool live, QObject *parent);

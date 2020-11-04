@@ -181,7 +181,7 @@ LinuxDrive::LinuxDrive(LinuxDriveProvider *parent, QString device, QString name,
 LinuxDrive::~LinuxDrive() {
     if (m_variant && m_variant->status() == Variant::WRITING) {
         m_variant->setErrorString(tr("The drive was removed while it was written to."));
-        m_variant->setStatus(Variant::FAILED);
+        m_variant->setStatus(Variant::WRITING_FAILED);
     }
 }
 
@@ -199,7 +199,7 @@ bool LinuxDrive::write(Variant *variant) {
         m_process->setProgram(helperPath);
     } else {
         variant->setErrorString(tr("Could not find the helper binary. Check your installation."));
-        variant->setStatus(Variant::FAILED);
+        variant->setStatus(Variant::WRITING_FAILED);
         return false;
     }
 
@@ -230,12 +230,12 @@ void LinuxDrive::cancel() {
         beingCancelled = true;
         if (m_variant) {
             if (m_variant->status() == Variant::WRITE_VERIFYING) {
-                m_variant->setStatus(Variant::FINISHED);
+                m_variant->setStatus(Variant::WRITING_FINISHED);
             }
             else if (m_variant->status() != Variant::DOWNLOADING &&
                      m_variant->status() != Variant::DOWNLOAD_VERIFYING) {
                 m_variant->setErrorString(tr("Stopped before writing has finished."));
-                m_variant->setStatus(Variant::FAILED);
+                m_variant->setStatus(Variant::WRITING_FAILED);
             }
         }
         m_process->kill();
@@ -289,7 +289,7 @@ void LinuxDrive::onReadyRead() {
             m_progress->setCurrent(0);
         }
         else if (line == "DONE") {
-            m_variant->setStatus(Variant::FINISHED);
+            m_variant->setStatus(Variant::WRITING_FINISHED);
             Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_variant->fileName()));
         }
         else {
@@ -313,12 +313,12 @@ void LinuxDrive::onFinished(int exitCode, QProcess::ExitStatus status) {
         Notifications::notify(tr("Error"), tr("Writing %1 failed").arg(m_variant->fileName()));
         if (m_variant->status() == Variant::WRITING) {
             m_variant->setErrorString(errorMessage);
-            m_variant->setStatus(Variant::FAILED);
+            m_variant->setStatus(Variant::WRITING_FAILED);
         }
     }
     else {
         Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_variant->fileName()));
-        m_variant->setStatus(Variant::FINISHED);
+        m_variant->setStatus(Variant::WRITING_FINISHED);
     }
     if (m_process) {
         m_process->deleteLater();
@@ -357,7 +357,7 @@ void LinuxDrive::onErrorOccurred(QProcess::ProcessError e) {
     m_variant->setErrorString(errorMessage);
     m_process->deleteLater();
     m_process = nullptr;
-    m_variant->setStatus(Variant::FAILED);
+    m_variant->setStatus(Variant::WRITING_FAILED);
     m_variant = nullptr;
 }
 

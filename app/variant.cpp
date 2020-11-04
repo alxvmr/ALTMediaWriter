@@ -55,7 +55,7 @@ Variant::Variant(const QString &path, QObject *parent)
 , m_live(false)
 , m_arch(Architecture::fromId(Architecture::UNKNOWN))
 , m_fileType(FileType::fromFilename(path))
-, m_status(Variant::READY)
+, m_status(Variant::READY_FOR_WRITING)
 , m_progress(new Progress(this))
 {
 
@@ -108,7 +108,7 @@ void Variant::setDelayedWrite(const bool value) {
 }
 
 Variant::Status Variant::status() const {
-    if (m_status == READY && DriveManager::instance()->isBackendBroken())
+    if (m_status == READY_FOR_WRITING && DriveManager::instance()->isBackendBroken())
         return WRITING_NOT_POSSIBLE;
     return m_status;
 }
@@ -128,7 +128,7 @@ void Variant::onImageDownloadFinished() {
     switch (result) {
         case ImageDownload::Success: {
             qDebug() << this->metaObject()->className() << "Image is ready";
-            setStatus(READY);
+            setStatus(READY_FOR_WRITING);
 
             if (delayedWrite) {
                 Drive *drive = DriveManager::instance()->selected();
@@ -142,14 +142,14 @@ void Variant::onImageDownloadFinished() {
         }
         case ImageDownload::DiskError: {
             setErrorString(download->errorString());
-            setStatus(FAILED_DOWNLOAD);
+            setStatus(DOWNLOAD_FAILED);
 
             break;
         }
         case ImageDownload::Md5CheckFail: {
             qWarning() << "MD5 check of" << m_url << "failed";
             setErrorString(tr("The downloaded image is corrupted"));
-            setStatus(FAILED_DOWNLOAD);
+            setStatus(DOWNLOAD_FAILED);
 
             break;
         }
@@ -169,7 +169,7 @@ void Variant::download() {
     if (already_downloaded) {
         // Already downloaded so skip download step
         qDebug() << this->metaObject()->className() << fileName() << "is already downloaded";
-        setStatus(READY);
+        setStatus(READY_FOR_WRITING);
     } else {
         // Download image
         auto download = new ImageDownload(QUrl(url()), filePath());
@@ -218,7 +218,7 @@ void Variant::cancelDownload() {
 
 void Variant::resetStatus() {
     if (!fileName().isEmpty()) {
-        setStatus(READY);
+        setStatus(READY_FOR_WRITING);
     } else {
         setStatus(PREPARING);
         m_progress->setMax(0.0);
