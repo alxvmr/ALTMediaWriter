@@ -22,6 +22,7 @@
 #define VARIANT_H
 
 #include "architecture.h"
+#include "file_type.h"
 
 #include <QObject>
 #include <QList>
@@ -29,7 +30,6 @@
 #include <QHash>
 
 class Progress;
-class FileType;
 
 /**
  * @brief The Variant class
@@ -49,10 +49,10 @@ class FileType;
 class Variant final : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString name READ name CONSTANT)
-    Q_PROPERTY(FileType *fileType READ fileType CONSTANT)
-
     Q_PROPERTY(QString filePath READ filePath CONSTANT)
     Q_PROPERTY(QString fileName READ fileName CONSTANT)
+    Q_PROPERTY(QString fileTypeName READ fileTypeName CONSTANT)
+    Q_PROPERTY(bool canWrite READ canWrite CONSTANT)
     Q_PROPERTY(Progress* progress READ progress CONSTANT)
 
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
@@ -86,7 +86,7 @@ public:
         {WRITING_FAILED, tr("Error")},
     };
 
-    Variant(QString url, Architecture arch, FileType *fileType, QString board, const bool live, QObject *parent);
+    Variant(QString url, Architecture arch, const FileType fileType, QString board, const bool live, QObject *parent);
 
     // Constructor for local file
     Variant(const QString &path, QObject *parent);
@@ -94,14 +94,13 @@ public:
     Q_INVOKABLE void setDelayedWrite(const bool value);
 
     Architecture arch() const;
-    FileType *fileType() const;
     QString name() const;
-    QString board() const;
-    bool live() const;
 
     QString url() const;
     QString filePath() const;
     QString fileName() const;
+    QString fileTypeName() const;
+    bool canWrite() const;
     Progress *progress();
 
     Status status() const;
@@ -130,8 +129,8 @@ private:
     const QString m_filePath;
     const QString m_board;
     const bool m_live;
-    Architecture m_arch;
-    FileType *m_fileType;
+    const Architecture m_arch;
+    const FileType m_fileType;
     Status m_status;
     QString m_error;
     bool delayedWrite;

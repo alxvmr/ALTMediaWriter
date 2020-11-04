@@ -20,7 +20,6 @@
 #include "releasemanager.h"
 #include "release.h"
 #include "variant.h"
-#include "file_type.h"
 #include "progress.h"
 #include "drivemanager.h"
 
@@ -99,7 +98,6 @@ int main(int argc, char **argv)
     qmlRegisterUncreatableType<ReleaseFilterModel>("MediaWriter", 1, 0, "ReleaseFilterModel", "");
     qmlRegisterUncreatableType<Release>("MediaWriter", 1, 0, "Release", "");
     qmlRegisterUncreatableType<Variant>("MediaWriter", 1, 0, "Variant", "");
-    qmlRegisterUncreatableType<FileType>("MediaWriter", 1, 0, "FileType", "");
     qmlRegisterUncreatableType<Progress>("MediaWriter", 1, 0, "Progress", "");
     qmlRegisterUncreatableType<Drive>("MediaWriter", 1, 0, "Drive", "");
 

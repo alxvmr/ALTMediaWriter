@@ -113,7 +113,7 @@ Dialog {
                 }
                 PropertyChanges {
                     target: rightButton;
-                    enabled: releases.selected.variant.fileType.canWrite;
+                    enabled: releases.selected.variant.canWrite;
                     color: "red";
                     onClicked: drives.selected.write(releases.selected.variant)
                 }
@@ -343,7 +343,7 @@ Dialog {
                         }
                         AdwaitaCheckBox {
                             text: qsTr("Write the image after downloading")
-                            enabled: drives.selected && ((releases.selected.variant.status == Variant.DOWNLOADING) || (releases.selected.variant.status == Variant.DOWNLOAD_RESUMING)) && releases.selected.variant.fileType.canWrite
+                            enabled: drives.selected && ((releases.selected.variant.status == Variant.DOWNLOADING) || (releases.selected.variant.status == Variant.DOWNLOAD_RESUMING)) && releases.selected.variant.canWrite
                             visible: enabled
 
                             onCheckedChanged: {
@@ -424,7 +424,7 @@ Dialog {
                             width: 1
                         }
                         Text {
-                            visible: !releases.selected.variant.fileType.canWrite
+                            visible: !releases.selected.variant.canWrite
                             font.pointSize: 10
                             Layout.fillWidth: true
                             width: Layout.width

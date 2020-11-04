@@ -21,11 +21,11 @@
 #define RELEASE_H
 
 #include "architecture.h"
+#include "file_type.h"
 
 #include <QQmlListProperty>
 
 class Variant;
-class FileType;
 
 /**
  * @brief The Release class

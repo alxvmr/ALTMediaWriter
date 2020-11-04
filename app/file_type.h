@@ -17,12 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef IMAGE_TYPE_H
-#define IMAGE_TYPE_H
-
-#include <QObject>
-#include <QList>
-#include <QString>
+#ifndef FILE_TYPE_H
+#define FILE_TYPE_H
 
 /**
  * Class representing the possible image types of the releases
@@ -31,37 +27,28 @@
  * @property name a common name what the short stands for, like "ISO DVD"
  * @property canWrite whether this image type is supported for writing
  */
-class FileType final : public QObject {
-    Q_OBJECT
-    Q_PROPERTY(QString name READ name CONSTANT)
-    Q_PROPERTY(bool canWrite READ canWrite CONSTANT)
-public:
-    enum Id {
-        ISO,
-        TAR,
-        TAR_GZ,
-        TAR_XZ,
-        IMG,
-        IMG_GZ,
-        IMG_XZ,
-        RECOVERY_TAR,
-        UNKNOWN,
-        COUNT,
-    };
-    Q_ENUMS(Id);
 
-    static QList<FileType *> all();
-    static FileType *fromFilename(const QString &filename);
+#include <QObject>
+#include <QList>
+#include <QString>
 
-    bool isValid() const;
-    QStringList extension() const;
-    QString name() const;
-    bool canWrite() const;
-
-private:
-    FileType(const FileType::Id id_arg);
-
-    FileType::Id m_id;
+enum FileType {
+    FileType_ISO,
+    FileType_TAR,
+    FileType_TAR_GZ,
+    FileType_TAR_XZ,
+    FileType_IMG,
+    FileType_IMG_GZ,
+    FileType_IMG_XZ,
+    FileType_RECOVERY_TAR,
+    FileType_UNKNOWN,
+    FileType_COUNT,
 };
 
-#endif // IMAGE_TYPE_H
+QList<FileType> file_type_all();
+QStringList file_type_strings(const FileType file_type);
+QString file_type_name(const FileType file_type);
+FileType file_type_from_filename(const QString &filename);
+bool file_type_can_write(const FileType file_type);
+
+#endif // FILE_TYPE_H

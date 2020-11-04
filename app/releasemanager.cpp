@@ -237,9 +237,9 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
             }
         }();
 
-        FileType *fileType = FileType::fromFilename(url);
-        if (!fileType->isValid()) {
-            qDebug() << "Invalid image type for" << url;
+        const FileType fileType = file_type_from_filename(url);
+        if (fileType == FileType_UNKNOWN) {
+            qDebug() << "Variant has unknown file type";
             continue;
         }
 
@@ -253,7 +253,7 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
             }
         }();
 
-        qDebug() << "Loading variant:" << name << architecture_name(arch) << board << fileType->name() << QUrl(url).fileName();
+        qDebug() << "Loading variant:" << name << architecture_name(arch) << board << file_type_name(fileType) << QUrl(url).fileName();
 
         // Find a release that has the same name as this variant
         Release *release =
@@ -289,22 +289,22 @@ QStringList ReleaseManager::architectures() const {
 }
 
 QStringList ReleaseManager::fileTypeFilters() const {
-    const QList<FileType *> fileTypes = FileType::all();
+    const QList<FileType> fileTypes = file_type_all();
 
     QStringList filters;
     for (const auto type : fileTypes) {
         const QString extensions =
         [type]() {
-            const QStringList extension = type->extension();
-            if (extension.isEmpty()) {
+            const QStringList strings = file_type_strings(type);
+            if (strings.isEmpty()) {
                 return QString();
             }
 
             QString out;
             out += "(";
 
-            for (const auto e : extension) {
-                if (extension.indexOf(e) > 0) {
+            for (const auto e : strings) {
+                if (strings.indexOf(e) > 0) {
                     out += " ";
                 }
 
@@ -320,7 +320,7 @@ QStringList ReleaseManager::fileTypeFilters() const {
             continue;
         }
 
-        const QString name = type->name();
+        const QString name = file_type_name(type);
         
         const QString filter = name + " " + extensions;
         filters.append(filter);

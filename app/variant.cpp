@@ -20,7 +20,6 @@
 #include "variant.h"
 #include "release.h"
 #include "image_download.h"
-#include "file_type.h"
 #include "architecture.h"
 #include "network.h"
 #include "progress.h"
@@ -31,7 +30,7 @@
 #include <QStandardPaths>
 #include <QDir>
 
-Variant::Variant(QString url, Architecture arch, FileType *fileType, QString board, const bool live, QObject *parent)
+Variant::Variant(QString url, Architecture arch, const FileType fileType, QString board, const bool live, QObject *parent)
 : QObject(parent)
 , m_url(url)
 , m_fileName(QUrl(url).fileName())
@@ -54,7 +53,7 @@ Variant::Variant(const QString &path, QObject *parent)
 , m_board(QString())
 , m_live(false)
 , m_arch(Architecture_UNKNOWN)
-, m_fileType(FileType::fromFilename(path))
+, m_fileType(file_type_from_filename(path))
 , m_status(Variant::READY_FOR_WRITING)
 , m_progress(new Progress(this))
 {
@@ -65,20 +64,12 @@ Architecture Variant::arch() const {
     return m_arch;
 }
 
-FileType *Variant::fileType() const {
-    return (FileType *)m_fileType;
-}
-
 QString Variant::fileName() const {
     return m_fileName;
 }
 
-QString Variant::board() const {
-    return m_board;
-}
-
-bool Variant::live() const {
-    return m_live;
+QString Variant::fileTypeName() const {
+    return file_type_name(m_fileType);
 }
 
 QString Variant::name() const {
@@ -97,6 +88,10 @@ QString Variant::url() const {
 
 QString Variant::filePath() const {
     return m_filePath;
+}
+
+bool Variant::canWrite() const {
+    return file_type_can_write(m_fileType);
 }
 
 Progress *Variant::progress() {

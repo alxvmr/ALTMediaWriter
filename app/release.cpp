@@ -46,28 +46,6 @@ Release *Release::custom(QObject *parent) {
 }
 
 void Release::addVariant(Variant *variant) {
-    // Check if variant already exists for debugging purposes
-    Variant *variant_in_list =
-    [=]() -> Variant * {
-        for (auto current : m_variants) {
-            const bool arch_equals = (current->arch() == variant->arch());
-            const bool fileType_equals = (current->fileType() == variant->fileType());
-            const bool board_equals = (current->board() == variant->board());
-            const bool live_equals = (current->live() == variant->live());
-            if (arch_equals && fileType_equals && board_equals && live_equals) {
-                return current;
-            }
-        }
-        return nullptr;
-    }();
-    if (variant_in_list != nullptr) {
-        qWarning() << "Duplicate variant for release" << m_name;
-        qWarning() << "\tcurrent=" << variant_in_list->url();
-        qWarning() << "\tnew=" << variant->url();
-
-        return;
-    }
-
     // Sort variants by architecture
     const int insert_index =
     [this, variant]() {

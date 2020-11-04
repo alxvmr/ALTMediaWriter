@@ -138,7 +138,7 @@ Item {
                                 font.pointSize: 8
                                 color: mixColors(palette.window, palette.windowText, 0.3)
                                 visible: releases.selected.variant
-                                text: releases.selected.variant && releases.selected.variant.fileType.name
+                                text: releases.selected.variant && releases.selected.variant.fileTypeName
                             }
                             RowLayout {
                                 spacing: 0
