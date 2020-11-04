@@ -212,17 +212,17 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
             continue;
         }
 
-        Architecture *arch =
-        [variantData, url]() -> Architecture * {
-            const QString arch_abbreviation = yml_get(variantData, "arch");
-            if (!arch_abbreviation.isEmpty()) {
-                return Architecture::fromAbbreviation(arch_abbreviation);
+        const QString arch_string = yml_get(variantData, "arch");
+        const Architecture arch =
+        [arch_string, url]() -> Architecture  {
+            if (!arch_string.isEmpty()) {
+                return architecture_from_string(arch_string);
             } else {
-                return Architecture::fromFilename(url);
+                return architecture_from_filename(url);
             }
         }();
-        if (arch->index() == Architecture::UNKNOWN) {
-            qDebug() << "Unknown arch for" << url;
+        if (arch == Architecture_UNKNOWN) {
+            qDebug() << "Variant has unknown architecture" << arch_string;
             continue;
         }
 
@@ -253,7 +253,7 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
             }
         }();
 
-        qDebug() << "Loading variant:" << name << arch->abbreviation().first() << board << fileType->abbreviation().first() << QUrl(url).fileName();
+        qDebug() << "Loading variant:" << name << architecture_name(arch) << board << fileType->name() << QUrl(url).fileName();
 
         // Find a release that has the same name as this variant
         Release *release =
@@ -278,7 +278,14 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
 }
 
 QStringList ReleaseManager::architectures() const {
-    return Architecture::listAllDescriptions();
+    QStringList out;
+    for (const Architecture architecture : architecture_all()) {
+        if (architecture != Architecture_UNKNOWN) {
+            const QString name = architecture_name(architecture);
+            out.append(name);
+        }
+    }
+    return out;
 }
 
 QStringList ReleaseManager::fileTypeFilters() const {
@@ -486,7 +493,7 @@ ReleaseFilterModel::ReleaseFilterModel(ReleaseModel *model_arg, QObject *parent)
 {
     model = model_arg;
     frontPage = true;
-    filterArch = Architecture::fromId(Architecture::ALL);
+    filterArch = Architecture_ALL;
 
     setSourceModel(model_arg);
 }
@@ -520,7 +527,7 @@ bool ReleaseFilterModel::filterAcceptsRow(int source_row, const QModelIndex &) c
         const bool releaseHasVariantWithArch =
         [this, release]() {
             // If filtering for all, accept all architectures
-            if (filterArch->index() == Architecture::ALL) {
+            if (filterArch == Architecture_ALL) {
                 return true;
             }
 
@@ -559,11 +566,8 @@ void ReleaseFilterModel::setFilterText(const QString &text) {
 }
 
 void ReleaseFilterModel::setFilterArch(const int index) {
-    Architecture *newFilterArch = Architecture::fromId((Architecture::Id) index);
-    if (newFilterArch->index() != Architecture::UNKNOWN) {
-        filterArch = newFilterArch;
-        invalidateFilter();
-    }
+    filterArch = (Architecture) index;
+    invalidateFilter();
 }
 
 void ReleaseFilterModel::invalidateCustom() {

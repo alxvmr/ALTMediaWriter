@@ -21,6 +21,8 @@
 #ifndef VARIANT_H
 #define VARIANT_H
 
+#include "architecture.h"
+
 #include <QObject>
 #include <QList>
 #include <QString>
@@ -28,7 +30,6 @@
 
 class Progress;
 class FileType;
-class Architecture;
 
 /**
  * @brief The Variant class
@@ -85,14 +86,14 @@ public:
         {WRITING_FAILED, tr("Error")},
     };
 
-    Variant(QString url, Architecture *arch, FileType *fileType, QString board, const bool live, QObject *parent);
+    Variant(QString url, Architecture arch, FileType *fileType, QString board, const bool live, QObject *parent);
 
     // Constructor for local file
     Variant(const QString &path, QObject *parent);
 
     Q_INVOKABLE void setDelayedWrite(const bool value);
 
-    Architecture *arch() const;
+    Architecture arch() const;
     FileType *fileType() const;
     QString name() const;
     QString board() const;
@@ -129,7 +130,7 @@ private:
     const QString m_filePath;
     const QString m_board;
     const bool m_live;
-    Architecture *m_arch;
+    Architecture m_arch;
     FileType *m_fileType;
     Status m_status;
     QString m_error;

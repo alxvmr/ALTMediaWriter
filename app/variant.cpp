@@ -31,7 +31,7 @@
 #include <QStandardPaths>
 #include <QDir>
 
-Variant::Variant(QString url, Architecture *arch, FileType *fileType, QString board, const bool live, QObject *parent)
+Variant::Variant(QString url, Architecture arch, FileType *fileType, QString board, const bool live, QObject *parent)
 : QObject(parent)
 , m_url(url)
 , m_fileName(QUrl(url).fileName())
@@ -53,7 +53,7 @@ Variant::Variant(const QString &path, QObject *parent)
 , m_filePath(path)
 , m_board(QString())
 , m_live(false)
-, m_arch(Architecture::fromId(Architecture::UNKNOWN))
+, m_arch(Architecture_UNKNOWN)
 , m_fileType(FileType::fromFilename(path))
 , m_status(Variant::READY_FOR_WRITING)
 , m_progress(new Progress(this))
@@ -61,7 +61,7 @@ Variant::Variant(const QString &path, QObject *parent)
 
 }
 
-Architecture *Variant::arch() const {
+Architecture Variant::arch() const {
     return m_arch;
 }
 
@@ -82,7 +82,7 @@ bool Variant::live() const {
 }
 
 QString Variant::name() const {
-    QString out = m_arch->description() + " | " + m_board;
+    QString out = architecture_name(m_arch) + " | " + m_board;
 
     if (m_live) {
         out += " LIVE";

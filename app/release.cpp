@@ -73,7 +73,6 @@ void Release::addVariant(Variant *variant) {
     [this, variant]() {
         int out = 0;
         for (auto current : m_variants) {
-            // NOTE: doing pointer comparison because architectures are a singleton pointers
             if (current->arch() > variant->arch()) {
                 return out;
             }

@@ -20,14 +20,14 @@
 #ifndef RELEASEMANAGER_H
 #define RELEASEMANAGER_H
 
+#include "architecture.h"
+
 #include <QSortFilterProxyModel>
 #include <QStandardItemModel>
-#include <QQmlListProperty>
 
 class Release;
 class ReleaseModel;
 class ReleaseFilterModel;
-class Architecture;
 
 /*
  * Architecture - singleton (x86, x86_64, etc)
@@ -141,7 +141,7 @@ private:
     ReleaseModel *model;
     bool frontPage;
     QString filterText;
-    Architecture *filterArch;
+    Architecture filterArch;
 };
 
 #endif // RELEASEMANAGER_H

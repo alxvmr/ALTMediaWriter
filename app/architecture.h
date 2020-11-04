@@ -20,55 +20,38 @@
 #ifndef ARCHITECTURE_H
 #define ARCHITECTURE_H
 
-#include <QObject>
+/**
+ * Class representing the possible architectures of the releases
+ */
+
 #include <QList>
 #include <QString>
 
-/**
- * @brief The Architecture class
- *
- * Class representing the possible architectures of the releases
- *
- * @property abbreviation short names for the architecture, like x86_64
- * @property description a better description what the short stands for, like Intel 64bit
- */
-class Architecture final : public QObject {
-    Q_OBJECT
-    Q_PROPERTY(QStringList abbreviation READ abbreviation CONSTANT)
-    Q_PROPERTY(QString description READ description CONSTANT)
-public:
-    enum Id {
-        ALL,
-        X86_64,
-        X86,
-        ARM,
-        AARCH64,
-        // NOTE: can't use just 'MIPSEL' because it's a predefined macro on mipsel
-        MIPSEL_arch,
-        RISCV64,
-        E2K,
-        PPC64LE,
-        UNKNOWN,
-        _ARCHCOUNT,
-    };
-    Q_ENUMS(Id);
-    static Architecture *fromId(Id id);
-    static Architecture *fromAbbreviation(const QString &abbr);
-    static Architecture *fromFilename(const QString &filename);
-    static QStringList listAllDescriptions();
-
-    QStringList abbreviation() const;
-    QString description() const;
-    int index() const;
-
-private:
-    Architecture(const QStringList &abbreviation, const char *description);
-
-    static Architecture m_all[];
-
-    const QStringList m_abbreviation {};
-    const char *m_description {};
-    const char *m_details {};
+enum Architecture {
+    Architecture_ALL,
+    Architecture_X86_64,
+    Architecture_X86,
+    Architecture_ARM,
+    Architecture_AARCH64,
+    Architecture_MIPSEL,
+    Architecture_RISCV64,
+    Architecture_E2K,
+    Architecture_PPC64LE,
+    Architecture_UNKNOWN,
+    Architecture_COUNT,
 };
+
+QList<Architecture> architecture_all();
+
+// Possible string representations of an architecture found in image
+// filenames ("x86_64", "aarch64", etc)
+QStringList architecture_strings(const Architecture architecture);
+
+// An architecture name for display ("AMD 64bit", "AArch64", etc)
+QString architecture_name(const Architecture architecture);
+
+Architecture architecture_from_string(const QString &string);
+
+Architecture architecture_from_filename(const QString &filename);
 
 #endif // ARCHITECTURE_H

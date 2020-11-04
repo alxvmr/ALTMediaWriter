@@ -19,69 +19,74 @@
 
 #include "architecture.h"
 
-Architecture Architecture::m_all[] = {
-    {{"All"}, QT_TR_NOOP("All")},
-    {{"x86-64"}, QT_TR_NOOP("AMD 64bit")},
-    {{"x86", "i386", "i586", "i686"}, QT_TR_NOOP("Intel 32bit")},
-    {{"armv7hl", "armhfp", "armh"}, QT_TR_NOOP("ARM v7")},
-    {{"aarch64"}, QT_TR_NOOP("AArch64")},
-    {{"mipsel"}, QT_TR_NOOP("MIPS")},
-    {{"riscv", "riscv64"}, QT_TR_NOOP("RiscV64")},
-    {{"e2k"}, QT_TR_NOOP("Elbrus")},
-    {{"ppc64le"}, QT_TR_NOOP("PowerPC")},
-    {{"", "unknown"}, QT_TR_NOOP("Unknown")},
-};
-
-Architecture::Architecture(const QStringList &abbreviation, const char *description)
-: m_abbreviation(abbreviation), m_description(description)
-{
-
+QList<Architecture> architecture_all() {
+    static QList<Architecture> list =
+    []() {
+        QList<Architecture> out; 
+        for (int i = 0; i < Architecture_COUNT; i++) {
+            const Architecture architecture = (Architecture) i;
+            list.append(architecture);
+        }
+        return out;
+    }();
+    
+    return list;
 }
 
-Architecture *Architecture::fromId(Architecture::Id id) {
-    if (id >= 0 && id < _ARCHCOUNT)
-        return &m_all[id];
-    return &m_all[Architecture::UNKNOWN];
-}
-
-Architecture *Architecture::fromAbbreviation(const QString &abbr) {
-    for (int i = 0; i < _ARCHCOUNT; i++) {
-        if (m_all[i].abbreviation().contains(abbr, Qt::CaseInsensitive))
-            return &m_all[i];
+QStringList architecture_strings(const Architecture architecture) {
+    switch (architecture) {
+        case Architecture_ALL: return QStringList();
+        case Architecture_X86_64: return {"x86-64", "x86_64"};
+        case Architecture_X86: return {"x86", "i386", "i586", "i686"};
+        case Architecture_ARM: return {"armv7hl", "armhfp", "armh"};
+        case Architecture_AARCH64: return {"aarch64"};
+        case Architecture_MIPSEL: return {"mipsel"};
+        case Architecture_RISCV64: return {"riscv", "riscv64"};
+        case Architecture_E2K: return {"e2k"};
+        case Architecture_PPC64LE: return {"ppc64le"};
+        case Architecture_UNKNOWN: return QStringList();
+        case Architecture_COUNT: return QStringList();
     }
-    return &m_all[Architecture::UNKNOWN];
+    return QStringList();
 }
 
-Architecture *Architecture::fromFilename(const QString &filename) {
-    for (int i = 0; i < _ARCHCOUNT; i++) {
-        Architecture *arch = &m_all[i];
-        for (int j = 0; j < arch->m_abbreviation.size(); j++) {
-            if (filename.contains(arch->m_abbreviation[j], Qt::CaseInsensitive))
-                return &m_all[i];
+QString architecture_name(const Architecture architecture) {
+    switch (architecture) {
+        case Architecture_ALL: return QT_TR_NOOP("All");
+        case Architecture_X86_64: return QT_TR_NOOP("AMD 64bit");
+        case Architecture_X86: return QT_TR_NOOP("Intel 32bit");
+        case Architecture_ARM: return QT_TR_NOOP("ARM v7");
+        case Architecture_AARCH64: return QT_TR_NOOP("AArch64");
+        case Architecture_MIPSEL: return QT_TR_NOOP("MIPS");
+        case Architecture_RISCV64: return QT_TR_NOOP("RiscV64");
+        case Architecture_E2K: return QT_TR_NOOP("Elbrus");
+        case Architecture_PPC64LE: return QT_TR_NOOP("PowerPC");
+        case Architecture_UNKNOWN: return QT_TR_NOOP("Unknown");
+        case Architecture_COUNT: return QString();
+    }
+    return QString();
+}
+
+Architecture architecture_from_string(const QString &string) {
+    for (const Architecture architecture : architecture_all()) {
+        const QStringList strings = architecture_strings(architecture);
+
+        if (strings.contains(string, Qt::CaseInsensitive)) {
+            return architecture;
         }
     }
-    return &m_all[Architecture::UNKNOWN];
+    return Architecture_UNKNOWN;
 }
 
-QStringList Architecture::listAllDescriptions() {
-    QStringList ret;
-    for (int i = 0; i < _ARCHCOUNT; i++) {
-        if (i == UNKNOWN) {
-            continue;
+Architecture architecture_from_filename(const QString &filename) {
+    for (const Architecture architecture : architecture_all()) {
+        const QStringList strings = architecture_strings(architecture);
+        
+        for (auto string : strings) {
+            if (filename.contains(string, Qt::CaseInsensitive)) {
+                return architecture;
+            }
         }
-        ret.append(m_all[i].description());
     }
-    return ret;
-}
-
-QStringList Architecture::abbreviation() const {
-    return m_abbreviation;
-}
-
-QString Architecture::description() const {
-    return tr(m_description);
-}
-
-int Architecture::index() const {
-    return this - m_all;
+    return Architecture_UNKNOWN;
 }
