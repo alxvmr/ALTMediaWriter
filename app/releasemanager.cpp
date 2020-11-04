@@ -281,23 +281,23 @@ QStringList ReleaseManager::architectures() const {
     return Architecture::listAllDescriptions();
 }
 
-QStringList ReleaseManager::fileNameFilters() const {
+QStringList ReleaseManager::fileTypeFilters() const {
     const QList<FileType *> fileTypes = FileType::all();
 
     QStringList filters;
     for (const auto type : fileTypes) {
         const QString extensions =
         [type]() {
-            const QStringList abbreviation = type->abbreviation();
-            if (abbreviation.isEmpty()) {
+            const QStringList extension = type->extension();
+            if (extension.isEmpty()) {
                 return QString();
             }
 
             QString out;
             out += "(";
 
-            for (const auto e : abbreviation) {
-                if (abbreviation.indexOf(e) > 0) {
+            for (const auto e : extension) {
+                if (extension.indexOf(e) > 0) {
                     out += " ";
                 }
 

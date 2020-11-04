@@ -149,7 +149,7 @@ ApplicationWindow {
     FileDialog {
         id: fileDialog
         folder: shortcuts.home
-        nameFilters: releases.fileNameFilters
+        nameFilters: releases.fileTypeFilters
         onAccepted: {
             releases.selected.setLocalFile(fileUrl)
             dlDialog.visible = true

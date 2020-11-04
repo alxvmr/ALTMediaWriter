@@ -64,7 +64,7 @@ class Architecture;
  * @property selected the currently selected release
  * @property selectedIndex the index of the currently selected release
  * @property architectures the list of the available architectures
- * @property fileNameFilters image type filters for file dialog
+ * @property fileTypeFilters image type filters for file dialog
  */
 class ReleaseManager : public QObject {
 Q_OBJECT
@@ -74,7 +74,7 @@ Q_OBJECT
     Q_PROPERTY(int selectedIndex READ selectedIndex WRITE setSelectedIndex NOTIFY selectedChanged)
 
     Q_PROPERTY(QStringList architectures READ architectures CONSTANT)
-    Q_PROPERTY(QStringList fileNameFilters READ fileNameFilters CONSTANT)
+    Q_PROPERTY(QStringList fileTypeFilters READ fileTypeFilters CONSTANT)
 
     Q_PROPERTY(ReleaseFilterModel* filter READ getFilterModel CONSTANT)
 
@@ -84,7 +84,7 @@ public:
     bool downloadingMetadata() const;
 
     QStringList architectures() const;
-    QStringList fileNameFilters() const;
+    QStringList fileTypeFilters() const;
 
     Release *selected() const;
     int selectedIndex() const;

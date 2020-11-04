@@ -19,18 +19,18 @@ QList<FileType *> FileType::all() {
 
 FileType *FileType::fromFilename(const QString &filename) {
     FileType *matching_type = all()[UNKNOWN];
-    QString matching_abbreviation = QString();
+    QString matching_extension = QString();
 
     for (auto type : all()) {
-        const QStringList abbreviations = type->abbreviation();
-        for (const QString abbreviation : abbreviations) {
-            // NOTE: need to select the longest abbreviation for cases like ".tar" and "recovery.tar"
-            const bool abbreviation_matches = filename.endsWith(abbreviation, Qt::CaseInsensitive);
-            const bool this_abbreviation_is_longer = (abbreviation.length() > matching_abbreviation.length());
+        const QStringList extensions = type->extension();
+        for (const QString extension : extensions) {
+            // NOTE: need to select the longest extension for cases like ".tar" and "recovery.tar"
+            const bool extension_matches = filename.endsWith(extension, Qt::CaseInsensitive);
+            const bool this_extension_is_longer = (extension.length() > matching_extension.length());
 
-            if (abbreviation_matches && this_abbreviation_is_longer) {
+            if (extension_matches && this_extension_is_longer) {
                 matching_type = type;
-                matching_abbreviation = abbreviation;
+                matching_extension = extension;
             }
         }
     }
@@ -42,7 +42,7 @@ bool FileType::isValid() const {
     return m_id != UNKNOWN;
 }
 
-QStringList FileType::abbreviation() const {
+QStringList FileType::extension() const {
     switch (m_id) {
         case ISO: return {"iso", "dvd"};
         case TAR: return {"tar"};

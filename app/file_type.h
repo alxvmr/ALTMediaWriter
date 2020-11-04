@@ -27,7 +27,7 @@
 /**
  * Class representing the possible image types of the releases
  *
- * @property abbreviation short names for the type, like iso
+ * @property extension short names for the type, like iso
  * @property name a common name what the short stands for, like "ISO DVD"
  * @property canWrite whether this image type is supported for writing
  */
@@ -54,7 +54,7 @@ public:
     static FileType *fromFilename(const QString &filename);
 
     bool isValid() const;
-    QStringList abbreviation() const;
+    QStringList extension() const;
     QString name() const;
     bool canWrite() const;
 
