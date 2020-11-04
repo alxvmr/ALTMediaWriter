@@ -201,13 +201,15 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
     for (auto variantData : variants["entries"]) {
         const QString url = yml_get(variantData, "link");
         if (url.isEmpty()) {
-            qDebug() << "Invalid url for" << url;
+            qWarning() << "Variant has no url";
             continue;
+        } else {
+            qDebug() << "Url:" << url;
         }
 
-        const QString name = yml_get(variantData, "solution");
-        if (name.isEmpty()) {
-            qDebug() << "Invalid name for" << url;
+        const QString releaseName = yml_get(variantData, "solution");
+        if (releaseName.isEmpty()) {
+            qWarning() << "Variant has no releaseName";
             continue;
         }
 
@@ -221,7 +223,7 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
             }
         }();
         if (arch == Architecture_UNKNOWN) {
-            qDebug() << "Variant has unknown architecture" << arch_string;
+            qWarning() << "Variant has unknown architecture" << arch_string;
             continue;
         }
 
@@ -238,7 +240,7 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
 
         const FileType fileType = file_type_from_filename(url);
         if (fileType == FileType_UNKNOWN) {
-            qDebug() << "Variant has unknown file type";
+            qWarning() << "Variant has unknown file type";
             continue;
         }
 
@@ -252,15 +254,15 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
             }
         }();
 
-        qDebug() << "Loading variant:" << name << architecture_name(arch) << board << file_type_name(fileType) << QUrl(url).fileName();
+        qDebug() << QUrl(url).fileName() << releaseName << architecture_name(arch) << board << file_type_name(fileType) << (live ? "LIVE" : "");
 
         // Find a release that has the same name as this variant
         Release *release =
-        [this, name]() -> Release *{
+        [this, releaseName]() -> Release *{
             for (int i = 0; i < sourceModel->rowCount(); i++) {
                 Release *release = sourceModel->get(i);
 
-                if (release->name() == name) {
+                if (release->name() == releaseName) {
                     return release;
                 }
             }
@@ -271,7 +273,7 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
             Variant *variant = new Variant(url, arch, fileType, board, live, this);
             release->addVariant(variant);
         } else {
-            qWarning() << "Failed to find a release for this variant!";
+            qWarning() << "Failed to find a release for this variant!" << url;
         }
     }
 }
@@ -344,8 +346,10 @@ void ReleaseManager::loadReleases(const QList<QString> &sectionsFiles) {
             const YAML::Node releaseData = section["members"][i];
 
             const QString name = yml_get(releaseData, "code");
-
-            qDebug() << "Loading release: " << name;
+            if (name.isEmpty()) {
+                qWarning() << "Release has no name";
+                continue;
+            }
 
             const QString language =
             []() {
@@ -357,18 +361,38 @@ void ReleaseManager::loadReleases(const QList<QString> &sectionsFiles) {
             }();
             
             const QString display_name = yml_get(releaseData, "name" + language);
+            if (display_name.isEmpty()) {
+                qWarning() << "Release has no display name";
+                continue;
+            }
+
             const QString summary = yml_get(releaseData, "descr" + language);
+            if (summary.isEmpty()) {
+                qWarning() << "Release has no summary";
+                continue;
+            }
+
             const QString description = yml_get(releaseData, "descr_full" + language);
+            if (description.isEmpty()) {
+                qWarning() << "Release has no description";
+                continue;
+            }
 
             // NOTE: currently no screenshots
             const QStringList screenshots;
             
             // Check that icon file exists
             const QString icon_name = yml_get(releaseData, "img");
+            if (icon_name.isEmpty()) {
+                qWarning() << "Release has no icon";
+                continue;
+            }
+
             const QString icon_path_test = ":/logo/" + icon_name;
             const QFile icon_file(icon_path_test);
             if (!icon_file.exists()) {
                 qWarning() << "Failed to find icon file at " << icon_path_test << " needed for release " << name;
+                continue;
             }
 
             // NOTE: icon_path is consumed by QML, so it needs to begin with "qrc:/" not ":/"

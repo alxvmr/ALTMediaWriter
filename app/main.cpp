@@ -82,7 +82,6 @@ int main(int argc, char **argv)
 
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     QApplication app(argc, argv);
-    qputenv("QMLSCENE_DEVICE", "softwarecontext");
 
     qDebug() << "Application constructed";
 
