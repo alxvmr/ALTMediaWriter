@@ -297,7 +297,7 @@ void LinuxDrive::onReadyRead() {
         else if (line == "DONE") {
             m_progress->setCurrent(m_variant->size());
             m_variant->setStatus(Variant::FINISHED);
-            Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_variant->fullName()));
+            Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_variant->fileName()));
         }
         else {
             bool ok = false;
@@ -317,14 +317,14 @@ void LinuxDrive::onFinished(int exitCode, QProcess::ExitStatus status) {
     if (exitCode != 0) {
         QString errorMessage = m_process->readAllStandardError();
         qWarning() << "Writing failed:" << errorMessage;
-        Notifications::notify(tr("Error"), tr("Writing %1 failed").arg(m_variant->fullName()));
+        Notifications::notify(tr("Error"), tr("Writing %1 failed").arg(m_variant->fileName()));
         if (m_variant->status() == Variant::WRITING) {
             m_variant->setErrorString(errorMessage);
             m_variant->setStatus(Variant::FAILED);
         }
     }
     else {
-        Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_variant->fullName()));
+        Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_variant->fileName()));
         m_variant->setStatus(Variant::FINISHED);
     }
     if (m_process) {

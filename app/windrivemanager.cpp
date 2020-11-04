@@ -247,7 +247,7 @@ WinDrive::~WinDrive() {
 }
 
 bool WinDrive::write(Variant *variant) {
-    qDebug() << this->metaObject()->className() << "Preparing to write" << variant->fullName() << "to drive" << m_device;
+    qDebug() << this->metaObject()->className() << "Preparing to write" << variant->fileName() << "to drive" << m_device;
     if (!Drive::write(variant))
         return false;
 
@@ -338,7 +338,7 @@ void WinDrive::onFinished(int exitCode, QProcess::ExitStatus exitStatus) {
 
     if (exitCode == 0) {
         m_variant->setStatus(Variant::FINISHED);
-        Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_variant->fullName()));
+        Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_variant->fileName()));
     }
     else {
         m_variant->setErrorString(m_child->readAllStandardError().trimmed());
@@ -385,7 +385,7 @@ void WinDrive::onReadyRead() {
         else if (line == "DONE") {
             m_progress->setCurrent(m_variant->size());
             m_variant->setStatus(Variant::FINISHED);
-            Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_variant->fullName()));
+            Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_variant->fileName()));
         }
         else {
             bool ok;

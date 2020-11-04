@@ -287,8 +287,7 @@ Dialog {
                         InfoMessage {
                             id: messageSelectedImage
                             width: infoColumn.width
-                            visible: releases.selected.isCustom
-                            text: "<font color=\"gray\">" + qsTr("Selected:") + "</font> " + (releases.selected.variant.file ? (((String)(releases.selected.variant.file)).split("/").slice(-1)[0]) : ("<font color=\"gray\">" + qsTr("None") + "</font>"))
+                            text: "<font color=\"gray\">" + qsTr("Selected:") + "</font> " + releases.selected.variant.fileName
                         }
 
                         InfoMessage {

@@ -51,6 +51,7 @@ class Variant final : public QObject {
     Q_PROPERTY(FileType *fileType READ fileType CONSTANT)
 
     Q_PROPERTY(QString file READ file NOTIFY fileChanged)
+    Q_PROPERTY(QString fileName READ fileName CONSTANT)
     Q_PROPERTY(qreal size READ size NOTIFY sizeChanged)
     Q_PROPERTY(Progress* progress READ progress CONSTANT)
 
@@ -88,7 +89,7 @@ public:
         tr("Error")
     };
 
-    Variant(QString url, const QString &releaseName_arg, Architecture *arch, FileType *fileType, QString board, const bool live, QObject *parent);
+    Variant(QString url, Architecture *arch, FileType *fileType, QString board, const bool live, QObject *parent);
 
     static Variant *custom(const QString &path, QObject *parent);
 
@@ -97,12 +98,12 @@ public:
     Architecture *arch() const;
     FileType *fileType() const;
     QString name() const;
-    QString fullName();
     QString board() const;
     bool live() const;
 
     QString url() const;
     QString file() const;
+    QString fileName() const;
     qreal size() const;
     Progress *progress();
 
@@ -128,16 +129,16 @@ public slots:
     void onImageDownloadFinished();
 
 private:
-    const QString releaseName;
-    QString m_file {};
+    const QString m_url;
+    const QString m_fileName;
+    const QString m_board;
+    const bool m_live;
+    QString m_file;
     Architecture *m_arch;
     FileType *m_fileType;
-    QString m_board {};
-    bool m_live;
-    QString m_url {};
     qreal m_size = 0.0;
-    Status m_status { PREPARING };
-    QString m_error {};
+    Status m_status;
+    QString m_error;
     bool delayedWrite;
 
     Progress *m_progress;

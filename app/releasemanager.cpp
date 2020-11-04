@@ -269,7 +269,7 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
         }();
 
         if (release != nullptr) {
-            Variant *variant = new Variant(url, release->displayName(), arch, fileType, board, live, this);
+            Variant *variant = new Variant(url, arch, fileType, board, live, this);
             release->addVariant(variant);
         } else {
             qWarning() << "Failed to find a release for this variant!";

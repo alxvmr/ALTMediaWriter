@@ -31,28 +31,30 @@
 #include <QStandardPaths>
 #include <QDir>
 
-Variant::Variant(QString url, const QString &releaseName_arg, Architecture *arch, FileType *fileType, QString board, const bool live, QObject *parent)
+Variant::Variant(QString url, Architecture *arch, FileType *fileType, QString board, const bool live, QObject *parent)
 : QObject(parent)
-, releaseName(releaseName_arg)
-, m_arch(arch)
-, m_fileType(fileType)
+, m_url(url)
+, m_fileName(QUrl(url).fileName())
 , m_board(board)
 , m_live(live)
-, m_url(url)
+, m_arch(arch)
+, m_fileType(fileType)
+, m_status(Variant::PREPARING)
 , m_progress(new Progress(this))
 {
 
 }
 
 Variant *Variant::custom(const QString &path, QObject *parent) {
-    const QString releaseName = tr("Custom");
+    const QString url = path;
     FileType *file_type = FileType::fromFilename(path);
     Architecture *arch = Architecture::fromId(Architecture::UNKNOWN);
     const QString board = QString();
     const bool live = false;
 
-    auto variant = new Variant(path, releaseName, arch, file_type, board, live, parent);
+    auto variant = new Variant(url, arch, file_type, board, live, parent);
     // NOTE: start out in ready because don't need to download
+    variant->m_file = path;
     variant->setStatus(Variant::READY);
 
     return variant;
@@ -64,6 +66,10 @@ Architecture *Variant::arch() const {
 
 FileType *Variant::fileType() const {
     return (FileType *)m_fileType;
+}
+
+QString Variant::fileName() const {
+    return m_fileName;
 }
 
 QString Variant::board() const {
@@ -82,10 +88,6 @@ QString Variant::name() const {
     }
 
     return out;
-}
-
-QString Variant::fullName() {
-    return QString("%1 %2").arg(releaseName, name());
 }
 
 QString Variant::url() const {
