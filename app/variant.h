@@ -17,9 +17,30 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-
 #ifndef VARIANT_H
 #define VARIANT_H
+
+/**
+ * @brief The Variant class
+ *
+ * The variant of the release. Each variant differs from others by
+ * architecture, board and other image details.
+ *
+ * @property name the name of the variant which is generated from
+ *     variant's architecture, board and live
+ * @property filePath path to the image's file (after it is downloaded)
+ * @property fileName the name of the image's file
+ * @property fileTypeName display filetype name of the image's file
+ * @property canWrite whether this image can be written, some file
+ *     types aren't supported
+ * @property progress the progress object of the image - reports the
+ *     progress of download
+ * @property status status of the variant - if it's downloading, being
+ *     written, etc.
+ * @property statusString string representation of the @ref status
+ * @property errorString a string better describing the current error
+ *     @ref status of the variant
+ */
 
 #include "architecture.h"
 #include "file_type.h"
@@ -31,21 +52,6 @@
 
 class Progress;
 
-/**
- * @brief The Variant class
- *
- * The variant of the release version. Usually it represents different architectures. It's possible to differentiate netinst and dvd images here too.
- *
- * @property name the name of the release, generated from @ref arch and @ref board
- * @property board the name of supported hardware of the image
- * @property url the URL pointing to the image
- * @property image the path to the image on the drive
- * @property fileType the type of the image on the drive
- * @property progress the progress object of the image - reports the progress of download
- * @property status status of the variant - if it's downloading, being written, etc.
- * @property statusString string representation of the @ref status
- * @property errorString a string better describing the current error @ref status of the variant
- */
 class Variant final : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString name READ name CONSTANT)
@@ -136,8 +142,6 @@ private:
     bool delayedWrite;
 
     Progress *m_progress;
-
-    void setSize(const qreal value);
 };
 
 #endif // VARIANT_H

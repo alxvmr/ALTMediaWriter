@@ -30,42 +30,9 @@ class ReleaseModel;
 class ReleaseFilterModel;
 
 /*
- * Architecture - singleton (x86, x86_64, etc)
- *
- * Release -> Version -> Variant
- *
- * Server  -> 24      -> Full    -> x86_64
- *                               -> i686
- *                    -> Netinst -> x86_64
- *                               -> i686
- *         -> 23      -> Full    -> x86_64
- *                               -> i686
- *                    -> Netinst -> x86_64
- *                               -> i686
- *
- * Variant can be downloaded.
- * Variant can be written to a drive - that's handled by the target drive object itself.
- *
- * There should be no platform-dependent code in this file nor in potential child classes.
+ * ReleaseManager stores releases in the ReleaseModel, which is filtered by ReleaseFilterModel.
  */
 
-
-/**
- * @brief The ReleaseManager class
- *
- * The main entry point to access all the available releases.
- *
- * It is a QSortFilterProxyModel - that means the actual release data has to be provided first by the @ref ReleaseListModel .
- *
- * @property frontPage is true if the application is on the front page
- * @property downloadingMetadata is true while downloading metadata and false once it's finished
- * @property filterArchitecture index of the currently selected architecture
- * @property filterText user-entered text filter
- * @property selected the currently selected release
- * @property selectedIndex the index of the currently selected release
- * @property architectures the list of the available architectures
- * @property fileTypeFilters image type filters for file dialog
- */
 class ReleaseManager : public QObject {
 Q_OBJECT
     Q_PROPERTY(bool downloadingMetadata READ downloadingMetadata NOTIFY downloadingMetadataChanged)

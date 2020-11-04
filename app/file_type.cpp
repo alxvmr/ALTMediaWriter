@@ -1,7 +1,6 @@
 
 #include "file_type.h"
 
-
 QList<FileType> file_type_all() {
     static QList<FileType> list =
     []() {

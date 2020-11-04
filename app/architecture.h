@@ -20,10 +20,6 @@
 #ifndef ARCHITECTURE_H
 #define ARCHITECTURE_H
 
-/**
- * Class representing the possible architectures of the releases
- */
-
 #include <QList>
 #include <QString>
 
@@ -42,16 +38,9 @@ enum Architecture {
 };
 
 QList<Architecture> architecture_all();
-
-// Possible string representations of an architecture found in image
-// filenames ("x86_64", "aarch64", etc)
 QStringList architecture_strings(const Architecture architecture);
-
-// An architecture name for display ("AMD 64bit", "AArch64", etc)
 QString architecture_name(const Architecture architecture);
-
 Architecture architecture_from_string(const QString &string);
-
 Architecture architecture_from_filename(const QString &filename);
 
 #endif // ARCHITECTURE_H

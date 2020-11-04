@@ -20,14 +20,6 @@
 #ifndef FILE_TYPE_H
 #define FILE_TYPE_H
 
-/**
- * Class representing the possible image types of the releases
- *
- * @property extension short names for the type, like iso
- * @property name a common name what the short stands for, like "ISO DVD"
- * @property canWrite whether this image type is supported for writing
- */
-
 #include <QObject>
 #include <QList>
 #include <QString>

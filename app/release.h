@@ -20,6 +20,27 @@
 #ifndef RELEASE_H
 #define RELEASE_H
 
+/**
+ * @brief The Release class
+ *
+ * Represents a group of images, for example "Workstation", "Server"
+ * or "Education". A release is further divided into Variants.
+ *
+ * @property name the codename of the release, as stored in metadata
+ * @property displayName the translated name for display
+ * @property summary the summary describing the release, displayed on
+ *     the main screen
+ * @property description the extensive description of the release -
+ *     displayed on the detail screen
+ * @property isCustom true if this is the custom release
+ * @property icon path of the icon of this release
+ * @property screenshots a list of paths to screenshots (typically
+ *     HTTP URLs)
+ * @property variants a list of available variants for this release
+ * @property variant currently selected variant
+ * @property variantIndex the index of the currently selected variant
+ */
+
 #include "architecture.h"
 #include "file_type.h"
 
@@ -27,25 +48,6 @@
 
 class Variant;
 
-/**
- * @brief The Release class
- *
- * The class representing a fedora flavor, like for example Workstation or KDE Plasma Desktop spin.
- *
- * It can have multiple versions.
- *
- * @property index the index in the list
- * @property name the name of the release, like "Fedora Workstation"
- * @property summary the summary describing the release - displayed on the main screen
- * @property description the extensive description of the release - displayed on the detail screen
- * @property isCustom true if this is the custom release
- * @property icon path of the icon of this release
- * @property screenshots a list of paths to screenshots (typically HTTP URLs)
- * @property versions a list of available versions of the @ref ReleaseVersion class
- * @property versionNames a list of the names of the available versions
- * @property version the currently selected @ref ReleaseVersion
- * @property versionIndex the index of the currently selected @ref ReleaseVersion
- */
 class Release : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString displayName READ displayName CONSTANT)
