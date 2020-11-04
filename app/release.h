@@ -66,7 +66,7 @@ public:
 
     void addVariant(Variant *variant);
 
-    Q_INVOKABLE void setLocalFile(const QString &path);
+    Q_INVOKABLE void setLocalFile(const QString &fileUrl);
 
     QString name() const;
     QString displayName() const;
