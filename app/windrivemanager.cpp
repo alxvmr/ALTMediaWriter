@@ -272,7 +272,7 @@ bool WinDrive::write(Variant *variant) {
 
     QStringList args;
     args << "write";
-    args << variant->file();
+    args << variant->filePath();
     args << QString("%1").arg(m_device);
     m_child->setArguments(args);
 

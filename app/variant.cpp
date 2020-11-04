@@ -35,6 +35,7 @@ Variant::Variant(QString url, Architecture *arch, FileType *fileType, QString bo
 : QObject(parent)
 , m_url(url)
 , m_fileName(QUrl(url).fileName())
+, m_filePath(QDir(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation)).filePath(fileName()))
 , m_board(board)
 , m_live(live)
 , m_arch(arch)
@@ -45,19 +46,19 @@ Variant::Variant(QString url, Architecture *arch, FileType *fileType, QString bo
 
 }
 
-Variant *Variant::custom(const QString &path, QObject *parent) {
-    const QString url = path;
-    FileType *file_type = FileType::fromFilename(path);
-    Architecture *arch = Architecture::fromId(Architecture::UNKNOWN);
-    const QString board = QString();
-    const bool live = false;
+Variant::Variant(const QString &path, QObject *parent)
+: QObject(parent)
+, m_url(QString())
+, m_fileName(QFileInfo(path).fileName())
+, m_filePath(path)
+, m_board(QString())
+, m_live(false)
+, m_arch(Architecture::fromId(Architecture::UNKNOWN))
+, m_fileType(FileType::fromFilename(path))
+, m_status(Variant::READY)
+, m_progress(new Progress(this))
+{
 
-    auto variant = new Variant(url, arch, file_type, board, live, parent);
-    // NOTE: start out in ready because don't need to download
-    variant->m_file = path;
-    variant->setStatus(Variant::READY);
-
-    return variant;
 }
 
 Architecture *Variant::arch() const {
@@ -94,8 +95,8 @@ QString Variant::url() const {
     return m_url;
 }
 
-QString Variant::file() const {
-    return m_file;
+QString Variant::filePath() const {
+    return m_filePath;
 }
 
 qreal Variant::size() const {
@@ -126,16 +127,10 @@ void Variant::onImageDownloadFinished() {
 
     switch (result) {
         case ImageDownload::Success: {
-            const QString download_dir_path = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
-            const QDir download_dir(download_dir_path);
-            m_file = download_dir.filePath(QUrl(m_url).fileName());;
-
-            emit fileChanged();
-
             qDebug() << this->metaObject()->className() << "Image is ready";
             setStatus(READY);
 
-            setSize(QFile(m_file).size());
+            setSize(QFile(filePath()).size());
 
             if (delayedWrite) {
                 Drive *drive = DriveManager::instance()->selected();
@@ -167,34 +162,21 @@ void Variant::onImageDownloadFinished() {
 }
 
 void Variant::download() {
-    if (m_url.isEmpty() && !m_file.isEmpty()) {
-        setStatus(READY);
-
-        return;
-    }
-
     delayedWrite = false;
 
     resetStatus();
 
-    // Check if already downloaded
-    const QString download_dir_path = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
-    const QDir download_dir(download_dir_path);
-    const QString filePath = download_dir.filePath(QUrl(m_url).fileName());
-    const bool already_downloaded = QFile::exists(filePath);
+    const bool already_downloaded = QFile::exists(filePath());
 
     if (already_downloaded) {
         // Already downloaded so skip download step
-        m_file = filePath;
-        emit fileChanged();
-
-        qDebug() << this->metaObject()->className() << m_file << "is already downloaded";
+        qDebug() << this->metaObject()->className() << fileName() << "is already downloaded";
         setStatus(READY);
 
-        setSize(QFile(m_file).size());
+        setSize(QFile(filePath()).size());
     } else {
         // Download image
-        auto download = new ImageDownload(QUrl(m_url));
+        auto download = new ImageDownload(QUrl(url()), filePath());
 
         connect(
             download, &ImageDownload::started,
@@ -239,7 +221,7 @@ void Variant::cancelDownload() {
 }
 
 void Variant::resetStatus() {
-    if (!m_file.isEmpty()) {
+    if (!fileName().isEmpty()) {
         setStatus(READY);
     } else {
         setStatus(PREPARING);
@@ -251,14 +233,11 @@ void Variant::resetStatus() {
 }
 
 bool Variant::erase() {
-    if (QFile(m_file).remove()) {
-        qDebug() << this->metaObject()->className() << "Deleted" << m_file;
-        m_file = QString();
-        emit fileChanged();
+    if (QFile(filePath()).remove()) {
+        qDebug() << this->metaObject()->className() << "Deleted" << filePath();
         return true;
-    }
-    else {
-        qWarning() << this->metaObject()->className() << "An attempt to delete" << m_file << "failed!";
+    } else {
+        qWarning() << this->metaObject()->className() << "An attempt to delete" << filePath() << "failed!";
         return false;
     }
 }

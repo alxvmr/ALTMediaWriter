@@ -50,7 +50,7 @@ class Variant final : public QObject {
     Q_PROPERTY(QString name READ name CONSTANT)
     Q_PROPERTY(FileType *fileType READ fileType CONSTANT)
 
-    Q_PROPERTY(QString file READ file NOTIFY fileChanged)
+    Q_PROPERTY(QString filePath READ filePath CONSTANT)
     Q_PROPERTY(QString fileName READ fileName CONSTANT)
     Q_PROPERTY(qreal size READ size NOTIFY sizeChanged)
     Q_PROPERTY(Progress* progress READ progress CONSTANT)
@@ -91,7 +91,8 @@ public:
 
     Variant(QString url, Architecture *arch, FileType *fileType, QString board, const bool live, QObject *parent);
 
-    static Variant *custom(const QString &path, QObject *parent);
+    // Constructor for local file
+    Variant(const QString &path, QObject *parent);
 
     Q_INVOKABLE void setDelayedWrite(const bool value);
 
@@ -102,7 +103,7 @@ public:
     bool live() const;
 
     QString url() const;
-    QString file() const;
+    QString filePath() const;
     QString fileName() const;
     qreal size() const;
     Progress *progress();
@@ -131,9 +132,9 @@ public slots:
 private:
     const QString m_url;
     const QString m_fileName;
+    const QString m_filePath;
     const QString m_board;
     const bool m_live;
-    QString m_file;
     Architecture *m_arch;
     FileType *m_fileType;
     qreal m_size = 0.0;

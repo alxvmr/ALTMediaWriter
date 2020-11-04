@@ -186,7 +186,7 @@ LinuxDrive::~LinuxDrive() {
 }
 
 bool LinuxDrive::write(Variant *variant) {
-    qDebug() << this->metaObject()->className() << "Will now write" << variant->file() << "to" << this->m_device;
+    qDebug() << this->metaObject()->className() << "Will now write" << variant->fileName() << "to" << this->m_device;
 
     if (!Drive::write(variant))
         return false;
@@ -208,7 +208,7 @@ bool LinuxDrive::write(Variant *variant) {
 
     QStringList args;
     args << "write";
-    args << variant->file();
+    args << variant->filePath();
     args << m_device;
 
     qDebug() << this->metaObject()->className() << "Helper command will be" << args;

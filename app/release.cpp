@@ -101,7 +101,7 @@ void Release::setLocalFile(const QString &path) {
     m_variants.clear();
 
     // Add new variant
-    auto customVariant = Variant::custom(path, this);
+    auto customVariant = new Variant(path, this);
     m_variants.append(customVariant);
     
     emit variantsChanged();

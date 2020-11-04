@@ -30,16 +30,17 @@
 #include <QTimer>
 #include <QFile>
 
-ImageDownload::ImageDownload(const QUrl &url_arg)
+ImageDownload::ImageDownload(const QUrl &url_arg, const QString &filePath_arg)
 : QObject()
 , url(url_arg)
+, filePath(filePath_arg)
 , hash(QCryptographicHash::Md5)
 {
     qDebug() << this->metaObject()->className() << "created for" << url;
     
     QNetworkProxyFactory::setUseSystemConfiguration(true);
 
-    const QString tempFilePath = getFilePath() + ".part";
+    const QString tempFilePath = filePath + ".part";
     file = new QFile(tempFilePath, this);
     file->open(QIODevice::WriteOnly);
 
@@ -266,7 +267,6 @@ void ImageDownload::checkMd5(const QString &computedMd5) {
     if (checkPassed) {
         qDebug() << this->metaObject()->className() << "Renaming to final filename";
 
-        const QString filePath = getFilePath();
         const bool rename_success = file->rename(filePath);
 
         if (rename_success) {
@@ -301,14 +301,4 @@ void ImageDownload::finish(const Result result_arg, const QString &errorString_a
     emit finished();
 
     deleteLater();
-}
-
-// Get filename from url and append it to download path
-QString ImageDownload::getFilePath() const {
-    const QString fileName = url.fileName();
-    const QString downloadPath = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
-    const QDir downloadDir(downloadPath);
-    const QString filePath = downloadDir.filePath(fileName);
-
-    return filePath;
 }

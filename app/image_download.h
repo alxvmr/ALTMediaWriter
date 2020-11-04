@@ -55,7 +55,7 @@ public:
         Cancelled
     };
 
-    ImageDownload(const QUrl &url_arg);
+    ImageDownload(const QUrl &url_arg, const QString &filePath_arg);
     Result result() const;
     QString errorString() const;
 
@@ -95,6 +95,7 @@ private:
     QString m_errorString;
 
     const QUrl url;
+    const QString filePath;
     QFile *file = nullptr;
     bool startingImageDownload = false;
     bool wasCancelled = false;
