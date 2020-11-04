@@ -191,9 +191,6 @@ bool LinuxDrive::write(Variant *variant) {
     if (!Drive::write(variant))
         return false;
 
-    if (m_variant->status() == Variant::READY || m_variant->status() == Variant::FAILED || m_variant->status() == Variant::FINISHED)
-        m_variant->setStatus(Variant::WRITING);
-
     if (!m_process)
         m_process = new QProcess(this);
 
@@ -282,20 +279,16 @@ void LinuxDrive::onReadyRead() {
     if (!m_process)
         return;
 
-    m_progress->setMax(m_variant->size());
     m_progress->setCurrent(NAN);
 
-    if (m_variant->status() != Variant::WRITE_VERIFYING && m_variant->status() != Variant::WRITING)
-        m_variant->setStatus(Variant::WRITING);
+    m_variant->setStatus(Variant::WRITING);
 
     while (m_process->bytesAvailable() > 0) {
         QString line = m_process->readLine().trimmed();
         if (line == "WRITE") {
             m_progress->setCurrent(0);
-            m_variant->setStatus(Variant::WRITING);
         }
         else if (line == "DONE") {
-            m_progress->setCurrent(m_variant->size());
             m_variant->setStatus(Variant::FINISHED);
             Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_variant->fileName()));
         }

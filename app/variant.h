@@ -24,6 +24,7 @@
 #include <QObject>
 #include <QList>
 #include <QString>
+#include <QHash>
 
 class Progress;
 class FileType;
@@ -39,7 +40,6 @@ class Architecture;
  * @property url the URL pointing to the image
  * @property image the path to the image on the drive
  * @property fileType the type of the image on the drive
- * @property size the size of the image in bytes
  * @property progress the progress object of the image - reports the progress of download
  * @property status status of the variant - if it's downloading, being written, etc.
  * @property statusString string representation of the @ref status
@@ -52,7 +52,6 @@ class Variant final : public QObject {
 
     Q_PROPERTY(QString filePath READ filePath CONSTANT)
     Q_PROPERTY(QString fileName READ fileName CONSTANT)
-    Q_PROPERTY(qreal size READ size NOTIFY sizeChanged)
     Q_PROPERTY(Progress* progress READ progress CONSTANT)
 
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
@@ -68,25 +67,22 @@ public:
         READY,
         WRITING_NOT_POSSIBLE,
         WRITING,
-        WRITE_VERIFYING,
         FINISHED,
         FAILED_DOWNLOAD,
         FAILED
     };
     Q_ENUMS(Status)
-    const QStringList m_statusStrings {
-        tr("Preparing"),
-        tr("Downloading"),
-        tr("Resuming download"),
-        tr("Checking the download"),
-        tr("Ready to write"),
-        tr("Image file was saved to your downloads folder. Writing is not possible"),
-        tr("Writing"),
-        tr("Checking the written data"),
-        tr("Finished!"),
-        tr("The written data is corrupted"),
-        tr("Download failed"),
-        tr("Error")
+    const QHash<Status, QString> m_statusStrings = {
+        {PREPARING, tr("Preparing")},
+        {DOWNLOADING, tr("Downloading")},
+        {DOWNLOAD_RESUMING, tr("Resuming download")},
+        {DOWNLOAD_VERIFYING, tr("Checking the download")},
+        {READY, tr("Ready to write")},
+        {WRITING_NOT_POSSIBLE, tr("Image file was saved to your downloads folder. Writing is not possible")},
+        {WRITING, tr("Writing")},
+        {FINISHED, tr("Finished!")},
+        {FAILED_DOWNLOAD, tr("Download failed")},
+        {FAILED, tr("Error")},
     };
 
     Variant(QString url, Architecture *arch, FileType *fileType, QString board, const bool live, QObject *parent);
@@ -105,7 +101,6 @@ public:
     QString url() const;
     QString filePath() const;
     QString fileName() const;
-    qreal size() const;
     Progress *progress();
 
     Status status() const;
@@ -120,7 +115,6 @@ signals:
     void fileChanged();
     void statusChanged();
     void errorStringChanged();
-    void sizeChanged();
     void cancelledDownload();
 
 public slots:
@@ -137,7 +131,6 @@ private:
     const bool m_live;
     Architecture *m_arch;
     FileType *m_fileType;
-    qreal m_size = 0.0;
     Status m_status;
     QString m_error;
     bool delayedWrite;

@@ -99,10 +99,6 @@ QString Variant::filePath() const {
     return m_filePath;
 }
 
-qreal Variant::size() const {
-    return m_size;
-}
-
 Progress *Variant::progress() {
     return m_progress;
 }
@@ -118,7 +114,11 @@ Variant::Status Variant::status() const {
 }
 
 QString Variant::statusString() const {
-    return m_statusStrings[status()];
+    if (m_statusStrings.contains(status())) {
+        return m_statusStrings[status()];
+    } else {
+        return tr("Unknown Status");
+    }
 }
 
 void Variant::onImageDownloadFinished() {
@@ -129,8 +129,6 @@ void Variant::onImageDownloadFinished() {
         case ImageDownload::Success: {
             qDebug() << this->metaObject()->className() << "Image is ready";
             setStatus(READY);
-
-            setSize(QFile(filePath()).size());
 
             if (delayedWrite) {
                 Drive *drive = DriveManager::instance()->selected();
@@ -172,8 +170,6 @@ void Variant::download() {
         // Already downloaded so skip download step
         qDebug() << this->metaObject()->className() << fileName() << "is already downloaded";
         setStatus(READY);
-
-        setSize(QFile(filePath()).size());
     } else {
         // Download image
         auto download = new ImageDownload(QUrl(url()), filePath());
@@ -257,12 +253,5 @@ void Variant::setErrorString(const QString &o) {
     if (m_error != o) {
         m_error = o;
         emit errorStringChanged();
-    }
-}
-
-void Variant::setSize(const qreal value) {
-    if (m_size != value) {
-        m_size = value;
-        emit sizeChanged();
     }
 }

@@ -30,6 +30,7 @@
 #endif // _WIN32
 
 #include <QtQml>
+#include <QFile>
 
 // NOTE: when installed, helper will be in the same directory as the mediawriter executable, so this is just for running from a build directory where they are in separate dirs.
 QString getHelperPath() {
@@ -289,7 +290,10 @@ bool Drive::write(Variant *variant) {
     m_variant = variant;
     m_variant->setErrorString(QString());
 
-    if (variant->size() > size()) {
+    const QFile file(m_variant->filePath());
+    m_progress->setMax(file.size());
+
+    if (file.size() > size()) {
         m_variant->setErrorString(tr("This drive is not large enough."));
         cancel();
         return false;

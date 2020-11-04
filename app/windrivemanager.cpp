@@ -259,9 +259,6 @@ bool WinDrive::write(Variant *variant) {
     connect(m_child, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), this, &WinDrive::onFinished);
     connect(m_child, &QProcess::readyRead, this, &WinDrive::onReadyRead);
 
-    if (variant->status() != Variant::DOWNLOADING)
-        m_variant->setStatus(Variant::WRITING);
-
     const QString helperPath = getHelperPath();
     if (!helperPath.isEmpty()) {
         m_child->setProgram(helperPath);
@@ -370,20 +367,16 @@ void WinDrive::onReadyRead() {
     if (!m_child)
         return;
 
-    m_progress->setMax(m_variant->size());
     m_progress->setCurrent(NAN);
 
-    if (m_variant->status() != Variant::WRITE_VERIFYING && m_variant->status() != Variant::WRITING)
-        m_variant->setStatus(Variant::WRITING);
+    m_variant->setStatus(Variant::WRITING);
 
     while (m_child->bytesAvailable() > 0) {
         QString line = m_child->readLine().trimmed();
         if (line == "WRITE") {
             m_progress->setCurrent(0);
-            m_variant->setStatus(Variant::WRITING);
         }
         else if (line == "DONE") {
-            m_progress->setCurrent(m_variant->size());
             m_variant->setStatus(Variant::FINISHED);
             Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_variant->fileName()));
         }

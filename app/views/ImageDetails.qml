@@ -123,17 +123,6 @@ Item {
                                 text: releases.selected.displayName
                                 color: palette.windowText
                             }
-                            Text {
-                                font.pointSize: 12
-                                property double size: releases.selected.variant.size
-                                text: size <= 0 ? "" :
-                                      (size < 1024) ? (size + " B") :
-                                      (size < (1024 * 1024)) ? ((size / 1024).toFixed(1) + " KB") :
-                                      (size < (1024 * 1024 * 1024)) ? ((size / 1024 / 1024).toFixed(1) + " MB") :
-                                      ((size / 1024 / 1024 / 1024).toFixed(1) + " GB")
-
-                                color: mixColors(palette.window, palette.windowText, 0.3)
-                            }
                         }
                         ColumnLayout {
                             width: parent.width
