@@ -384,7 +384,6 @@ FocusScope {
             }
 
             delegate: DelegateImage {
-                width: parent.width
                 focus: true
             }
 

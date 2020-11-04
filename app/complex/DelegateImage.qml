@@ -25,7 +25,7 @@ import "../simple"
 
 Item {
     id: root
-    width: parent.width
+    width: parent ? parent.width : 0
     height: 84
     activeFocusOnTab: true
 
