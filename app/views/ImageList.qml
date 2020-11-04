@@ -49,118 +49,122 @@ FocusScope {
         }
     }
 
-    Component {
-        id: searchBar
+    Item {
+        anchors {
+            top: parent.top
+            topMargin: 12
+            left: parent.left
+            right: parent.right
+            leftMargin: mainWindow.margin
+            rightMargin: mainWindow.margin
+        }
 
-        Item {
-            width: listView.width
-            height: searchBarHeight
-            z: 2
-            enabled: !releases.filter.frontPage
-            visible: enabled
-            opacity: enabled ? 1.0 : 0.0
-            Behavior on opacity {
-                NumberAnimation {
-                    duration: 300
-                }
+        width: listView.width
+        height: searchBarHeight
+        z: 2
+        enabled: !releases.filter.frontPage
+        visible: enabled
+        opacity: enabled ? 1.0 : 0.0
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 300
             }
+        }
 
-            // Blank rectangle to hide scrolling listview behind header
-            Rectangle {
-                anchors.fill: parent
-                color: palette.window
+        // Blank rectangle to hide scrolling listview behind header
+        Rectangle {
+            anchors.fill: parent
+            color: palette.window
+        }
+
+        Rectangle {
+            anchors {
+                top: parent.top
+                bottom: parent.bottom
+                left: parent.left
+                right: archSelect.left
+                rightMargin: 4
             }
+            border {
+                color: searchInput.activeFocus ? "#4a90d9" : Qt.darker(palette.button, 1.3)
+                width: 1
+            }
+            radius: 5
+            color: palette.background
+            z: 1
 
-            Rectangle {
+            Item {
+                id: magnifyingGlass
                 anchors {
-                    top: parent.top
-                    bottom: parent.bottom
                     left: parent.left
-                    right: archSelect.left
-                    rightMargin: 4
+                    leftMargin: (parent.height - height) / 2
+                    verticalCenter: parent.verticalCenter
                 }
-                border {
-                    color: searchInput.activeFocus ? "#4a90d9" : Qt.darker(palette.button, 1.3)
-                    width: 1
-                }
-                radius: 5
-                color: palette.background
-                z: 1
+                height: childrenRect.height + 3
+                width: childrenRect.width + 2
 
-                Item {
-                    id: magnifyingGlass
-                    anchors {
-                        left: parent.left
-                        leftMargin: (parent.height - height) / 2
-                        verticalCenter: parent.verticalCenter
-                    }
-                    height: childrenRect.height + 3
-                    width: childrenRect.width + 2
-
+                Rectangle {
+                    height: 11
+                    antialiasing: true
+                    width: height
+                    radius: height / 2
+                    color: palette.text
                     Rectangle {
-                        height: 11
+                        height: 7
                         antialiasing: true
                         width: height
                         radius: height / 2
+                        color: palette.background
+                        anchors.centerIn: parent
+                    }
+                    Rectangle {
+                        height: 2
+                        width: 6
+                        radius: 2
+                        x: 8
+                        y: 11
+                        rotation: 45
                         color: palette.text
-                        Rectangle {
-                            height: 7
-                            antialiasing: true
-                            width: height
-                            radius: height / 2
-                            color: palette.background
-                            anchors.centerIn: parent
-                        }
-                        Rectangle {
-                            height: 2
-                            width: 6
-                            radius: 2
-                            x: 8
-                            y: 11
-                            rotation: 45
-                            color: palette.text
-                        }
                     }
-                }
-
-                TextInput {
-                    id: searchInput
-                    anchors {
-                        left: magnifyingGlass.right
-                        top: parent.top
-                        bottom: parent.bottom
-                        right: parent.right
-                        margins: 8
-                    }
-                    activeFocusOnTab: true
-                    Text {
-                        anchors.fill: parent
-                        color: "light gray"
-                        font.pointSize: 9
-                        text: qsTr("Find an operating system image")
-                        visible: !parent.activeFocus && parent.text.length == 0
-                        verticalAlignment: Text.AlignVCenter
-                    }
-                    verticalAlignment: TextInput.AlignVCenter
-                    onTextChanged: releases.filter.setFilterText(text)
-                    clip: true
-                    color: palette.text
                 }
             }
 
-            AdwaitaComboBox {
-                id: archSelect
+            TextInput {
+                id: searchInput
                 anchors {
+                    left: magnifyingGlass.right
+                    top: parent.top
+                    bottom: parent.bottom
                     right: parent.right
+                    margins: 8
                 }
-                width: 148
-                activeFocusOnTab: visible
-                model: releases.architectures
-                onCurrentIndexChanged:  {
-                    releases.filter.setFilterArch(currentIndex)
+                activeFocusOnTab: true
+                Text {
+                    anchors.fill: parent
+                    color: "light gray"
+                    font.pointSize: 9
+                    text: qsTr("Find an operating system image")
+                    visible: !parent.activeFocus && parent.text.length == 0
+                    verticalAlignment: Text.AlignVCenter
                 }
+                verticalAlignment: TextInput.AlignVCenter
+                onTextChanged: releases.filter.setFilterText(text)
+                clip: true
+                color: palette.text
             }
-        
+        }
+
+        AdwaitaComboBox {
+            id: archSelect
+            anchors {
+                right: parent.right
+            }
+            width: 148
+            activeFocusOnTab: visible
+            model: releases.architectures
+            onCurrentIndexChanged:  {
+                releases.filter.setFilterArch(currentIndex)
+            }
         }
     }
 
@@ -348,16 +352,14 @@ FocusScope {
             clip: true
             focus: true
             anchors {
-                topMargin: mainWindow.margin - searchBarHeight
+                topMargin: mainWindow.margin
                 leftMargin: mainWindow.margin
-                rightMargin: mainWindow.margin
+                // NOTE: when leaving front page and scrollView gets a scrollbar, the width is reduced, so recalculate right margin so that the right side of listView doesn't move due to that
+                rightMargin: anchors.leftMargin - (scrollView.width - scrollView.viewport.width)
             }
 
             model: releases.filter
             footer: listExpander
-            headerPositioning: ListView.OverlayHeader
-            // NOTE: searchBar has to be assigned from the start and hidden because adding it dynamically when entering "full" state is not handled well by the scrollview
-            header: searchBar
 
             // When exiting front page, move the list to the top of the screen
             states: State {
@@ -367,7 +369,7 @@ FocusScope {
                     target: listView
 
                     // Move the list up so it occupies all available vertical space
-                    anchors.topMargin: 12
+                    anchors.topMargin: 12 + searchBarHeight
                     // Replace footer
                     footer: aboutFooter
                 }
