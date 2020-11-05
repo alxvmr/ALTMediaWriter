@@ -228,16 +228,6 @@ void LinuxDrive::cancel() {
     static bool beingCancelled = false;
     if (m_process != nullptr && !beingCancelled) {
         beingCancelled = true;
-        if (m_variant) {
-            if (m_variant->status() == Variant::WRITE_VERIFYING) {
-                m_variant->setStatus(Variant::WRITING_FINISHED);
-            }
-            else if (m_variant->status() != Variant::DOWNLOADING &&
-                     m_variant->status() != Variant::DOWNLOAD_VERIFYING) {
-                m_variant->setErrorString(tr("Stopped before writing has finished."));
-                m_variant->setStatus(Variant::WRITING_FAILED);
-            }
-        }
         m_process->kill();
         m_process->deleteLater();
         m_process = nullptr;

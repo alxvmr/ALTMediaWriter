@@ -230,7 +230,13 @@ bool WriteJob::writeCompressed(HANDLE drive) {
     uint8_t *outBuffer = new uint8_t[BLOCK_SIZE];
 
     QFile file(what);
-    file.open(QIODevice::ReadOnly);
+    const bool open_success = file.open(QIODevice::ReadOnly);
+    if (!open_success) {
+        err << tr("Source image is not readable");
+        err.flush();
+        qApp->exit(1);
+        return false;
+    }
 
     ret = lzma_stream_decoder(&strm, MEDIAWRITER_LZMA_LIMIT, LZMA_CONCATENATED);
     if (ret != LZMA_OK) {
@@ -322,8 +328,8 @@ bool WriteJob::writePlain(HANDLE drive) {
     uint64_t cnt = 0;
     QByteArray buffer;
     QFile isoFile(what);
-    isoFile.open(QIODevice::ReadOnly);
-    if (!isoFile.isOpen()) {
+    const bool open_success = isoFile.open(QIODevice::ReadOnly);
+    if (!open_success) {
         err << tr("Source image is not readable");
         err.flush();
         qApp->exit(1);

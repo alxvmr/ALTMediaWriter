@@ -212,7 +212,7 @@ void Variant::cancelDownload() {
 }
 
 void Variant::resetStatus() {
-    if (!fileName().isEmpty()) {
+    if (QFile::exists(filePath())) {
         setStatus(READY_FOR_WRITING);
     } else {
         setStatus(PREPARING);

@@ -43,12 +43,13 @@ Dialog {
     }
 
     onVisibleChanged: {
+        // When dialog is closed via Cancel button or Close button, cancel current download or write
         if (!visible) {
             if (drives.selected)
                 drives.selected.cancel()
             releases.selected.variant.cancelDownload()
-            releases.selected.variant.resetStatus()
         }
+        releases.selected.variant.resetStatus()
         reset()
     }
 

@@ -133,6 +133,8 @@ void ReleaseManager::downloadMetadata() {
             return out;
         }();
 
+        qDebug() << "Loading releases";
+
         loadReleases(sectionsFiles);
 
         const QList<QString> imagesFiles =
@@ -144,6 +146,8 @@ void ReleaseManager::downloadMetadata() {
             }
             return out;
         }();
+
+        qDebug() << "Loading variants";
 
         for (auto imagesFile : imagesFiles) {
             loadVariants(imagesFile);
@@ -203,13 +207,11 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
         if (url.isEmpty()) {
             qWarning() << "Variant has no url";
             continue;
-        } else {
-            qDebug() << "Url:" << url;
         }
 
         const QString releaseName = yml_get(variantData, "solution");
         if (releaseName.isEmpty()) {
-            qWarning() << "Variant has no releaseName";
+            qDebug() << "Variant has no releaseName" << url;
             continue;
         }
 
@@ -223,7 +225,7 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
             }
         }();
         if (arch == Architecture_UNKNOWN) {
-            qWarning() << "Variant has unknown architecture" << arch_string;
+            qDebug() << "Variant has unknown architecture" << arch_string << url;
             continue;
         }
 
@@ -240,7 +242,7 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
 
         const FileType fileType = file_type_from_filename(url);
         if (fileType == FileType_UNKNOWN) {
-            qWarning() << "Variant has unknown file type";
+            qDebug() << "Variant has unknown file type" << url;
             continue;
         }
 
@@ -254,7 +256,7 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
             }
         }();
 
-        qDebug() << QUrl(url).fileName() << releaseName << architecture_name(arch) << board << file_type_name(fileType) << (live ? "LIVE" : "");
+        // qDebug() << QUrl(url).fileName() << releaseName << architecture_name(arch) << board << file_type_name(fileType) << (live ? "LIVE" : "");
 
         // Find a release that has the same name as this variant
         Release *release =
@@ -273,7 +275,7 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
             Variant *variant = new Variant(url, arch, fileType, board, live, this);
             release->addVariant(variant);
         } else {
-            qWarning() << "Failed to find a release for this variant!" << url;
+            qDebug() << "Failed to find a release for this variant!" << url;
         }
     }
 }
@@ -333,8 +335,6 @@ QStringList ReleaseManager::fileTypeFilters() const {
 }
 
 void ReleaseManager::loadReleases(const QList<QString> &sectionsFiles) {
-    qDebug() << "Loading releases";
-
     for (auto sectionFile : sectionsFiles) {
         const YAML::Node section = YAML::Load(sectionFile.toStdString());
 
