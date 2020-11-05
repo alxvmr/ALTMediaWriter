@@ -117,7 +117,7 @@ void LinuxDriveProvider::init(QDBusPendingCallWatcher *w) {
     QSet<QDBusObjectPath> newPaths;
 
     if (reply.isError()) {
-        qWarning() << "Could not read drives from UDisks:" << reply.error().name() << reply.error().message();
+        qDebug() << "Could not read drives from UDisks:" << reply.error().name() << reply.error().message();
         emit backendBroken(tr("UDisks2 seems to be unavailable or unaccessible on your system."));
         return;
     }
@@ -251,7 +251,7 @@ void LinuxDrive::restore() {
     if (!helperPath.isEmpty()) {
         m_process->setProgram(helperPath);
     } else {
-        qWarning() << "Couldn't find the helper binary.";
+        qDebug() << "Couldn't find the helper binary.";
         setRestoreStatus(RESTORE_ERROR);
         return;
     }
@@ -302,7 +302,7 @@ void LinuxDrive::onFinished(int exitCode, QProcess::ExitStatus status) {
 
     if (exitCode != 0) {
         QString errorMessage = m_process->readAllStandardError();
-        qWarning() << "Writing failed:" << errorMessage;
+        qDebug() << "Writing failed:" << errorMessage;
         Notifications::notify(tr("Error"), tr("Writing %1 failed").arg(m_variant->fileName()));
         if (m_variant->status() == Variant::WRITING) {
             m_variant->setErrorString(errorMessage);
@@ -325,9 +325,9 @@ void LinuxDrive::onRestoreFinished(int exitCode, QProcess::ExitStatus status) {
 
     if (exitCode != 0) {
         if (m_process)
-            qWarning() << "Drive restoration failed:" << m_process->readAllStandardError();
+            qDebug() << "Drive restoration failed:" << m_process->readAllStandardError();
         else
-            qWarning() << "Drive restoration failed";
+            qDebug() << "Drive restoration failed";
         m_restoreStatus = RESTORE_ERROR;
     }
     else {
@@ -346,7 +346,7 @@ void LinuxDrive::onErrorOccurred(QProcess::ProcessError e) {
         return;
 
     QString errorMessage = m_process->errorString();
-    qWarning() << "Restoring failed:" << errorMessage;
+    qDebug() << "Restoring failed:" << errorMessage;
     m_variant->setErrorString(errorMessage);
     m_process->deleteLater();
     m_process = nullptr;

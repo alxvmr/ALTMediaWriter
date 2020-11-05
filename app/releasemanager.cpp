@@ -102,7 +102,7 @@ void ReleaseManager::downloadMetadata() {
             const bool download_failed = (error != QNetworkReply::NoError && error != QNetworkReply::ContentNotFoundError);
 
             if (download_failed) {
-                qWarning() << "Failed to download metadata:" << reply->errorString() << reply->error() << "Retrying in 10 seconds.";
+                qDebug() << "Failed to download metadata:" << reply->errorString() << reply->error() << "Retrying in 10 seconds.";
                 QTimer::singleShot(10000, this, &ReleaseManager::downloadMetadata);
 
                 return;
@@ -121,8 +121,8 @@ void ReleaseManager::downloadMetadata() {
                 const QByteArray bytes = reply->readAll();
                 url_to_file[url] = QString(bytes);
             } else {
-                qWarning() << "Failed to download metadata from" << url;
-                qWarning() << "Error:" << reply->error();
+                qDebug() << "Failed to download metadata from" << url;
+                qDebug() << "Error:" << reply->error();
             }
         }
 
@@ -208,7 +208,7 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
     for (auto variantData : variants["entries"]) {
         const QString url = yml_get(variantData, "link");
         if (url.isEmpty()) {
-            qWarning() << "Variant has no url";
+            qDebug() << "Variant has no url";
             continue;
         }
 
@@ -350,7 +350,7 @@ void ReleaseManager::loadReleases(const QList<QString> &sectionsFiles) {
 
             const QString name = yml_get(releaseData, "code");
             if (name.isEmpty()) {
-                qWarning() << "Release has no name";
+                qDebug() << "Release has no name";
                 continue;
             }
 
@@ -365,19 +365,19 @@ void ReleaseManager::loadReleases(const QList<QString> &sectionsFiles) {
             
             const QString display_name = yml_get(releaseData, "name" + language);
             if (display_name.isEmpty()) {
-                qWarning() << "Release has no display name";
+                qDebug() << "Release has no display name";
                 continue;
             }
 
             const QString summary = yml_get(releaseData, "descr" + language);
             if (summary.isEmpty()) {
-                qWarning() << "Release has no summary";
+                qDebug() << "Release has no summary";
                 continue;
             }
 
             const QString description = yml_get(releaseData, "descr_full" + language);
             if (description.isEmpty()) {
-                qWarning() << "Release has no description";
+                qDebug() << "Release has no description";
                 continue;
             }
 
@@ -387,14 +387,14 @@ void ReleaseManager::loadReleases(const QList<QString> &sectionsFiles) {
             // Check that icon file exists
             const QString icon_name = yml_get(releaseData, "img");
             if (icon_name.isEmpty()) {
-                qWarning() << "Release has no icon";
+                qDebug() << "Release has no icon";
                 continue;
             }
 
             const QString icon_path_test = ":/logo/" + icon_name;
             const QFile icon_file(icon_path_test);
             if (!icon_file.exists()) {
-                qWarning() << "Failed to find icon file at " << icon_path_test << " needed for release " << name;
+                qDebug() << "Failed to find icon file at " << icon_path_test << " needed for release " << name;
                 continue;
             }
 
@@ -445,7 +445,7 @@ QList<QString> load_list_from_file(const QString &filepath) {
 
     const bool open_success = file.open(QIODevice::ReadOnly | QIODevice::Text);
     if (!open_success) {
-        qWarning() << "Failed to open" << filepath;
+        qDebug() << "Failed to open" << filepath;
         return QList<QString>();
     }
 

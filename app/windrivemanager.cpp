@@ -88,7 +88,7 @@ QSet<int> WinDriveProvider::findPhysicalDrive(char driveLetter) {
         // warn just three times, it spams the log
         if (warningMap[driveLetter] <= 3) {
             warningMap[driveLetter]++;
-            qWarning() << "Could not get disk extents for" << drivePath;
+            qDebug() << "Could not get disk extents for" << drivePath;
         }
         ::CloseHandle(hDevice);
         return ret;

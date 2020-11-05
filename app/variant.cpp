@@ -145,7 +145,7 @@ void Variant::onImageDownloadFinished() {
             break;
         }
         case ImageDownload::Md5CheckFail: {
-            qWarning() << "MD5 check of" << m_url << "failed";
+            qDebug() << "MD5 check of" << m_url << "failed";
             setErrorString(tr("The downloaded image is corrupted"));
             setStatus(DOWNLOAD_FAILED);
 
@@ -231,7 +231,7 @@ bool Variant::erase() {
         qDebug() << this->metaObject()->className() << "Deleted" << filePath();
         return true;
     } else {
-        qWarning() << this->metaObject()->className() << "An attempt to delete" << filePath() << "failed!";
+        qDebug() << "An attempt to delete" << filePath() << "failed!";
         return false;
     }
 }
