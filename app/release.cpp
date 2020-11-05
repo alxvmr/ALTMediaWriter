@@ -74,7 +74,17 @@ void Release::addVariant(Variant *variant) {
 }
 
 void Release::setLocalFile(const QUrl &fileUrl) {
-    const QString filePath = fileUrl.path();
+    QString filePath = fileUrl.path();
+
+    // NOTE: on windows QUrl::path() leaves a leading
+    // slash like this: "/C:foo/bar", very fun!
+    #ifdef _WIN32
+    if (filePath.startsWith("/")) {
+        filePath.remove(0, 1);
+    }
+    #endif // _WIN32
+
+    qInfo() << filePath;
 
     // Delete old custom variant (there's really only one, but iterate anyway)
     for (auto variant : m_variants) {
