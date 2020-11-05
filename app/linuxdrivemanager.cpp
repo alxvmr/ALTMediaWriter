@@ -1,6 +1,9 @@
 /*
- * Fedora Media Writer
- * Copyright (C) 2016 Martin Bříza <mbriza@redhat.com>
+ * ALT Media Writer
+ * Copyright (C) 2016-2019 Martin Bříza <mbriza@redhat.com>
+ * Copyright (C) 2020 Dmitry Degtyarev <kevl@basealt.ru>
+ *
+ * ALT Media Writer is a fork of Fedora Media Writer
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
