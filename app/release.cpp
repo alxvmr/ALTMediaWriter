@@ -73,11 +73,8 @@ void Release::addVariant(Variant *variant) {
     }
 }
 
-void Release::setLocalFile(const QString &fileUrl) {
-    // NOTE: fileUrl has this suffix, which needs to be removed
-    // for files to open properly
-    QString filePath = fileUrl;
-    filePath.remove("file:///");
+void Release::setLocalFile(const QUrl &fileUrl) {
+    const QString filePath = fileUrl.path();
 
     // Delete old custom variant (there's really only one, but iterate anyway)
     for (auto variant : m_variants) {
