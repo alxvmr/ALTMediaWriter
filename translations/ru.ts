@@ -189,6 +189,81 @@
     </message>
 </context>
 <context>
+    <name>QObject</name>
+    <message>
+        <source>All</source>
+        <translation>Все</translation>
+    </message>
+    <message>
+        <source>AMD 64bit</source>
+        <translation>AMD 64bit</translation>
+    </message>
+    <message>
+        <source>Intel 32bit</source>
+        <translation>Intel 32bit</translation>
+    </message>
+    <message>
+        <source>ARM v7</source>
+        <translation>ARM v7</translation>
+    </message>
+    <message>
+        <source>AArch64</source>
+        <translation>AArch64</translation>
+    </message>
+    <message>
+        <source>MIPS</source>
+        <translation>MIPS</translation>
+    </message>
+    <message>
+        <source>RiscV64</source>
+        <translation>RiscV64</translation>
+    </message>
+    <message>
+        <source>Elbrus</source>
+        <translation>Эльбрус</translation>
+    </message>
+    <message>
+        <source>PowerPC</source>
+        <translation>PowerPC</translation>
+    </message>
+    <message>
+        <source>Unknown</source>
+        <translation>Unknown</translation>
+    </message>
+    <message>
+        <source>ISO DVD</source>
+        <translation>ISO DVD</translation>
+    </message>
+    <message>
+        <source>TAR Archive</source>
+        <translation>TAR архив</translation>
+    </message>
+    <message>
+        <source>GZIP TAR Archive</source>
+        <translation>GZIP TAR архив</translation>
+    </message>
+    <message>
+        <source>LZMA TAR Archive</source>
+        <translation>LZMA TAR архив</translation>
+    </message>
+    <message>
+        <source>IMG</source>
+        <translation>IMG</translation>
+    </message>
+    <message>
+        <source>GZIP IMG</source>
+        <translation>GZIP IMG</translation>
+    </message>
+    <message>
+        <source>LZMA IMG</source>
+        <translation>LZMA IMG</translation>
+    </message>
+    <message>
+        <source>Recovery TAR Archive</source>
+        <translation>Recovery TAR архив</translation>
+    </message>
+</context>
+<context>
     <name>Release</name>
     <message>
         <source>Pick a file from your drive(s)</source>
@@ -379,88 +454,6 @@
     <message>
         <source>Couldn&apos;t unlock the drive</source>
         <translation>Не удалось разблокировать диск</translation>
-    </message>
-</context>
-<context>
-    <name>arch</name>
-    <message>
-        <source>All</source>
-        <translation>Все</translation>
-    </message>
-    <message>
-        <source>AMD 64bit</source>
-        <translation>AMD 64bit</translation>
-    </message>
-    <message>
-        <source>Intel 32bit</source>
-        <translation>Intel 32bit</translation>
-    </message>
-    <message>
-        <source>ARM v7</source>
-        <translation>ARM v7</translation>
-    </message>
-    <message>
-        <source>AArch64</source>
-        <translation>AArch64</translation>
-    </message>
-    <message>
-        <source>MIPS</source>
-        <translation>MIPS</translation>
-    </message>
-    <message>
-        <source>RiscV64</source>
-        <translation>RiscV64</translation>
-    </message>
-    <message>
-        <source>Elbrus</source>
-        <translation>Эльбрус</translation>
-    </message>
-    <message>
-        <source>PowerPC</source>
-        <translation>PowerPC</translation>
-    </message>
-    <message>
-        <source>Unknown</source>
-        <translation>Unknown</translation>
-    </message>
-</context>
-<context>
-    <name>file type</name>
-    <message>
-        <source>ISO DVD</source>
-        <translation>ISO DVD</translation>
-    </message>
-    <message>
-        <source>TAR Archive</source>
-        <translation>TAR архив</translation>
-    </message>
-    <message>
-        <source>GZIP TAR Archive</source>
-        <translation>GZIP TAR архив</translation>
-    </message>
-    <message>
-        <source>LZMA TAR Archive</source>
-        <translation>LZMA TAR архив</translation>
-    </message>
-    <message>
-        <source>IMG</source>
-        <translation>IMG</translation>
-    </message>
-    <message>
-        <source>GZIP IMG</source>
-        <translation>GZIP IMG</translation>
-    </message>
-    <message>
-        <source>LZMA IMG</source>
-        <translation>LZMA IMG</translation>
-    </message>
-    <message>
-        <source>Recovery TAR Archive</source>
-        <translation>Recovery TAR архив</translation>
-    </message>
-    <message>
-        <source>Unknown</source>
-        <translation>Unknown</translation>
     </message>
 </context>
 <context>
