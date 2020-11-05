@@ -33,15 +33,15 @@ QStringList file_type_strings(const FileType file_type) {
 
 QString file_type_name(const FileType file_type) {
     switch (file_type) {
-        case FileType_ISO: return QT_TR_NOOP("ISO DVD");
-        case FileType_TAR: return QT_TR_NOOP("TAR Archive");
-        case FileType_TAR_GZ: return QT_TR_NOOP("GZIP TAR Archive");
-        case FileType_TAR_XZ: return QT_TR_NOOP("LZMA TAR Archive");
-        case FileType_IMG: return QT_TR_NOOP("IMG");
-        case FileType_IMG_GZ: return QT_TR_NOOP("GZIP IMG");
-        case FileType_IMG_XZ: return QT_TR_NOOP("LZMA IMG");
-        case FileType_RECOVERY_TAR: return QT_TR_NOOP("Recovery TAR Archive");
-        case FileType_UNKNOWN: return QT_TR_NOOP("Unknown");
+        case FileType_ISO: return QT_TRANSLATE_NOOP("file type", "ISO DVD");
+        case FileType_TAR: return QT_TRANSLATE_NOOP("file type", "TAR Archive");
+        case FileType_TAR_GZ: return QT_TRANSLATE_NOOP("file type", "GZIP TAR Archive");
+        case FileType_TAR_XZ: return QT_TRANSLATE_NOOP("file type", "LZMA TAR Archive");
+        case FileType_IMG: return QT_TRANSLATE_NOOP("file type", "IMG");
+        case FileType_IMG_GZ: return QT_TRANSLATE_NOOP("file type", "GZIP IMG");
+        case FileType_IMG_XZ: return QT_TRANSLATE_NOOP("file type", "LZMA IMG");
+        case FileType_RECOVERY_TAR: return QT_TRANSLATE_NOOP("file type", "Recovery TAR Archive");
+        case FileType_UNKNOWN: return QT_TRANSLATE_NOOP("file type", "Unknown");
         case FileType_COUNT: return QString();
     }
     return QString();

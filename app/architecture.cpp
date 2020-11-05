@@ -55,16 +55,16 @@ QStringList architecture_strings(const Architecture architecture) {
 
 QString architecture_name(const Architecture architecture) {
     switch (architecture) {
-        case Architecture_ALL: return QT_TR_NOOP("All");
-        case Architecture_X86_64: return QT_TR_NOOP("AMD 64bit");
-        case Architecture_X86: return QT_TR_NOOP("Intel 32bit");
-        case Architecture_ARM: return QT_TR_NOOP("ARM v7");
-        case Architecture_AARCH64: return QT_TR_NOOP("AArch64");
-        case Architecture_MIPSEL: return QT_TR_NOOP("MIPS");
-        case Architecture_RISCV64: return QT_TR_NOOP("RiscV64");
-        case Architecture_E2K: return QT_TR_NOOP("Elbrus");
-        case Architecture_PPC64LE: return QT_TR_NOOP("PowerPC");
-        case Architecture_UNKNOWN: return QT_TR_NOOP("Unknown");
+        case Architecture_ALL: return QT_TRANSLATE_NOOP("arch", "All");
+        case Architecture_X86_64: return QT_TRANSLATE_NOOP("arch", "AMD 64bit");
+        case Architecture_X86: return QT_TRANSLATE_NOOP("arch", "Intel 32bit");
+        case Architecture_ARM: return QT_TRANSLATE_NOOP("arch", "ARM v7");
+        case Architecture_AARCH64: return QT_TRANSLATE_NOOP("arch", "AArch64");
+        case Architecture_MIPSEL: return QT_TRANSLATE_NOOP("arch", "MIPS");
+        case Architecture_RISCV64: return QT_TRANSLATE_NOOP("arch", "RiscV64");
+        case Architecture_E2K: return QT_TRANSLATE_NOOP("arch", "Elbrus");
+        case Architecture_PPC64LE: return QT_TRANSLATE_NOOP("arch", "PowerPC");
+        case Architecture_UNKNOWN: return QT_TRANSLATE_NOOP("arch", "Unknown");
         case Architecture_COUNT: return QString();
     }
     return QString();
