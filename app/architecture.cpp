@@ -22,6 +22,8 @@
 
 #include "architecture.h"
 
+#include <QObject>
+
 QList<Architecture> architecture_all() {
     static QList<Architecture> list =
     []() {
