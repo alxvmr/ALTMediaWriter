@@ -48,6 +48,7 @@
 #include "file_type.h"
 
 #include <QQmlListProperty>
+#include <QUrl>
 
 class Variant;
 
