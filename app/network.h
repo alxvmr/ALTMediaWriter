@@ -30,7 +30,6 @@ class QNetworkReply;
 
 extern QNetworkAccessManager *network_access_manager;
 
-QString userAgent();
 QNetworkReply *makeNetworkRequest(const QString &url, const int time_out_millis = 0);
 
 #endif // NETWORK_H

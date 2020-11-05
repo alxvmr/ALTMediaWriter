@@ -28,33 +28,9 @@
 
 QNetworkAccessManager *network_access_manager = new QNetworkAccessManager();
 
-QString userAgent() {
-    QString ret = QString("FedoraMediaWriter/%1 (").arg(MEDIAWRITER_VERSION);
-#if QT_VERSION >= 0x050400
-    ret.append(QString("%1").arg(QSysInfo::prettyProductName().replace(QRegExp("[()]"), "")));
-    ret.append(QString("; %1").arg(QSysInfo::buildAbi()));
-#else
-    // TODO probably should follow the format of prettyProductName, however this will be a problem just on Debian it seems
-# ifdef __linux__
-    ret.append("linux");
-# endif // __linux__
-# ifdef _WIN32
-    ret.append("windows");
-# endif // _WIN32
-#endif
-    ret.append(QString("; %1").arg(QLocale(QLocale().language()).name()));
-#ifdef MEDIAWRITER_PLATFORM_DETAILS
-    ret.append(QString("; %1").arg(MEDIAWRITER_PLATFORM_DETAILS));
-#endif
-    ret.append(")");
-
-    return ret;
-}
-
 QNetworkReply *makeNetworkRequest(const QString &url, const int time_out_millis) {
     QNetworkRequest request(url);
     request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
-    request.setHeader(QNetworkRequest::UserAgentHeader, userAgent());
 
     QNetworkReply *reply = network_access_manager->get(request);
 

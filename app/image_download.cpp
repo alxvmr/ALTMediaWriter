@@ -229,7 +229,6 @@ void ImageDownload::startImageDownload() {
     request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);
     request.setUrl(url);
     request.setRawHeader("Range", QString("bytes=%1-").arg(file->size()).toLocal8Bit());
-    request.setHeader(QNetworkRequest::UserAgentHeader, userAgent());
 
     QNetworkReply *reply = network_access_manager->get(request);
     // NOTE: 64MB buffer in case the user is on a very fast network
