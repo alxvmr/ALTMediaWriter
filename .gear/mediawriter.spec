@@ -2,7 +2,7 @@
 %define oname ALTMediaWriter
 
 Name:           altmediawriter
-Version:        0.5.0
+Version:        0.6.0
 Release:        alt1
 Summary:        ALT Media Writer
 Group:          System/Configuration/Other
@@ -59,6 +59,17 @@ appstream-util validate-relax --nonet %buildroot/%_datadir/appdata/%name.appdata
 
 
 %changelog
+* Thu Nov 05 2020 Dmitry Degtyarev <kevl@altlinux.org> 0.6.0-alt1
+- Implement LIVE variants
+- Fix download bugs
+- Remove user agent from network requests
+- Attempt to recover from connection errors instead of failing
+- Don't do MD5 check after writing
+- Don't force software renderer
+- Remove built-in metadata
+  + While metadata is downloading only show Custom release
+- Update license
+
 * Tue Oct 20 2020 Dmitry Degtyarev <kevl@altlinux.org> 0.5.0-alt1
 - Remove artifacts from all yml strings
 - Remove blank rectangle that obscured top of images list
