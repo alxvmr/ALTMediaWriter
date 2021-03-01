@@ -84,7 +84,7 @@ void Release::setLocalFile(const QUrl &fileUrl) {
     }
     #endif // _WIN32
 
-    qInfo() << filePath;
+    qDebug() << "Setting local file to: " << filePath;
 
     // Delete old custom variant (there's really only one, but iterate anyway)
     for (auto variant : m_variants) {
