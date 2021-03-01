@@ -1,0 +1,105 @@
+altmediawriter
+CHANGELOG
+
+-----------------------------------------------------------------------
+ VERSION 0.6.1 (Released 05-11-2020)
+-----------------------------------------------------------------------
+- Translation: Fixed arch and file type translations.
+- Display: Fixed missing frontpage header on some Qt versions.
+- Misc: Fixed custom image not loading on windows.
+
+-----------------------------------------------------------------------
+ VERSION 0.6.0 (Released 05-11-2020)
+-----------------------------------------------------------------------
+- Variants: Implemented choosing LIVE variants.
+- Misc: Fixed download bugs.
+- Misc: Removed user agent from network requests.
+- Misc: Added an attempt to recover from connection errors instead of failing.
+- Misc: Removed MD5 check after writing.
+- Display: Removed forcing of software renderer - use hardware acceleration if possible.
+- Misc: Removed built-in metadata, all metadata is now downloaded from getalt.org.
+- Misc: Updated license.
+
+-----------------------------------------------------------------------
+ VERSION 0.5.0 (Released 20-10-2020)
+-----------------------------------------------------------------------
+- Display: Removed blank rectangle that obscured top of images list.
+- Display: Moved workstation and server releases to the front page.
+- Display: Reduce row heights and max line counts of frontpage rows.
+
+-----------------------------------------------------------------------
+ VERSION 0.4.8 (Released 07-10-2020)
+-----------------------------------------------------------------------
+- Display: Improved image summary display.
+- Build: Changed Windows build to building a static executable.
+
+-----------------------------------------------------------------------
+ VERSION 0.4.7 (Released 01-10-2020)
+-----------------------------------------------------------------------
+- Display: Show image type name instead of description in image details.
+- Misc: Added more filters to file opening dialog.
+- Misc: Add missing image types.
+
+-----------------------------------------------------------------------
+ VERSION 0.4.6 (Released 16-09-2020)
+-----------------------------------------------------------------------
+- Releases: Added p9-kworkstation.
+- Misc: Fixed "Delete downloaded image?" button showing for local images.
+- Misc: Removed "Board is unknown" console messages.
+
+-----------------------------------------------------------------------
+ VERSION 0.4.5 (Released 01-05-2020)
+-----------------------------------------------------------------------
+- Translation: Fix broken release search when app language is Russian.
+
+-----------------------------------------------------------------------
+ VERSION 0.4.4 (Released 15-04-2020)
+-----------------------------------------------------------------------
+- Build: Added missing qt5-quickcontrols requirement.
+- Build: Updated BuildRequires according to gear-buildreq output.
+
+-----------------------------------------------------------------------
+ VERSION 0.4.3 (Released 15-04-2020)
+-----------------------------------------------------------------------
+- Build: Fix Windows build by adding missing SSL dll's to windows build.
+
+-----------------------------------------------------------------------
+ VERSION 0.4.2 (Released 15-04-2020)
+-----------------------------------------------------------------------
+- Misc: Removed build instructions from README.
+- Misc: Fixed "Unknown" architecture text going outside button bounds.
+
+-----------------------------------------------------------------------
+ VERSION 0.4.1 (Released 15-04-2020)
+-----------------------------------------------------------------------
+- Translation: Fixed incorrect encoding of Russian text on Windows.
+- Misc: Fix display of version in Windows executable.
+- Misc: Fixed MD5 check failing on large files on some 32bit platforms.
+
+-----------------------------------------------------------------------
+ VERSION 0.4.0 (Released 8-04-2020)
+-----------------------------------------------------------------------
+- Variants: Added Simply variant.
+- Releases: Added Live releases.
+- Metadata: Replaced metadata generation with straight copies of yaml files from getalt.org.
+- Misc: Turned off md5 check for compressed images because it's not possible.
+
+-----------------------------------------------------------------------
+ VERSION 0.3.0 (Released 10-03-2020)
+-----------------------------------------------------------------------
+- Display: Increased height of frontpage rows to fit Russian text spanning 4 lines.
+- Display: Added info about rootfs'able image types.
+- Misc: Check whether image type is supported before writing.
+
+-----------------------------------------------------------------------
+ VERSION 0.2.0 (Released 28-02-2020)
+-----------------------------------------------------------------------
+- Translation: Made it work.
+- Metadata: Added automatic generation of metadata from getalt.org sources.
+- Build: Improved Windows build process and change to building 32bit executable.
+- Misc: Removed unneeded Raspberry Pi board drop-down menu.
+
+-----------------------------------------------------------------------
+ VERSION 0.1.0 (Released 05-11-2019)
+-----------------------------------------------------------------------
+- Initial build for Sisyphus.
