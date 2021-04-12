@@ -2,6 +2,12 @@ altmediawriter
 CHANGELOG
 
 -----------------------------------------------------------------------
+ VERSION 0.6.2 (Released 12-04-2021)
+-----------------------------------------------------------------------
+- Misc: Remove "Other" release. Doesn't contain any images.
+- Misc: Move KWorkstation release to the front page.
+
+-----------------------------------------------------------------------
  VERSION 0.6.1 (Released 05-11-2020)
 -----------------------------------------------------------------------
 - Translation: Fixed arch and file type translations.
