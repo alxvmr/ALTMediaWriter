@@ -412,11 +412,11 @@ void ReleaseManager::loadReleases(const QList<QString> &sectionsFiles) {
             [this, release]() {
                 const QString release_name = release->name();
                 const bool is_workstation = (release_name == "alt-workstation");
-                const bool is_server = (release_name == "alt-server");
+                const bool is_kworkstation = (release_name == "alt-kworkstation");
 
                 if (is_workstation) {
                     return 1;
-                } else if (is_server) {
+                } else if (is_kworkstation) {
                     return 2;
                 } else {
                     return sourceModel->rowCount();
