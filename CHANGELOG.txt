@@ -2,6 +2,21 @@ altmediawriter
 CHANGELOG
 
 -----------------------------------------------------------------------
+ VERSION 0.6.3 (Released 22-04-2021)
+-----------------------------------------------------------------------
+- Download Dialog: Fix "Write image after downloading"
+  checkbox not asking authenticating immediately. Was
+  authenticating after download was done which defeats the
+  purpose of checkbox since user wants image to be written
+  while they are AFK.
+- Download Dialog: Uncheck "Write image after downloading"
+  when dialog is closed.
+- Download: Don't delete partially downloaded file when
+  cancelling download.
+- Download: Resume partial downloads if a partially
+  downloaded file is present.
+  
+-----------------------------------------------------------------------
  VERSION 0.6.2 (Released 12-04-2021)
 -----------------------------------------------------------------------
 - Misc: Remove "Other" release. Doesn't contain any images.
