@@ -278,7 +278,12 @@ void LinuxDrive::onReadyRead() {
 
     while (m_process->bytesAvailable() > 0) {
         QString line = m_process->readLine().trimmed();
+        qDebug() << "helper:" << line;
         if (line == "WRITE") {
+            // Set progress bar max value at start of writing
+            const QFile file(m_variant->filePath());
+            m_progress->setMax(file.size());
+
             m_progress->setCurrent(0);
         }
         else if (line == "DONE") {

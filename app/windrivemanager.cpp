@@ -378,6 +378,10 @@ void WinDrive::onReadyRead() {
         QString line = m_child->readLine().trimmed();
         if (line == "WRITE") {
             m_progress->setCurrent(0);
+            
+            // Set progress bar max value at start of writing
+            const QFile file(m_variant->filePath());
+            m_progress->setMax(file.size());
         }
         else if (line == "DONE") {
             m_variant->setStatus(Variant::WRITING_FINISHED);

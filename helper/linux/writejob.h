@@ -28,6 +28,7 @@
 #include <QProcess>
 #include <QFile>
 #include <QDBusUnixFileDescriptor>
+#include <QFileSystemWatcher>
 
 #include <unistd.h>
 
@@ -52,12 +53,15 @@ public:
     bool writePlain(int fd);
 public slots:
     void work();
+private slots:
+    void onFileChanged(const QString &path);
 private:
     QString what;
     QString where;
     QTextStream out { stdout };
     QTextStream err { stderr };
     QDBusUnixFileDescriptor fd { -1 };
+    QFileSystemWatcher watcher;
 };
 
 std::tuple<std::unique_ptr<char[]>, char*, std::size_t> pageAlignedBuffer(std::size_t pages = 1024);

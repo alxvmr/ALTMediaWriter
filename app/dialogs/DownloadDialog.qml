@@ -345,7 +345,12 @@ Dialog {
                                 value: 0.0
                             }
                         }
+                        // TODO: need to uncheck when drive
+                        // changes because delayedwrite
+                        // starts a helper that is setup for
+                        // one specific drive
                         AdwaitaCheckBox {
+                            id: delayedWriteCheck
                             text: qsTr("Write the image after downloading")
                             enabled: drives.selected && ((releases.selected.variant.status == Variant.DOWNLOADING) || (releases.selected.variant.status == Variant.DOWNLOAD_RESUMING)) && releases.selected.variant.canWrite
                             visible: enabled
@@ -454,6 +459,7 @@ Dialog {
                                 text: qsTr("Cancel")
                                 enabled: true
                                 onClicked: {
+                                    delayedWriteCheck.checked = false
                                     dialog.close()
                                 }
                             }

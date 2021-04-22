@@ -54,6 +54,9 @@ WriteJob::WriteJob(const QString &what, const QString &where)
     qDBusRegisterMetaType<Properties>();
     qDBusRegisterMetaType<InterfacesAndProperties>();
     qDBusRegisterMetaType<DBusIntrospection>();
+    connect(
+        &watcher, &QFileSystemWatcher::fileChanged,
+        this, &WriteJob::onFileChanged);
     QTimer::singleShot(0, this, SLOT(work()));
 }
 
@@ -251,12 +254,46 @@ void WriteJob::work() {
     if (fd.fileDescriptor() < 0)
         return;
 
-    if (!write(fd.fileDescriptor()))
+    const bool delayed_write =
+    [&]() {
+        const QString part_path = what + ".part";
+
+        return (QFile::exists(part_path) && !QFile::exists(what));
+    }();
+
+    if (delayed_write) {
+        watcher.addPath(what + ".part");
+
+        return;
+    }
+
+    // NOTE: let the app know that writing started
+    out << "WRITE\n";
+    out.flush();
+
+    const bool write_success = write(fd.fileDescriptor());
+
+    if (write_success) {
+        out.flush();
+        err << "DONE\n";
+        qApp->exit(0);
+    } else {
+        qApp->exit(4);
+    }
+}
+
+void WriteJob::onFileChanged(const QString &path) {
+    const bool still_downloading = QFile::exists(path);
+    if (still_downloading)
         return;
 
-    err << "DONE\n";
-    out.flush();
-    qApp->exit(0);
+    const bool downloaded_file_exists = QFile::exists(what);
+    if (!downloaded_file_exists) {
+        qApp->exit(4);
+        return;
+    }
+
+    work();
 }
 
 std::tuple<std::unique_ptr<char[]>, char*, std::size_t> pageAlignedBuffer(std::size_t pages) {

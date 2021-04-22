@@ -294,8 +294,10 @@ bool Drive::write(Variant *variant) {
     m_variant->setErrorString(QString());
 
     const QFile file(m_variant->filePath());
-    m_progress->setMax(file.size());
 
+    // TODO: this won't work for delayed write. When delayed
+    // write is turned on, this write() f-n is called and
+    // file size is not known yet.
     if (file.size() > size()) {
         m_variant->setErrorString(tr("This drive is not large enough."));
         cancel();

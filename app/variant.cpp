@@ -103,6 +103,15 @@ Progress *Variant::progress() {
 
 void Variant::setDelayedWrite(const bool value) {
     delayedWrite = value;
+    
+    Drive *drive = DriveManager::instance()->selected();
+    if (drive != nullptr) {
+        if (value) {
+            drive->write(this);
+        } else {
+            drive->cancel();
+        }
+    }
 }
 
 Variant::Status Variant::status() const {
@@ -127,14 +136,6 @@ void Variant::onImageDownloadFinished() {
         case ImageDownload::Success: {
             qDebug() << this->metaObject()->className() << "Image is ready";
             setStatus(READY_FOR_WRITING);
-
-            if (delayedWrite) {
-                Drive *drive = DriveManager::instance()->selected();
-
-                if (drive != nullptr) {
-                    drive->write(this);
-                }
-            }
 
             break;
         }

@@ -41,6 +41,10 @@ WriteJob::WriteJob(const QString &what, const QString &where)
     bool ok = false;
     this->where = where.toInt(&ok);
 
+    connect(
+        &watcher, &QFileSystemWatcher::fileChanged,
+        this, &WriteJob::onFileChanged);
+
     QTimer::singleShot(0, this, &WriteJob::work);
 }
 
@@ -194,17 +198,42 @@ void WriteJob::unlockDrive(HANDLE drive) {
 }
 
 void WriteJob::work() {
-    if (!write()) {
+    const bool delayed_write =
+    [&]() {
+        const QString part_path = what + ".part";
+
+        return (QFile::exists(part_path) && !QFile::exists(what));
+    }();
+
+    if (delayed_write) {
+        watcher.addPath(what + ".part");
+
+        return;
+    }
+
+    // NOTE: let the app know that writing started
+    out << "WRITE\n";
+    out.flush();
+
+    bool write_success = write();
+
+    // NOTE: try to write 2 times and sleep between
+    // attempts. Apparently needed on windows.
+    if (!write_success) {
         out << "0\n";
         out.flush();
         QThread::sleep(5);
-        if (!write())
-            return;
+
+        write_success = write();
     }
 
-    err << "DONE\n";
-    out.flush();
-    qApp->exit(0);
+    if (write_success) {
+        out.flush();
+        err << "DONE\n";
+        qApp->exit(0);
+    } else {
+        qApp->exit(4);
+    }
 }
 
 bool WriteJob::write() {
@@ -360,4 +389,18 @@ bool WriteJob::writePlain(HANDLE drive) {
     CloseHandle(drive);
 
     return true;
+}
+
+void WriteJob::onFileChanged(const QString &path) {
+    const bool still_downloading = QFile::exists(path);
+    if (still_downloading)
+        return;
+
+    const bool downloaded_file_exists = QFile::exists(what);
+    if (!downloaded_file_exists) {
+        qApp->exit(4);
+        return;
+    }
+
+    work();
 }

@@ -25,6 +25,7 @@
 
 #include <QObject>
 #include <QTextStream>
+#include <QFileSystemWatcher>
 
 #include <windows.h>
 
@@ -57,12 +58,14 @@ private slots:
     bool write();
     bool writeCompressed(HANDLE drive);
     bool writePlain(HANDLE drive);
+    void onFileChanged(const QString &path);
 private:
     QString what;
     uint where;
 
     QTextStream out { stdout };
     QTextStream err { stderr };
+    QFileSystemWatcher watcher;
 
     const int BLOCK_SIZE { 512 * 128 };
 };
