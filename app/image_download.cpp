@@ -42,7 +42,7 @@ ImageDownload::ImageDownload(const QUrl &url_arg, const QString &filePath_arg)
 
     const QString tempFilePath = filePath + ".part";
     file = new QFile(tempFilePath, this);
-    file->open(QIODevice::WriteOnly);
+    file->open(QIODevice::WriteOnly | QIODevice::Append);
 
     startImageDownload();
 }
@@ -291,7 +291,7 @@ void ImageDownload::finish(const Result result_arg, const QString &errorString_a
         qDebug() << "Error string:" << m_errorString;
     }
 
-    if (m_result == ImageDownload::Success) {
+    if (m_result == ImageDownload::Success || m_result == ImageDownload::Cancelled) {
         file->close();
     } else {
         file->remove();
