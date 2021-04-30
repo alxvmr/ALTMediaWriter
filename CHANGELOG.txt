@@ -2,6 +2,12 @@ altmediawriter
 CHANGELOG
 
 -----------------------------------------------------------------------
+ VERSION 0.6.4 (Released ??-??-2021)
+-----------------------------------------------------------------------
+- Image List: Fix incorrect variant selection behavior while
+  filtering by name.
+
+-----------------------------------------------------------------------
  VERSION 0.6.3 (Released 22-04-2021)
 -----------------------------------------------------------------------
 - Download Dialog: Fix "Write image after downloading"
