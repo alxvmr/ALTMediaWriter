@@ -187,9 +187,14 @@ int ReleaseManager::selectedIndex() const {
     return m_selectedIndex;
 }
 
-void ReleaseManager::setSelectedIndex(int o) {
-    if (m_selectedIndex != o) {
-        m_selectedIndex = o;
+void ReleaseManager::setSelectedIndex(int row_proxy) {
+    const QModelIndex index_proxy = filterModel->index(row_proxy, 0);
+    const QModelIndex index_source = filterModel->mapToSource(index_proxy);
+
+    const int row_source = index_source.row();
+
+    if (m_selectedIndex != row_source) {
+        m_selectedIndex = row_source;
         emit selectedChanged();
     }
 }
