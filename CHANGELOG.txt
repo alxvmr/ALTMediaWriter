@@ -2,31 +2,31 @@ altmediawriter
 CHANGELOG
 
 -----------------------------------------------------------------------
- VERSION 0.6.4 (Released ??-??-2021)
+ VERSION 0.6.4 (Released 11-05-2021)
 -----------------------------------------------------------------------
-- Image List: Fix incorrect variant selection behavior while
+- Image List: Fixed incorrect variant selection behavior while
   filtering by name.
 
 -----------------------------------------------------------------------
  VERSION 0.6.3 (Released 22-04-2021)
 -----------------------------------------------------------------------
-- Download Dialog: Fix "Write image after downloading"
-  checkbox not asking authenticating immediately. Was
-  authenticating after download was done which defeats the
-  purpose of checkbox since user wants image to be written
-  while they are AFK.
-- Download Dialog: Uncheck "Write image after downloading"
-  when dialog is closed.
-- Download: Don't delete partially downloaded file when
-  cancelling download.
-- Download: Resume partial downloads if a partially
-  downloaded file is present.
-  
+- Download Dialog: Fixed "Write image after downloading"
+  checkbox not authenticating immediately. Previously, it
+  was authenticating after the download was done which
+  defeats the purpose of this checkbox since the user wants
+  the image to be written while they are AFK.
+- Download Dialog: The "Write image after downloading"
+  checkbox is now unchecked when the dialog is closed.
+- Download Dialog: Partially downloaded images aren't
+  deleted anymore. If the download dialog is reopened and
+  there's a partially downloaded image, the download is
+  resumed.
+
 -----------------------------------------------------------------------
  VERSION 0.6.2 (Released 12-04-2021)
 -----------------------------------------------------------------------
-- Misc: Remove "Other" release. Doesn't contain any images.
-- Misc: Move KWorkstation release to the front page.
+- Misc: Removed "Other" release. Doesn't contain any images.
+- Misc: Moved KWorkstation release to the front page.
 
 -----------------------------------------------------------------------
  VERSION 0.6.1 (Released 05-11-2020)

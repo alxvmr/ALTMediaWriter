@@ -12,14 +12,8 @@ This overwrites the drive's partition layout though so it also provides a way to
 
 ## Troubleshooting
 
-If you experience any problem with the application, like crashes or errors when writing to your drives, please open an issue here on Github.
+If you experience any problems with the application, like crashes or errors when writing to your drives, please open an issue here on Github.
 
-Please don't forget to attach the ALTMediaWriter.log file that will appear in your Documents folder ($HOME/Documents on Linux and Mac, C:\Users\<user>\Documents). It contains some non-sensitive information about your system and the log of all events happening during the runtime.
+## MD5 checksum
 
-## Other information
-
-For details about cryptography, see [CRYPTOGRAPHY.md](CRYPTOGRAPHY.md).
-
-Some brief privacy information (regarding User-Agent strings) is in [PRIVACY.md](PRIVACY.md).
-
-To enable debug messages (qDebug()) on linux, set QT_LOGGING_RULES variable like this:
+Most ALT image files have an associated MD5 checksum for integrity purposes. ALT Media Writer verifies this checksum right after the image is downloaded.
