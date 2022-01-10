@@ -475,21 +475,16 @@ QList<QString> get_images_urls() {
 
 QString yml_get(const YAML::Node &node, const QString &key) {
     const std::string key_std = key.toStdString();
-    const bool node_has_key = node[key_std];
+    const YAML::Node value_yml = node[key_std];
+    const std::string fallback = std::string();
+    const std::string value_std = value_yml.as<std::string>(fallback);
+    QString value = QString::fromStdString(value_std);
 
-    if (node_has_key) {
-        const YAML::Node value_yml = node[key_std];
-        const std::string value_std = value_yml.as<std::string>();
-        QString value = QString::fromStdString(value_std);
+    // Remove HTML character entities that don't render in Qt
+    value.replace("&colon;", ":");
+    value.replace("&nbsp;", " ");
+    // Remove newlines because text will have wordwrap
+    value.replace("\n", " ");
 
-        // Remove HTML character entities that don't render in Qt
-        value.replace("&colon;", ":");
-        value.replace("&nbsp;", " ");
-        // Remove newlines because text will have wordwrap
-        value.replace("\n", " ");
-
-        return value;
-    } else {
-        return QString();
-    }
+    return value;
 }
