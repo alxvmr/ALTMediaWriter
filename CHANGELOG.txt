@@ -11,7 +11,13 @@ CHANGELOG
   to rebuild and re-release ALTMediawriter.
 
 -----------------------------------------------------------------------
- VERSION 0.6.4
+ VERSION 0.6.5
+-----------------------------------------------------------------------
+- Misc: Fixed failing build on riscv architecture.
+  (bugzilla #41646)
+
+-----------------------------------------------------------------------
+ VERSION 0.6.4 (Released 11-05-2021)
 -----------------------------------------------------------------------
 - Image List: Fixed incorrect variant selection behavior while
   filtering by name.
