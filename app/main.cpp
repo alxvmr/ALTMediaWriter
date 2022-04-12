@@ -70,9 +70,13 @@ int main(int argc, char **argv) {
     }
 #endif
 
-    QApplication::setOrganizationDomain("altlinux.org");
+    QApplication::setOrganizationDomain("basealt.ru");
     QApplication::setOrganizationName("BaseALT");
-    QApplication::setApplicationName("MediaWriter");
+    QApplication::setApplicationName("ALTMediaWriter");
+    // NOTE: don't set display name because it's
+    // already displayed in main.qml's title. If
+    // display name is set, then window is named "ALT
+    // Media Writer - ALTMediaWriter" - no good.
 
 #ifdef __linux
     // qt x11 scaling is broken
