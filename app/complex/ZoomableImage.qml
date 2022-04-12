@@ -1,7 +1,7 @@
 /*
  * ALT Media Writer
  * Copyright (C) 2016-2019 Martin Bříza <mbriza@redhat.com>
- * Copyright (C) 2020 Dmitry Degtyarev <kevl@basealt.ru>
+ * Copyright (C) 2020-2022 Dmitry Degtyarev <kevl@basealt.ru>
  *
  * ALT Media Writer is a fork of Fedora Media Writer
  *
