@@ -4,6 +4,8 @@ Build using standard ALTLinux build process.
 # Windows
 Windows build requries MSYS2 to be installed, install it from the official website. Make sure to complete all of the installation steps listed on the website!
 
+Remember to pull all of the repo tags because they are used to create the app version string that's displayed inside the app.
+
 Run mingw32.exe found in the MSYS2 folder.
 
 Run build.sh found in "altmediawriter/dist/win". Possible run modes are:
