@@ -2,13 +2,13 @@ altmediawriter
 CHANGELOG
 
 -----------------------------------------------------------------------
- VERSION 0.6.4 (Released 11-05-2021)
+ VERSION 0.6.4
 -----------------------------------------------------------------------
 - Image List: Fixed incorrect variant selection behavior while
   filtering by name.
 
 -----------------------------------------------------------------------
- VERSION 0.6.3 (Released 22-04-2021)
+ VERSION 0.6.3
 -----------------------------------------------------------------------
 - Download Dialog: Fixed "Write image after downloading"
   checkbox not authenticating immediately. Previously, it
@@ -23,20 +23,20 @@ CHANGELOG
   resumed.
 
 -----------------------------------------------------------------------
- VERSION 0.6.2 (Released 12-04-2021)
+ VERSION 0.6.2
 -----------------------------------------------------------------------
 - Misc: Removed "Other" release. Doesn't contain any images.
 - Misc: Moved KWorkstation release to the front page.
 
 -----------------------------------------------------------------------
- VERSION 0.6.1 (Released 05-11-2020)
+ VERSION 0.6.1
 -----------------------------------------------------------------------
 - Translation: Fixed arch and file type translations.
 - Display: Fixed missing frontpage header on some Qt versions.
 - Misc: Fixed custom image not loading on windows.
 
 -----------------------------------------------------------------------
- VERSION 0.6.0 (Released 05-11-2020)
+ VERSION 0.6.0
 -----------------------------------------------------------------------
 - Variants: Implemented choosing LIVE variants.
 - Misc: Fixed download bugs.
@@ -48,63 +48,63 @@ CHANGELOG
 - Misc: Updated license.
 
 -----------------------------------------------------------------------
- VERSION 0.5.0 (Released 20-10-2020)
+ VERSION 0.5.0
 -----------------------------------------------------------------------
 - Display: Removed blank rectangle that obscured top of images list.
 - Display: Moved workstation and server releases to the front page.
 - Display: Reduce row heights and max line counts of frontpage rows.
 
 -----------------------------------------------------------------------
- VERSION 0.4.8 (Released 07-10-2020)
+ VERSION 0.4.8
 -----------------------------------------------------------------------
 - Display: Improved image summary display.
 - Build: Changed Windows build to building a static executable.
 
 -----------------------------------------------------------------------
- VERSION 0.4.7 (Released 01-10-2020)
+ VERSION 0.4.7
 -----------------------------------------------------------------------
 - Display: Show image type name instead of description in image details.
 - Misc: Added more filters to file opening dialog.
 - Misc: Add missing image types.
 
 -----------------------------------------------------------------------
- VERSION 0.4.6 (Released 16-09-2020)
+ VERSION 0.4.6
 -----------------------------------------------------------------------
 - Releases: Added p9-kworkstation.
 - Misc: Fixed "Delete downloaded image?" button showing for local images.
 - Misc: Removed "Board is unknown" console messages.
 
 -----------------------------------------------------------------------
- VERSION 0.4.5 (Released 01-05-2020)
+ VERSION 0.4.5
 -----------------------------------------------------------------------
 - Translation: Fix broken release search when app language is Russian.
 
 -----------------------------------------------------------------------
- VERSION 0.4.4 (Released 15-04-2020)
+ VERSION 0.4.4
 -----------------------------------------------------------------------
 - Build: Added missing qt5-quickcontrols requirement.
 - Build: Updated BuildRequires according to gear-buildreq output.
 
 -----------------------------------------------------------------------
- VERSION 0.4.3 (Released 15-04-2020)
+ VERSION 0.4.3
 -----------------------------------------------------------------------
 - Build: Fix Windows build by adding missing SSL dll's to windows build.
 
 -----------------------------------------------------------------------
- VERSION 0.4.2 (Released 15-04-2020)
+ VERSION 0.4.2
 -----------------------------------------------------------------------
 - Misc: Removed build instructions from README.
 - Misc: Fixed "Unknown" architecture text going outside button bounds.
 
 -----------------------------------------------------------------------
- VERSION 0.4.1 (Released 15-04-2020)
+ VERSION 0.4.1
 -----------------------------------------------------------------------
 - Translation: Fixed incorrect encoding of Russian text on Windows.
 - Misc: Fix display of version in Windows executable.
 - Misc: Fixed MD5 check failing on large files on some 32bit platforms.
 
 -----------------------------------------------------------------------
- VERSION 0.4.0 (Released 8-04-2020)
+ VERSION 0.4.0
 -----------------------------------------------------------------------
 - Variants: Added Simply variant.
 - Releases: Added Live releases.
@@ -112,14 +112,14 @@ CHANGELOG
 - Misc: Turned off md5 check for compressed images because it's not possible.
 
 -----------------------------------------------------------------------
- VERSION 0.3.0 (Released 10-03-2020)
+ VERSION 0.3.0
 -----------------------------------------------------------------------
 - Display: Increased height of frontpage rows to fit Russian text spanning 4 lines.
 - Display: Added info about rootfs'able image types.
 - Misc: Check whether image type is supported before writing.
 
 -----------------------------------------------------------------------
- VERSION 0.2.0 (Released 28-02-2020)
+ VERSION 0.2.0
 -----------------------------------------------------------------------
 - Translation: Made it work.
 - Metadata: Added automatic generation of metadata from getalt.org sources.
@@ -127,6 +127,6 @@ CHANGELOG
 - Misc: Removed unneeded Raspberry Pi board drop-down menu.
 
 -----------------------------------------------------------------------
- VERSION 0.1.0 (Released 05-11-2019)
+ VERSION 0.1.0
 -----------------------------------------------------------------------
 - Initial build for Sisyphus.
