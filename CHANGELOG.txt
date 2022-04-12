@@ -2,6 +2,15 @@ altmediawriter
 CHANGELOG
 
 -----------------------------------------------------------------------
+ VERSION 1.0.0
+-----------------------------------------------------------------------
+- Misc: Updated available variants to p10, except for
+  KWorkstation which remains p9.
+- Misc: Implemented dynamic downloading of variant
+  list. Variant list can now be updated without needing
+  to rebuild and re-release ALTMediawriter.
+
+-----------------------------------------------------------------------
  VERSION 0.6.4
 -----------------------------------------------------------------------
 - Image List: Fixed incorrect variant selection behavior while
