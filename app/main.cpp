@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
 #endif
 
     QApplication::setOrganizationDomain("altlinux.org");
-    QApplication::setOrganizationName("basealt.ru");
+    QApplication::setOrganizationName("BaseALT");
     QApplication::setApplicationName("MediaWriter");
 
 #ifdef __linux
