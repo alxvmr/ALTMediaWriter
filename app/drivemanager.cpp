@@ -79,10 +79,9 @@ DriveManager *DriveManager::_self = nullptr;
 
 DriveManager::DriveManager(QObject *parent)
 : QAbstractListModel(parent) {
-    m_provider = DriveProvider::create(this);
     m_selectedIndex = 0;
     m_lastRestoreable = nullptr;
-    m_provider = nullptr;
+    m_provider = DriveProvider::create(this);
 
     qDebug() << this->metaObject()->className() << "construction";
 
@@ -262,7 +261,6 @@ Drive::Drive(DriveProvider *parent, const QString &name, const uint64_t size, co
         }
     }();
     m_variant = nullptr;
-    m_size = 0;
 }
 
 Progress *Drive::progress() const {
