@@ -2,6 +2,13 @@ altmediawriter
 CHANGELOG
 
 -----------------------------------------------------------------------
+ VERSION 1.0.1
+-----------------------------------------------------------------------
+- Misc: Fixed write dialog not recognizing any drives
+  on Linux.
+- Misc: Fixed writing sometimes failing on Windows.
+
+-----------------------------------------------------------------------
  VERSION 1.0.0
 -----------------------------------------------------------------------
 - Misc: Updated available variants to p10, except for
