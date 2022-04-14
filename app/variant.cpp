@@ -33,13 +33,14 @@
 #include <QFileInfo>
 #include <QStandardPaths>
 
-Variant::Variant(const QString &url, const Architecture arch, const FileType fileType, const QString &board, const bool live, QObject *parent)
+Variant::Variant(const QString &url, const Architecture arch, const FileType fileType, const QString &board, const bool live, const QString &md5sum, QObject *parent)
 : QObject(parent) {
     m_url = url;
     m_fileName = QUrl(url).fileName();
     m_filePath = QDir(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation)).filePath(fileName());
     m_board = board;
     m_live = live;
+    m_md5sum = md5sum;
     m_arch = arch;
     m_fileType = fileType;
     m_status = Variant::PREPARING;
@@ -53,6 +54,7 @@ Variant::Variant(const QString &path, QObject *parent)
     m_filePath = path;
     m_board = QString();
     m_live = false;
+    m_md5sum = QString();
     m_arch = Architecture_UNKNOWN;
     m_fileType = file_type_from_filename(path);
     m_status = Variant::READY_FOR_WRITING;

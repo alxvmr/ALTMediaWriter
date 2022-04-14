@@ -92,7 +92,7 @@ public:
         {WRITING_FAILED, tr("Error")},
     };
 
-    Variant(const QString &url, const Architecture arch, const FileType fileType, const QString &board, const bool live, QObject *parent);
+    Variant(const QString &url, const Architecture arch, const FileType fileType, const QString &board, const bool live, const QString &md5sum, QObject *parent);
 
     // Constructor for local file
     Variant(const QString &path, QObject *parent);
@@ -135,6 +135,7 @@ private:
     QString m_filePath;
     QString m_board;
     bool m_live;
+    QString m_md5sum;
     Architecture m_arch;
     FileType m_fileType;
     Status m_status;
