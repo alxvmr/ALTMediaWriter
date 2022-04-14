@@ -177,6 +177,8 @@ void ImageDownload::computeMd5() {
             const bool checkPassed = (computedMd5 == md5sum);
 
             if (checkPassed) {
+                qDebug() << "MD5 check passed";
+
                 rename_to_final_name();
             } else {
                 qDebug() << "MD5 mismatch";
