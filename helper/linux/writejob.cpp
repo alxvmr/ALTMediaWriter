@@ -75,6 +75,19 @@ WriteJob::WriteJob(const QString &what, const QString &where)
     QTimer::singleShot(0, this, SLOT(work()));
 }
 
+int WriteJob::staticOnMediaCheckAdvanced(void *data, long long offset, long long total) {
+    return ((WriteJob*)data)->onMediaCheckAdvanced(offset, total);
+}
+
+int WriteJob::onMediaCheckAdvanced(long long offset, long long total) {
+    QTextStream out(stdout);
+
+    Q_UNUSED(total);
+    out << offset << "\n";
+    out.flush();
+    return 0;
+}
+
 QDBusUnixFileDescriptor WriteJob::getDescriptor() {
     QTextStream err(stderr);
 
