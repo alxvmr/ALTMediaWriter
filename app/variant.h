@@ -76,6 +76,7 @@ public:
         READY_FOR_WRITING,
         WRITING,
         WRITING_FINISHED,
+        WRITING_VERIFYING,
         WRITING_FAILED
     };
     Q_ENUMS(Status)

@@ -5,6 +5,8 @@ QT += core network dbus
 CONFIG += link_pkgconfig
 PKGCONFIG += liblzma
 
+LIBS += -lisomd5
+
 CONFIG += c++11
 CONFIG += console
 

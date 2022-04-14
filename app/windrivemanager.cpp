@@ -291,6 +291,7 @@ bool WinDrive::write(Variant *variant) {
     args << "write";
     args << variant->filePath();
     args << QString("%1").arg(m_device);
+    args << variant->md5sum();
     m_child->setArguments(args);
 
     qDebug() << this->metaObject()->className() << "Starting" << m_child->program() << args;
@@ -406,6 +407,10 @@ void WinDrive::onReadyRead() {
         } else if (line == "DONE") {
             m_variant->setStatus(Variant::WRITING_FINISHED);
             Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_variant->fileName()));
+        } else if (line == "CHECK") {
+            qDebug() << this->metaObject()->className() << "Written media check starting";
+            m_progress->setCurrent(0);
+            m_variant->setStatus(Variant::WRITING_VERIFYING);
         } else {
             bool ok;
             qreal bytes = line.toLongLong(&ok);

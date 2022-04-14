@@ -220,6 +220,7 @@ bool LinuxDrive::write(Variant *variant) {
     args << "write";
     args << variant->filePath();
     args << m_device;
+    args << variant->md5sum();
 
     qDebug() << this->metaObject()->className() << "Helper command will be" << args;
     m_process->setArguments(args);
@@ -297,6 +298,10 @@ void LinuxDrive::onReadyRead() {
             m_progress->setMax(file.size());
 
             m_progress->setCurrent(0);
+        } else if (line == "CHECK") {
+            qDebug() << this->metaObject()->className() << "Helper finished writing, now it will check the written data";
+            m_progress->setCurrent(0);
+            m_variant->setStatus(Variant::WRITING_VERIFYING);
         } else if (line == "DONE") {
             m_variant->setStatus(Variant::WRITING_FINISHED);
             Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_variant->fileName()));

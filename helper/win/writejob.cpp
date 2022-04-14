@@ -35,11 +35,15 @@
 
 #include <lzma.h>
 
+#include "isomd5/libcheckisomd5.h"
+
 const int BLOCK_SIZE = 512 * 128;
 
-WriteJob::WriteJob(const QString &what, const QString &where)
+WriteJob::WriteJob(const QString &what, const QString &where, const QString &md5_arg)
 : QObject(nullptr)
-, what(what) {
+, what(what)
+, md5(md5_arg)
+{
     bool ok = false;
     this->where = where.toInt(&ok);
 
@@ -253,9 +257,7 @@ void WriteJob::work() {
     }
 
     if (write_success) {
-        out.flush();
-        err << "DONE\n";
-        qApp->exit(0);
+        check(fd.fileDescriptor());
     } else {
         qApp->exit(4);
     }
@@ -428,6 +430,9 @@ bool WriteJob::writePlain(HANDLE drive) {
 }
 
 void WriteJob::onFileChanged(const QString &path) {
+    QTextStream out(stdout);
+    QTextStream err(stderr);
+
     const bool still_downloading = QFile::exists(path);
     if (still_downloading) {
         return;
@@ -439,5 +444,78 @@ void WriteJob::onFileChanged(const QString &path) {
         return;
     }
 
-    work();
+    // NOTE: let the app know that writing started
+    out << "WRITE\n";
+    out.flush();
+
+    bool write_success = write();
+
+    // NOTE: try to write 2 times and sleep between
+    // attempts. Apparently needed on windows.
+    if (!write_success) {
+        out << "0\n";
+        out.flush();
+        QThread::sleep(5);
+
+        write_success = write();
+    }
+
+    if (write_success) {
+        check(fd.fileDescriptor());
+    } else {
+        qApp->exit(4);
+    }
+}
+
+bool WriteJob::check() {
+    QTextStream out(stdout);
+    QTextStream err(stdout);
+
+    if (what.endsWith(".xz")) {
+        out << "NOT CHECKING BECAUSE IMAGE IS ZIPPED\n";
+        out << "DONE\n";
+        out.flush();
+        err << "OK\n";
+        err.flush();
+        qApp->exit(0);
+        return true;
+    }
+
+    if (what.endsWith(".xz")) {
+        out << "NOT CHECKING BECAUSE NO MD5 IS PROVIDED\n";
+        out << "DONE\n";
+        out.flush();
+        err << "OK\n";
+        err.flush();
+        qApp->exit(0);
+        return true;
+    }
+
+    out << "CHECK\n";
+    out.flush();
+
+    HANDLE drive = openDrive(where);
+
+    switch (mediaCheckFD(_open_osfhandle(reinterpret_cast<intptr_t>(drive), 0), md5.toLocal8Bit().data(), &WriteJob::staticOnMediaCheckAdvanced, this)) {
+    case ISOMD5SUM_CHECK_NOT_FOUND:
+    case ISOMD5SUM_CHECK_PASSED:
+        out << "DONE\n";
+        out.flush();
+        err << "OK\n";
+        err.flush();
+        qApp->exit(0);
+        break;
+    case ISOMD5SUM_CHECK_FAILED:
+        err << tr("Your drive is probably damaged.") << "\n";
+        err.flush();
+        qApp->exit(1);
+        return false;
+    default:
+        err << tr("Unexpected error occurred during media check.") << "\n";
+        err.flush();
+        qApp->exit(1);
+        return false;
+    }
+
+    return true;
 }
