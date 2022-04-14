@@ -33,7 +33,7 @@ import "../simple"
 
 Dialog {
     id: root
-    title: drives.lastRestoreable ? qsTr("Restore %1?").arg(drives.lastRestoreable.displayName) : ""
+    title: drives.lastRestoreable ? qsTr("Restore %1?").arg(drives.lastRestoreable.name) : ""
 
     Connections {
         target: drives
