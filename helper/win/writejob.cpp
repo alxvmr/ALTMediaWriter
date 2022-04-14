@@ -257,7 +257,7 @@ void WriteJob::work() {
     }
 
     if (write_success) {
-        check(fd.fileDescriptor());
+        check();
     } else {
         qApp->exit(4);
     }
@@ -461,7 +461,7 @@ void WriteJob::onFileChanged(const QString &path) {
     }
 
     if (write_success) {
-        check(fd.fileDescriptor());
+        check();
     } else {
         qApp->exit(4);
     }

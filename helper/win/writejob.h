@@ -66,6 +66,8 @@ private:
     QString md5;
 
     QFileSystemWatcher watcher;
+
+    bool check();
 };
 
 #endif // WRITEJOB_H
