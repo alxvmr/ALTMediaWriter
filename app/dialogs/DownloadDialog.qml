@@ -446,6 +446,22 @@ Dialog {
                             text: qsTr("Writing this image type is not supported.")
                             color: "red"
                         }
+                        Text {
+                            visible: releases.selected.variant.noMd5sum
+                            font.pointSize: 10
+                            Layout.fillWidth: true
+                            width: Layout.width
+                            wrapMode: Text.WordWrap
+                            text: qsTr("This image won't be verified after writing because no MD5 sum was found.")
+                        }
+                        Text {
+                            visible: releases.selected.variant.isCompressed
+                            font.pointSize: 10
+                            Layout.fillWidth: true
+                            width: Layout.width
+                            wrapMode: Text.WordWrap
+                            text: qsTr("This image won't be verified after writing because it is a compressed image.")
+                        }
                         RowLayout {
                             height: rightButton.height
                             Layout.minimumWidth: parent.width

@@ -99,6 +99,14 @@ bool Variant::canWrite() const {
     return file_type_can_write(m_fileType);
 }
 
+bool Variant::noMd5sum() const {
+    return md5sum().isEmpty();
+}
+
+bool Variant::isCompressed() const {
+    return (m_fileType == FileType_TAR_XZ || m_fileType == FileType_IMG_XZ);
+}
+
 Progress *Variant::progress() {
     return m_progress;
 }

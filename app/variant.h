@@ -59,6 +59,8 @@ class Variant final : public QObject {
     Q_PROPERTY(QString fileName READ fileName CONSTANT)
     Q_PROPERTY(QString fileTypeName READ fileTypeName CONSTANT)
     Q_PROPERTY(bool canWrite READ canWrite CONSTANT)
+    Q_PROPERTY(bool noMd5sum READ noMd5sum CONSTANT)
+    Q_PROPERTY(bool isCompressed READ isCompressed CONSTANT)
     Q_PROPERTY(Progress *progress READ progress CONSTANT)
 
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
@@ -109,6 +111,8 @@ public:
     QString fileTypeName() const;
     QString md5sum() const;
     bool canWrite() const;
+    bool noMd5sum() const;
+    bool isCompressed() const;
     Progress *progress();
 
     Status status() const;
