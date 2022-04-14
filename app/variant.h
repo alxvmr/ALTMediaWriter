@@ -106,6 +106,7 @@ public:
     QString filePath() const;
     QString fileName() const;
     QString fileTypeName() const;
+    QString md5sum() const;
     bool canWrite() const;
     Progress *progress();
 

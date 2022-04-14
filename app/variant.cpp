@@ -73,6 +73,10 @@ QString Variant::fileTypeName() const {
     return file_type_name(m_fileType);
 }
 
+QString Variant::md5sum() const {
+    return m_md5sum;
+}
+
 QString Variant::name() const {
     QString out = architecture_name(m_arch) + " | " + m_board;
 
@@ -170,7 +174,7 @@ void Variant::download() {
         setStatus(READY_FOR_WRITING);
     } else {
         // Download image
-        auto download = new ImageDownload(QUrl(url()), filePath());
+        auto download = new ImageDownload(QUrl(url()), filePath(), md5sum());
 
         connect(
             download, &ImageDownload::started,
