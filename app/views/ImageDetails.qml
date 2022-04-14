@@ -230,6 +230,7 @@ Item {
                     textFormat: Text.RichText
                     font.pointSize: 9
                     color: palette.windowText
+                    onLinkActivated: Qt.openUrlExternally(link)
                 }
                 Repeater {
                     id: screenshotRepeater
