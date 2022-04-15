@@ -32,7 +32,8 @@
 #include <string.h>
 #include <inttypes.h>
 
-#include "md5.h"
+#include <QCryptographicHash>
+
 #include "libcheckisomd5.h"
 
 #ifdef __APPLE__
@@ -51,9 +52,6 @@ size_t getpagesize () {
 #define MAX(x, y)  ((x > y) ? x : y)
 #define MIN(x, y)  ((x < y) ? x : y)
 
-char libcheckisomd5_last_computedsum[MD5_DIGEST_LENGTH * 2 + 1];
-char libcheckisomd5_last_mediasum[MD5_DIGEST_LENGTH * 2 + 1];
-
 static int checkmd5sum(int fd, const char *mediasum, checkCallback cb, void *cbdata, long long size) {
     // Md5 is empty, therefore md5 check not needed
     if (mediasum[0] == '\0') {
@@ -68,8 +66,7 @@ static int checkmd5sum(int fd, const char *mediasum, checkCallback cb, void *cbd
     long long offset = lseek64(fd, 0LL, SEEK_SET);
 
     // Compute md5
-    MD5_CTX md5ctx;
-    MD5_Init(&md5ctx);
+    QCryptographicHash hash(QCryptographicHash::Md5);
 
     if (cb) {
         cb(cbdata, 0, size);
@@ -87,7 +84,7 @@ static int checkmd5sum(int fd, const char *mediasum, checkCallback cb, void *cbd
             lseek64(fd, offset + nread, SEEK_SET);
         }
 
-        MD5_Update(&md5ctx, buf, nread);
+        hash.addData((const char *) buf, nread);
 
         offset = offset + nread;
         if (cb && offset / nread % 256 == 0) {
@@ -104,26 +101,12 @@ static int checkmd5sum(int fd, const char *mediasum, checkCallback cb, void *cbd
 
     free(buf_unaligned);
 
-    unsigned char computedsum_raw[MD5_DIGEST_LENGTH];
-    MD5_Final(computedsum_raw, &md5ctx);
+    const QByteArray computedsum_bytes = hash.result().toHex();
+    const char *computed_sum = computedsum_bytes.constData();
 
-    // Convert computedsum to ascii string (mediasum is in ascii)
-    char computedsum[MD5_DIGEST_LENGTH * 2 + 1];
-    *computedsum = '\0';
-    for (int i = 0; i < MD5_DIGEST_LENGTH; i++) {
-        char tmpstr[4];
-        snprintf(tmpstr, 4, "%02x", computedsum_raw[i]);
-        strncat(computedsum, tmpstr, 2);
-    }
+    const bool sums_match = (memcmp(computed_sum, mediasum, computedsum_bytes.size()) == 0);
 
-    // printf("computedsum=%s\n", computedsum);
-    // printf("mediasum=%s\n", mediasum);
-
-    // Save sums for debug purposes
-    memcpy(libcheckisomd5_last_mediasum, mediasum, sizeof(libcheckisomd5_last_mediasum) * sizeof(char));
-    memcpy(libcheckisomd5_last_computedsum, computedsum, sizeof(libcheckisomd5_last_computedsum) * sizeof(char));
-
-    if (strcmp(mediasum, computedsum) == 0) {
+    if (sums_match) {
         return ISOMD5SUM_CHECK_PASSED;
     } else {
         return ISOMD5SUM_CHECK_FAILED;
@@ -164,13 +147,15 @@ int mediaCheckFD(int fd, const char *md5, checkCallback cb, void *cbdata) {
     unsigned char *buf_unaligned = (unsigned char *) malloc((BUFSIZE + pagesize) * sizeof(unsigned char));
     unsigned char *buf = (buf_unaligned + (pagesize - ((uintptr_t) buf_unaligned % pagesize)));
     if (lseek64(fd, (16LL * 2048LL), SEEK_SET) == -1) {
-        goto fail;
+        free(buf_unaligned);
+        return ISOMD5SUM_CHECK_NOT_FOUND;
     }
 
     long long offset = (16LL * 2048LL);
     for (;1;) {
         if (read(fd, buf, 2048) <= 0) {
-            goto fail;
+            free(buf_unaligned);
+            return ISOMD5SUM_CHECK_NOT_FOUND;
         }
 
         if (buf[0] == 1) {
@@ -178,7 +163,8 @@ int mediaCheckFD(int fd, const char *md5, checkCallback cb, void *cbdata) {
             break;
         } else if (buf[0] == 255) {
         /* hit end and didn't find primary volume descriptor */
-            goto fail;
+            free(buf_unaligned);
+            return ISOMD5SUM_CHECK_NOT_FOUND;
         }
         offset += 2048LL;
     }
@@ -191,8 +177,4 @@ int mediaCheckFD(int fd, const char *md5, checkCallback cb, void *cbdata) {
     int rc = checkmd5sum(fd, md5, cb, cbdata, size);
 
     return rc;
-
-fail:
-    free(buf_unaligned);
-    return ISOMD5SUM_CHECK_NOT_FOUND;
 }
