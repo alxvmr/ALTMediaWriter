@@ -78,7 +78,8 @@ public:
         READY_FOR_WRITING,
         WRITING,
         WRITING_FINISHED,
-        WRITING_VERIFYING,
+        WRITE_VERIFYING,
+        WRITE_VERIFYING_FAILED,
         WRITING_FAILED
     };
     Q_ENUMS(Status)
@@ -92,6 +93,8 @@ public:
         {READY_FOR_WRITING, tr("Ready to write")},
         {WRITING, tr("Writing")},
         {WRITING_FINISHED, tr("Finished!")},
+        {WRITE_VERIFYING, tr("Checking the written data")},
+        {WRITE_VERIFYING_FAILED, tr("The written data is corrupted")},
         {WRITING_FAILED, tr("Error")},
     };
 

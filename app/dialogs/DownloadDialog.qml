@@ -196,6 +196,32 @@ Dialog {
                 }
             },
             State {
+                name: "write_verifying_failed_no_drives"
+                when: releases.selected.variant.status === Variant.WRITE_VERIFYING_FAILED && drives.length <= 0
+                PropertyChanges {
+                    target: rightButton;
+                    text: qsTr("Retry");
+                    enabled: false;
+                    color: "red";
+                    onClicked: drives.selected.write(releases.selected.variant);
+                }
+            },
+            State {
+                name: "write_verifying_failed"
+                when: releases.selected.variant.status === Variant.WRITE_VERIFYING_FAILED && drives.length > 0
+                PropertyChanges {
+                    target: messageLoseData;
+                    visible: true;
+                }
+                PropertyChanges {
+                    target: rightButton;
+                    text: qsTr("Retry");
+                    enabled: true;
+                    color: "red";
+                    onClicked: drives.selected.write(releases.selected.variant);
+                }
+            },
+            State {
                 name: "failed_download"
                 when: releases.selected.variant.status === Variant.DOWNLOAD_FAILED
                 PropertyChanges {

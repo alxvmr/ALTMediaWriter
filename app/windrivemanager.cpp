@@ -361,7 +361,12 @@ void WinDrive::onFinished(const int exitCode, const QProcess::ExitStatus exitSta
         Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_variant->fileName()));
     } else {
         m_variant->setErrorString(m_child->readAllStandardError().trimmed());
-        m_variant->setStatus(Variant::WRITING_FAILED);
+
+        if (m_variant->status() == Variant::WRITE_VERIFYING) {
+            m_variant->setStatus(Variant::WRITE_VERIFYING_FAILED);
+        } else {
+            m_variant->setStatus(Variant::WRITING_FAILED);
+        }
     }
 
     m_child->deleteLater();
@@ -394,7 +399,9 @@ void WinDrive::onReadyRead() {
 
     m_progress->setCurrent(NAN);
 
-    m_variant->setStatus(Variant::WRITING);
+    if (m_variant->status() != Variant::WRITE_VERIFYING && m_variant->status() != Variant::WRITING) {
+        m_variant->setStatus(Variant::WRITING);
+    }
 
     while (m_child->bytesAvailable() > 0) {
         QString line = m_child->readLine().trimmed();
@@ -409,8 +416,10 @@ void WinDrive::onReadyRead() {
             Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_variant->fileName()));
         } else if (line == "CHECK") {
             qDebug() << this->metaObject()->className() << "Written media check starting";
+            const QFile file(m_variant->filePath());
+            m_progress->setMax(file.size());
             m_progress->setCurrent(0);
-            m_variant->setStatus(Variant::WRITING_VERIFYING);
+            m_variant->setStatus(Variant::WRITE_VERIFYING);
         } else {
             bool ok;
             qreal bytes = line.toLongLong(&ok);
