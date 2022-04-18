@@ -124,11 +124,8 @@ void ImageDownload::onImageDownloadFinished() {
         qDebug() << this->metaObject()->className() << "Finished successfully";
 
         if (md5sum.isEmpty()) {
-            // Can fail to md5sum may be empty if:
-            // 1) Failed to download MD5SUM file
-            // 2) MD5SUM file is not present
-            // 3) MD5SUM file does not contain needed sum
-            // In all cases, DON'T treat this as a fail.
+            // If md5sum doesn't exist, be lenient and
+            // don't treat this as a failed check.
             // Instead, skip the check.
             qDebug() << this->metaObject()->className() << "No md5sum found, so skipping md5 check";
 
