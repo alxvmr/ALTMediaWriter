@@ -40,6 +40,8 @@
 
 #include <lzma.h>
 
+#include "isomd5/libcheckisomd5.h"
+
 typedef QHash<QString, QVariant> Properties;
 typedef QHash<QString, Properties> InterfacesAndProperties;
 typedef QHash<QDBusObjectPath, InterfacesAndProperties> DBusIntrospection;
@@ -59,10 +61,11 @@ public:
     size_t size;
 };
 
-WriteJob::WriteJob(const QString &what, const QString &where)
+WriteJob::WriteJob(const QString &what, const QString &where, const QString &md5_arg)
 : QObject(nullptr)
 , what(what)
-, where(where) {
+, where(where)
+, md5(md5_arg) {
     qDBusRegisterMetaType<Properties>();
     qDBusRegisterMetaType<InterfacesAndProperties>();
     qDBusRegisterMetaType<DBusIntrospection>();
@@ -73,6 +76,19 @@ WriteJob::WriteJob(const QString &what, const QString &where)
         &watcher, &QFileSystemWatcher::fileChanged,
         this, &WriteJob::onFileChanged);
     QTimer::singleShot(0, this, SLOT(work()));
+}
+
+int WriteJob::staticOnMediaCheckAdvanced(void *data, long long offset, long long total) {
+    return ((WriteJob*)data)->onMediaCheckAdvanced(offset, total);
+}
+
+int WriteJob::onMediaCheckAdvanced(long long offset, long long total) {
+    QTextStream out(stdout);
+
+    Q_UNUSED(total);
+    out << offset << "\n";
+    out.flush();
+    return 0;
 }
 
 QDBusUnixFileDescriptor WriteJob::getDescriptor() {
@@ -264,6 +280,55 @@ bool WriteJob::writePlain(int fd) {
     return true;
 }
 
+bool WriteJob::check(int fd) {
+    QTextStream out(stdout);
+    QTextStream err(stderr);
+
+    if (what.endsWith(".xz")) {
+        out << "NOT CHECKING BECAUSE IMAGE IS ZIPPED\n";
+        out << "DONE\n";
+        out.flush();
+        err << "OK\n";
+        err.flush();
+        qApp->exit(0);
+        return false;
+    }
+
+    if (md5.isEmpty()) {
+        out << "NOT CHECKING BECAUSE NO MD5 IS PROVIDED\n";
+        out << "DONE\n";
+        out.flush();
+        err << "OK\n";
+        err.flush();
+        qApp->exit(0);
+        return false;
+    }
+
+    out << "CHECK\n";
+    out.flush();
+    switch (mediaCheckFD(fd, md5.toLocal8Bit().data(), &WriteJob::staticOnMediaCheckAdvanced, this)) {
+    case ISOMD5SUM_CHECK_NOT_FOUND:
+    case ISOMD5SUM_CHECK_PASSED:
+        out << "DONE\n";
+        out.flush();
+        err << "OK\n";
+        err.flush();
+        qApp->exit(0);
+        return false;
+    case ISOMD5SUM_CHECK_FAILED:
+        err << tr("Your drive is probably damaged.") << "\n";
+        err.flush();
+        qApp->exit(1);
+        return false;
+    default:
+        err << tr("Unexpected error occurred during media check.") << "\n";
+        err.flush();
+        qApp->exit(1);
+        return false;
+    }
+    return true;
+}
+
 void WriteJob::work() {
     QTextStream out(stdout);
     QTextStream err(stderr);
@@ -293,15 +358,16 @@ void WriteJob::work() {
     const bool write_success = write(fd.fileDescriptor());
 
     if (write_success) {
-        out.flush();
-        err << "DONE\n";
-        qApp->exit(0);
+        check(fd.fileDescriptor());
     } else {
         qApp->exit(4);
     }
 }
 
 void WriteJob::onFileChanged(const QString &path) {
+    QTextStream out(stdout);
+    QTextStream err(stderr);
+
     const bool still_downloading = QFile::exists(path);
     if (still_downloading) {
         return;
@@ -313,7 +379,16 @@ void WriteJob::onFileChanged(const QString &path) {
         return;
     }
 
-    work();
+    out << "WRITE\n";
+    out.flush();
+
+    const bool write_success = write(fd.fileDescriptor());
+
+    if (write_success) {
+        check(fd.fileDescriptor());
+    } else {
+        qApp->exit(4);
+    }
 }
 
 PageAlignedBuffer::PageAlignedBuffer(const size_t page_count) {

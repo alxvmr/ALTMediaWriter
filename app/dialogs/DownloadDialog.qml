@@ -196,6 +196,32 @@ Dialog {
                 }
             },
             State {
+                name: "write_verifying_failed_no_drives"
+                when: releases.selected.variant.status === Variant.WRITE_VERIFYING_FAILED && drives.length <= 0
+                PropertyChanges {
+                    target: rightButton;
+                    text: qsTr("Retry");
+                    enabled: false;
+                    color: "red";
+                    onClicked: drives.selected.write(releases.selected.variant);
+                }
+            },
+            State {
+                name: "write_verifying_failed"
+                when: releases.selected.variant.status === Variant.WRITE_VERIFYING_FAILED && drives.length > 0
+                PropertyChanges {
+                    target: messageLoseData;
+                    visible: true;
+                }
+                PropertyChanges {
+                    target: rightButton;
+                    text: qsTr("Retry");
+                    enabled: true;
+                    color: "red";
+                    onClicked: drives.selected.write(releases.selected.variant);
+                }
+            },
+            State {
                 name: "failed_download"
                 when: releases.selected.variant.status === Variant.DOWNLOAD_FAILED
                 PropertyChanges {
@@ -445,6 +471,22 @@ Dialog {
                             wrapMode: Text.WordWrap
                             text: qsTr("Writing this image type is not supported.")
                             color: "red"
+                        }
+                        Text {
+                            visible: releases.selected.variant.noMd5sum
+                            font.pointSize: 10
+                            Layout.fillWidth: true
+                            width: Layout.width
+                            wrapMode: Text.WordWrap
+                            text: qsTr("This image won't be verified after writing because no MD5 sum was found.")
+                        }
+                        Text {
+                            visible: releases.selected.variant.isCompressed
+                            font.pointSize: 10
+                            Layout.fillWidth: true
+                            width: Layout.width
+                            wrapMode: Text.WordWrap
+                            text: qsTr("This image won't be verified after writing because it is a compressed image.")
                         }
                         RowLayout {
                             height: rightButton.height

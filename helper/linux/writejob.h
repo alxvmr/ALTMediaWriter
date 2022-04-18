@@ -43,12 +43,16 @@
 class WriteJob : public QObject {
     Q_OBJECT
 public:
-    explicit WriteJob(const QString &what, const QString &where);
+    explicit WriteJob(const QString &what, const QString &where, const QString &md5_arg);
+
+    static int staticOnMediaCheckAdvanced(void *data, long long offset, long long total);
+    int onMediaCheckAdvanced(long long offset, long long total);
 
     QDBusUnixFileDescriptor getDescriptor();
     bool write(int fd);
     bool writeCompressed(int fd);
     bool writePlain(int fd);
+    bool check(int fd);
 public slots:
     void work();
 private slots:
@@ -57,6 +61,7 @@ private slots:
 private:
     QString what;
     QString where;
+    QString md5;
     QDBusUnixFileDescriptor fd;
     QFileSystemWatcher watcher;
 };

@@ -33,13 +33,14 @@
 #include <QFileInfo>
 #include <QStandardPaths>
 
-Variant::Variant(const QString &url, const Architecture arch, const FileType fileType, const QString &board, const bool live, QObject *parent)
+Variant::Variant(const QString &url, const Architecture arch, const FileType fileType, const QString &board, const bool live, const QString &md5sum, QObject *parent)
 : QObject(parent) {
     m_url = url;
     m_fileName = QUrl(url).fileName();
     m_filePath = QDir(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation)).filePath(fileName());
     m_board = board;
     m_live = live;
+    m_md5sum = md5sum;
     m_arch = arch;
     m_fileType = fileType;
     m_status = Variant::PREPARING;
@@ -53,6 +54,7 @@ Variant::Variant(const QString &path, QObject *parent)
     m_filePath = path;
     m_board = QString();
     m_live = false;
+    m_md5sum = QString();
     m_arch = Architecture_UNKNOWN;
     m_fileType = file_type_from_filename(path);
     m_status = Variant::READY_FOR_WRITING;
@@ -69,6 +71,10 @@ QString Variant::fileName() const {
 
 QString Variant::fileTypeName() const {
     return file_type_name(m_fileType);
+}
+
+QString Variant::md5sum() const {
+    return m_md5sum;
 }
 
 QString Variant::name() const {
@@ -91,6 +97,14 @@ QString Variant::filePath() const {
 
 bool Variant::canWrite() const {
     return file_type_can_write(m_fileType);
+}
+
+bool Variant::noMd5sum() const {
+    return md5sum().isEmpty();
+}
+
+bool Variant::isCompressed() const {
+    return (m_fileType == FileType_TAR_XZ || m_fileType == FileType_IMG_XZ);
 }
 
 Progress *Variant::progress() {
@@ -168,7 +182,7 @@ void Variant::download() {
         setStatus(READY_FOR_WRITING);
     } else {
         // Download image
-        auto download = new ImageDownload(QUrl(url()), filePath());
+        auto download = new ImageDownload(QUrl(url()), filePath(), md5sum());
 
         connect(
             download, &ImageDownload::started,

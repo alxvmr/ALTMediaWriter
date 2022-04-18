@@ -29,6 +29,7 @@
  */
 
 #include <QObject>
+#include <QHash>
 
 class Release;
 class ReleaseModel;
@@ -73,19 +74,23 @@ private:
     NetworkReplyGroup *metadata_reply_group;
     NetworkReplyGroup *metadata_urls_reply_group;
     NetworkReplyGroup *metadata_urls_backup_reply_group;
+    NetworkReplyGroup *md5sum_reply_group;
     QList<QString> section_urls;
     QList<QString> image_urls;
+    QList<QString> imagesFiles;
 
-    void loadVariants(const QString &variantsFile);
+    void loadVariants(const QString &variantsFile, const QHash<QString, QString> &md5sum_map);
     void setDownloadingMetadata(const bool value);
     void downloadMetadataUrls();
     void onMetadataUrlsDownloaded();
     void downloadMetadataUrlsBackup();
     void onMetadataUrlsBackupDownloaded();
     void downloadMetadata();
+    void downloadMD5SUM(const QList<QString> &md5sum_url_list);
     void loadReleases(const QList<QString> &sectionsFiles);
     void addReleaseToModel(const int index, Release *release);
     void onMetadataDownloaded();
+    void onMD5SUMDownloaded();
 };
 
 #endif // RELEASEMANAGER_H

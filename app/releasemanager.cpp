@@ -47,6 +47,7 @@ ReleaseManager::ReleaseManager(QObject *parent)
     metadata_urls_reply_group = nullptr;
     metadata_urls_backup_reply_group = nullptr;
     metadata_reply_group = nullptr;
+    md5sum_reply_group = nullptr;
 
     qDebug() << this->metaObject()->className() << "construction";
 
@@ -319,7 +320,7 @@ void ReleaseManager::onMetadataDownloaded() {
 
     loadReleases(sectionsFiles);
 
-    const QList<QString> imagesFiles = [&]() {
+    imagesFiles = [&]() {
         QList<QString> out;
 
         for (const QString &image_url : image_urls) {
@@ -329,14 +330,147 @@ void ReleaseManager::onMetadataDownloaded() {
         return out;
     }();
 
-    qDebug() << "Loading variants";
-
-    for (const QString &imagesFile : imagesFiles) {
-        loadVariants(imagesFile);
-    }
+    // NOTE: images/variants are loaded later after
+    // md5sum is downloaded
 
     delete metadata_reply_group;
     metadata_reply_group = nullptr;
+
+    const QList<QString> md5sum_url_list = [&]() {
+        const QList<QString> image_url_list = [&]() {
+            QList<QString> out;
+
+            for (const QString &imagesFile : imagesFiles) {
+                YAML::Node variants = YAML::Load(imagesFile.toStdString());
+
+                if (!variants["entries"]) {
+                    continue;
+                }
+
+                for (const YAML::Node &variantData : variants["entries"]) {
+                    const QString url = yml_get(variantData, "link");
+                    out.append(url);
+                }
+            }
+
+            return out;
+        }();
+
+        const QList<QString> out = [&]() {
+            // NOTE: using set because there will be
+            // duplicates due to there being multiple
+            // images per folder
+            QSet<QString> out_set;
+
+            for (const QString &image_url : image_url_list) {
+                // TODO: duplicating code in
+                // image_download.cpp
+                const QString md5sum_url = QUrl(image_url).adjusted(QUrl::RemoveFilename).toString() + "/MD5SUM";
+
+                out_set.insert(md5sum_url);
+            }
+
+            const QList<QString> out = out_set.toList();
+
+            return out;
+        }();
+
+        return out;
+    }();
+
+    downloadMD5SUM(md5sum_url_list);
+}
+
+void ReleaseManager::downloadMD5SUM(const QList<QString> &md5sum_url_list) {
+    qDebug() << "Downloading MD5SUM's";
+
+    md5sum_reply_group = new NetworkReplyGroup(md5sum_url_list, this);
+
+    connect(
+        md5sum_reply_group, &NetworkReplyGroup::finished,
+        this, &ReleaseManager::onMD5SUMDownloaded);
+}
+
+void ReleaseManager::onMD5SUMDownloaded() {
+    const QHash<QString, QNetworkReply *> replies = md5sum_reply_group->get_reply_list();
+
+    // Check that all replies suceeded
+    // If not, retry
+    // TODO: duplicating code
+    for (const QNetworkReply *reply : replies.values()) {
+        // NOTE: ignore ContentNotFoundError for
+        // metadata since it can happen if one of
+        // the files was moved or renamed. In that
+        // case it's fine to process other
+        // downloads and ignore this failed one.
+        const QNetworkReply::NetworkError error = reply->error();
+        const bool download_failed = (error != QNetworkReply::NoError && error != QNetworkReply::ContentNotFoundError);
+
+        if (download_failed) {
+            qDebug() << "Failed to download md5sum:" << reply->errorString() << reply->error() << "Retrying in 10 seconds.";
+            QTimer::singleShot(10000, this, &ReleaseManager::downloadMetadata);
+
+            delete md5sum_reply_group;
+            md5sum_reply_group = nullptr;
+
+            return;
+        }
+    }
+
+    qDebug() << "Downloaded md5sum, loading it";
+
+    const QList<QString> md5sum_file_list = [&]() {
+        QList<QString> out;
+
+        for (const QString &url : replies.keys()) {
+            QNetworkReply *reply = replies[url];
+
+            if (reply->error() == QNetworkReply::NoError) {
+                const QByteArray bytes = reply->readAll();
+                const QString string = QString(bytes);
+                out.append(string);
+            } else {
+                qDebug() << "Failed to download metadata from" << url;
+                qDebug() << "Error:" << reply->error();
+            }
+        }
+
+        return out;
+    }();
+
+    const QHash<QString, QString> md5sum_map = [&]() {
+        QHash<QString, QString> out;
+
+        for (const QString &file : md5sum_file_list) {
+            const QList<QString> line_list = file.split("\n");
+
+            // MD5SUM is of the form "sum image \n sum
+            // image \n ..."
+            for (const QString &line : line_list) {
+                const QList<QString> elements = line.split(QRegExp("\\s+"));
+
+                if (elements.size() != 2) {
+                    continue;
+                }
+
+                const QString md5sum = elements[0];
+                const QString filename = elements[1];
+
+                out[filename] = md5sum;
+            }
+        }
+
+        return out;
+    }();
+
+    qDebug() << "Loading variants";
+
+    for (const QString &imagesFile : imagesFiles) {
+        loadVariants(imagesFile, md5sum_map);
+    }
+
+    delete md5sum_reply_group;
+    md5sum_reply_group = nullptr;
 
     setDownloadingMetadata(false);
 }
@@ -376,7 +510,7 @@ ReleaseFilterModel *ReleaseManager::getFilterModel() const {
     return filterModel;
 }
 
-void ReleaseManager::loadVariants(const QString &variantsFile) {
+void ReleaseManager::loadVariants(const QString &variantsFile, const QHash<QString, QString> &md5sum_map) {
     YAML::Node variants = YAML::Load(variantsFile.toStdString());
 
     if (!variants["entries"]) {
@@ -434,6 +568,13 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
             }
         }();
 
+        const QString md5sum = [&]() {
+            const QString filename = QUrl(url).fileName();
+            const QString out = md5sum_map[filename];
+
+            return out;
+        }();
+
         // qDebug() << QUrl(url).fileName() << releaseName << architecture_name(arch) << board << file_type_name(fileType) << (live ? "LIVE" : "");
 
         // Find a release that has the same name as this variant
@@ -449,7 +590,7 @@ void ReleaseManager::loadVariants(const QString &variantsFile) {
         }();
 
         if (release != nullptr) {
-            Variant *variant = new Variant(url, arch, fileType, board, live, this);
+            Variant *variant = new Variant(url, arch, fileType, board, live, md5sum, this);
             release->addVariant(variant);
         } else {
             qDebug() << "Failed to find a release for this variant!" << url;

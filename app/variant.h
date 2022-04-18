@@ -59,6 +59,8 @@ class Variant final : public QObject {
     Q_PROPERTY(QString fileName READ fileName CONSTANT)
     Q_PROPERTY(QString fileTypeName READ fileTypeName CONSTANT)
     Q_PROPERTY(bool canWrite READ canWrite CONSTANT)
+    Q_PROPERTY(bool noMd5sum READ noMd5sum CONSTANT)
+    Q_PROPERTY(bool isCompressed READ isCompressed CONSTANT)
     Q_PROPERTY(Progress *progress READ progress CONSTANT)
 
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
@@ -76,6 +78,8 @@ public:
         READY_FOR_WRITING,
         WRITING,
         WRITING_FINISHED,
+        WRITE_VERIFYING,
+        WRITE_VERIFYING_FAILED,
         WRITING_FAILED
     };
     Q_ENUMS(Status)
@@ -89,10 +93,12 @@ public:
         {READY_FOR_WRITING, tr("Ready to write")},
         {WRITING, tr("Writing")},
         {WRITING_FINISHED, tr("Finished!")},
+        {WRITE_VERIFYING, tr("Checking the written data")},
+        {WRITE_VERIFYING_FAILED, tr("The written data is corrupted")},
         {WRITING_FAILED, tr("Error")},
     };
 
-    Variant(const QString &url, const Architecture arch, const FileType fileType, const QString &board, const bool live, QObject *parent);
+    Variant(const QString &url, const Architecture arch, const FileType fileType, const QString &board, const bool live, const QString &md5sum, QObject *parent);
 
     // Constructor for local file
     Variant(const QString &path, QObject *parent);
@@ -106,7 +112,10 @@ public:
     QString filePath() const;
     QString fileName() const;
     QString fileTypeName() const;
+    QString md5sum() const;
     bool canWrite() const;
+    bool noMd5sum() const;
+    bool isCompressed() const;
     Progress *progress();
 
     Status status() const;
@@ -135,6 +144,7 @@ private:
     QString m_filePath;
     QString m_board;
     bool m_live;
+    QString m_md5sum;
     Architecture m_arch;
     FileType m_fileType;
     Status m_status;

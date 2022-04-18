@@ -220,6 +220,7 @@ bool LinuxDrive::write(Variant *variant) {
     args << "write";
     args << variant->filePath();
     args << m_device;
+    args << variant->md5sum();
 
     qDebug() << this->metaObject()->className() << "Helper command will be" << args;
     m_process->setArguments(args);
@@ -286,7 +287,9 @@ void LinuxDrive::onReadyRead() {
 
     m_progress->setCurrent(NAN);
 
-    m_variant->setStatus(Variant::WRITING);
+    if (m_variant->status() != Variant::WRITE_VERIFYING && m_variant->status() != Variant::WRITING) {
+        m_variant->setStatus(Variant::WRITING);
+    }
 
     while (m_process->bytesAvailable() > 0) {
         QString line = m_process->readLine().trimmed();
@@ -297,6 +300,14 @@ void LinuxDrive::onReadyRead() {
             m_progress->setMax(file.size());
 
             m_progress->setCurrent(0);
+
+            m_variant->setStatus(Variant::WRITING);
+        } else if (line == "CHECK") {
+            qDebug() << this->metaObject()->className() << "Helper finished writing, now it will check the written data";
+            const QFile file(m_variant->filePath());
+            m_progress->setMax(file.size());
+            m_progress->setCurrent(0);
+            m_variant->setStatus(Variant::WRITE_VERIFYING);
         } else if (line == "DONE") {
             m_variant->setStatus(Variant::WRITING_FINISHED);
             Notifications::notify(tr("Finished!"), tr("Writing %1 was successful").arg(m_variant->fileName()));
@@ -321,8 +332,12 @@ void LinuxDrive::onFinished(const int exitCode, const QProcess::ExitStatus statu
         QString errorMessage = m_process->readAllStandardError();
         qDebug() << "Writing failed:" << errorMessage;
         Notifications::notify(tr("Error"), tr("Writing %1 failed").arg(m_variant->fileName()));
-        if (m_variant->status() == Variant::WRITING) {
-            m_variant->setErrorString(errorMessage);
+
+        m_variant->setErrorString(errorMessage);
+
+        if (m_variant->status() == Variant::WRITE_VERIFYING) {
+            m_variant->setStatus(Variant::WRITE_VERIFYING_FAILED);
+        } else {
             m_variant->setStatus(Variant::WRITING_FAILED);
         }
     } else {

@@ -54,7 +54,7 @@ public:
         Cancelled
     };
 
-    ImageDownload(const QUrl &url_arg, const QString &filePath_arg);
+    ImageDownload(const QUrl &url_arg, const QString &filePath_arg, const QString &md5sum_arg);
     Result result() const;
     QString errorString() const;
 
@@ -86,7 +86,6 @@ public slots:
 private slots:
     void onImageDownloadReadyRead();
     void onImageDownloadFinished();
-    void onMd5DownloadFinished();
     void computeMd5();
 
 private:
@@ -95,16 +94,15 @@ private:
 
     QUrl url;
     QString filePath;
+    QString md5sum;
     QFile *file;
     bool startingImageDownload;
     bool wasCancelled;
     QCryptographicHash hash;
 
-    QString md5;
-
     QString getFilePath() const;
     void startImageDownload();
-    void checkMd5(const QString &computedMd5);
+    void rename_to_final_name();
     void finish(const Result result_arg, const QString &errorString_arg = QString());
 };
 

@@ -36,7 +36,10 @@
 class WriteJob : public QObject {
     Q_OBJECT
 public:
-    explicit WriteJob(const QString &what, const QString &where);
+    explicit WriteJob(const QString &what, const QString &where, const QString &md5_arg);
+
+    static int staticOnMediaCheckAdvanced(void *data, long long offset, long long total);
+    int onMediaCheckAdvanced(long long offset, long long total);
 
 private:
     HANDLE openDrive(int physicalDriveNumber);
@@ -60,8 +63,11 @@ private slots:
 private:
     QString what;
     uint where;
+    QString md5;
 
     QFileSystemWatcher watcher;
+
+    bool check();
 };
 
 #endif // WRITEJOB_H
