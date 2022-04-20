@@ -28,6 +28,7 @@ HEADERS += \
     architecture.h \
     release.h \
     release_model.h \
+    units.h \
     variant.h
 
 SOURCES += main.cpp \
@@ -41,6 +42,7 @@ SOURCES += main.cpp \
     architecture.cpp \
     release.cpp \
     release_model.cpp \
+    units.cpp \
     variant.cpp
 
 RESOURCES += qml.qrc \

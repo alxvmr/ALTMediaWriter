@@ -24,6 +24,7 @@ import QtQuick 2.3
 import QtQuick.Controls 1.2
 import QtQuick.Controls.Styles 1.2
 import QtQuick.Layouts 1.1
+import MediaWriter 1.0
 
 Rectangle {
     id: root
@@ -37,8 +38,8 @@ Rectangle {
         width: 1
     }
 
-    height: 70
-    property real margin: open ? 0 : -70
+    height: units.gridUnit * 4
+    property real margin: open ? 0 : -(units.gridUnit * 4)
     anchors.topMargin: margin
     Behavior on margin {
         NumberAnimation {
@@ -62,9 +63,9 @@ Rectangle {
     RowLayout {
         anchors {
             fill: parent
-            margins: 18
+            margins: units.gridUnit
         }
-        spacing: 12
+        spacing: 2 * units.largeSpacing
         Text {
             id: label
 

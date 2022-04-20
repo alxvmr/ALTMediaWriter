@@ -26,6 +26,7 @@
 #include "release_model.h"
 #include "releasemanager.h"
 #include "variant.h"
+#include "units.h"
 
 #include <QApplication>
 #include <QDebug>
@@ -103,6 +104,7 @@ int main(int argc, char **argv) {
     engine.rootContext()->setContextProperty("drives", DriveManager::instance());
     engine.rootContext()->setContextProperty("releases", new ReleaseManager());
     engine.rootContext()->setContextProperty("mediawriterVersion", MEDIAWRITER_VERSION);
+    engine.rootContext()->setContextProperty("units", Units::instance());
 
     qmlRegisterUncreatableType<ReleaseFilterModel>("MediaWriter", 1, 0, "ReleaseFilterModel", "");
     qmlRegisterUncreatableType<Release>("MediaWriter", 1, 0, "Release", "");
