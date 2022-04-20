@@ -45,6 +45,7 @@ Dialog {
     }
 
     contentItem : Rectangle {
+        id: mainItem
         focus: true
         implicitWidth: 480
         implicitHeight: textItem.height + buttonItem.height + 48
@@ -64,29 +65,12 @@ Dialog {
             Row {
                 id: textItem
                 spacing: 36
-                x: !drives.lastRestoreable || drives.lastRestoreable.restoreStatus == Drive.CONTAINS_LIVE ? 0 :
-                                              drives.lastRestoreable.restoreStatus == Drive.RESTORING     ? - (parent.width + 36) :
-                                                                                                            - (2 * parent.width + 72)
                 height: warningText.height
-                Behavior on x {
-                    NumberAnimation {
-                        duration: 300
-                        easing.type: Easing.OutExpo
-                    }
-                }
                 Text {
                     id: warningText
+                    visible: mainItem.state == "contains_live"
                     width: wrapper.width
-                    text: qsTr( "<p align=\"justify\">
-                                                To reclaim all space available on the drive, it has to be restored to its factory settings.
-                                                The live system and all saved data will be deleted.
-                                            </p>
-                                            <p align=\"justify\">
-                                                You don't need to restore the drive if you want to write another live system to it.
-                                            </p>
-                                            <p align=\"justify\">
-                                                Do you want to continue?
-                                            </p>")
+                    text: qsTr("<p align=\"justify\">To reclaim all space available on the drive, it has to be restored to its factory settings. The live system and all saved data will be deleted.</p><p align=\"justify\">You don't need to restore the drive if you want to write another live system to it.</p><p align=\"justify\">Do you want to continue?</p>")
                     textFormat: Text.RichText
                     wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                     font.pointSize: 9
@@ -94,6 +78,7 @@ Dialog {
                 }
                 ColumnLayout {
                     id: progress
+                    visible: mainItem.state == "restoring"
                     width: wrapper.width
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: 12
@@ -109,6 +94,7 @@ Dialog {
 
                     Text {
                         Layout.alignment: Qt.AlignHCenter
+                        Layout.maximumWidth: wrapper.width
                         wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                         text: qsTr("<p align=\"justify\">Please wait while ALT Media Writer restores your portable drive.</p>")
                         font.pointSize: 9
@@ -116,7 +102,7 @@ Dialog {
                     }
                 }
                 ColumnLayout {
-                    visible: drives.lastRestoreable && drives.lastRestoreable.restoreStatus != Drive.RESTORE_ERROR
+                    visible: mainItem.state == "restored"
                     width: wrapper.width
                     anchors.verticalCenter: parent.verticalCenter
                     CheckMark {
@@ -124,6 +110,7 @@ Dialog {
                     }
                     Text {
                         Layout.alignment: Qt.AlignHCenter
+                        Layout.maximumWidth: wrapper.width
                         horizontalAlignment: Text.AlignHCenter
                         text: qsTr("Your drive was successfully restored!")
                         font.pointSize: 9
@@ -132,7 +119,7 @@ Dialog {
                     }
                 }
                 ColumnLayout {
-                    visible: drives.lastRestoreable && drives.lastRestoreable.restoreStatus != Drive.RESTORED
+                    visible: mainItem.state == "restore_error"
                     width: wrapper.width
                     anchors.verticalCenter: parent.verticalCenter
                     Cross {
@@ -156,10 +143,7 @@ Dialog {
                 spacing: 12
                 AdwaitaButton {
                     text: qsTr("Cancel")
-                    visible: drives.lastRestoreable &&
-                             drives.lastRestoreable.restoreStatus != Drive.RESTORED &&
-                             drives.lastRestoreable.restoreStatus != Drive.RESTORE_ERROR ? true : false
-                    Behavior on x { NumberAnimation {} }
+                    visible: (mainItem.state == "contains_live" || mainItem.state == "restoring")
                     onClicked: root.visible = false
                 }
                 AdwaitaButton {
@@ -177,5 +161,24 @@ Dialog {
                 }
             }
         }
+
+        states: [
+            State {
+                name: "contains_live"
+                when: (drives.lastRestoreable && drives.lastRestoreable.restoreStatus == Drive.CONTAINS_LIVE)
+            },
+            State {
+                name: "restoring"
+                when: (drives.lastRestoreable && drives.lastRestoreable.restoreStatus == Drive.RESTORING)
+            },
+            State {
+                name: "restored"
+                when: (drives.lastRestoreable && drives.lastRestoreable.restoreStatus == Drive.RESTORED)
+            },
+            State {
+                name: "restore_error"
+                when: (drives.lastRestoreable && drives.lastRestoreable.restoreStatus == Drive.RESTORE_ERROR)
+            }
+        ]
     }
 }
