@@ -2,6 +2,23 @@ altmediawriter
 CHANGELOG
 
 -----------------------------------------------------------------------
+ VERSION 1.0.2
+-----------------------------------------------------------------------
+- Writing: Restored previously removed "MD5 check after
+  writing" feature. This feature was originally removed
+  in version 0.6.0.
+- Writing: Added warnings for cases where "MD5 check
+  after writing" is not possible.
+- Restore dialog: Fixed a visual bug where if the app was
+  launched in Russian, text didn't word wrap correctly
+  and leaked into other dialog pages.
+- Misc: Fixed a visual bug where notification bar for
+  restoration was not sized properly for contents on
+  some languages/systems.
+- Image details: Fixed links in image description text
+  not opening in browser.
+
+-----------------------------------------------------------------------
  VERSION 1.0.1
 -----------------------------------------------------------------------
 - Misc: Fixed write dialog not recognizing any drives
