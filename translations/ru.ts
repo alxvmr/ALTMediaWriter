@@ -89,6 +89,14 @@
         <source>Write the image after downloading</source>
         <translation>Записать образ после загрузки</translation>
     </message>
+    <message>
+        <source>This image won&apos;t be verified after writing because no MD5 sum was found.</source>
+        <translation>Проверка после записи невозможна потому что нет MD5 суммы для выбраного образа.</translation>
+    </message>
+    <message>
+        <source>This image won&apos;t be verified after writing because it is a compressed image.</source>
+        <translation>Проверка после записи невозможна потому что выбраный образ сжат.</translation>
+    </message>
 </context>
 <context>
     <name>Drive</name>
@@ -292,29 +300,6 @@
         <translation>Восстановить %1?</translation>
     </message>
     <message>
-        <source>&lt;p align=&quot;justify&quot;&gt;
-                                                To reclaim all space available on the drive, it has to be restored to its factory settings.
-                                                The live system and all saved data will be deleted.
-                                            &lt;/p&gt;
-                                            &lt;p align=&quot;justify&quot;&gt;
-                                                You don&apos;t need to restore the drive if you want to write another live system to it.
-                                            &lt;/p&gt;
-                                            &lt;p align=&quot;justify&quot;&gt;
-                                                Do you want to continue?
-                                            &lt;/p&gt;</source>
-        <translation>&lt;p align=&quot;justify&quot;&gt;
-                                                Чтобы вернуть все имеющееся на диске пространство, нужно восстановить заводские настройки диска.
-                                                Будут удалены live-система и
-                                                все сохраненные данные.
-                                            &lt;/p&gt;
-                                            &lt;p align=&quot;justify&quot;&gt;
-                                                Не нужно восстанавливать диск, если вы хотите записать на него еще одну live-систему.
-                                            &lt;/p&gt;
-                                            &lt;p align=&quot;justify&quot;&gt;
-                                                Хотите продолжить?
-                                            &lt;/p&gt;</translation>
-    </message>
-    <message>
         <source>&lt;p align=&quot;justify&quot;&gt;Please wait while ALT Media Writer restores your portable drive.&lt;/p&gt;</source>
         <translation>&lt;p align=\&quot;justify\&quot;&gt;Подождите, пока ALT Media Writer восстанавливает ваш переносной диск.&lt;/p&gt;</translation>
     </message>
@@ -337,6 +322,10 @@
     <message>
         <source>Close</source>
         <translation>Закрыть</translation>
+    </message>
+    <message>
+        <source>&lt;p align=&quot;justify&quot;&gt;To reclaim all space available on the drive, it has to be restored to its factory settings. The live system and all saved data will be deleted.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;You don&apos;t need to restore the drive if you want to write another live system to it.&lt;/p&gt;&lt;p align=&quot;justify&quot;&gt;Do you want to continue?&lt;/p&gt;</source>
+        <translation>&lt;p align=&quot;justify&quot;&gt;Чтобы вернуть все имеющееся на диске пространство, нужно восстановить заводские настройки диска. Будут удалены live-система и все сохраненные данные.&lt;p&gt;&lt;p align=&quot;justify&quot;&gt;Не нужно восстанавливать диск, если вы хотите записать на него еще одну live-систему.&lt;p&gt;&lt;p align=&quot;justify&quot;&gt;Хотите продолжить?&lt;p&gt;</translation>
     </message>
 </context>
 <context>
@@ -392,6 +381,14 @@
     <message>
         <source>Unknown Status</source>
         <translation>Unknown Status</translation>
+    </message>
+    <message>
+        <source>Checking the written data</source>
+        <translation>Проверка записи</translation>
+    </message>
+    <message>
+        <source>The written data is corrupted</source>
+        <translation>Записанный образ поврежден</translation>
     </message>
 </context>
 <context>
@@ -454,6 +451,14 @@
     <message>
         <source>Couldn&apos;t unlock the drive</source>
         <translation>Не удалось разблокировать диск</translation>
+    </message>
+    <message>
+        <source>Your drive is probably damaged.</source>
+        <translation>Ваш диск возможно поврежден.</translation>
+    </message>
+    <message>
+        <source>Unexpected error occurred during media check.</source>
+        <translation>Во время проверки произошла непредвиденная ошибка.</translation>
     </message>
 </context>
 <context>
