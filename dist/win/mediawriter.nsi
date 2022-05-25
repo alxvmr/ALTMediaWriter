@@ -1,3 +1,5 @@
+Unicode true
+
 !include "MUI2.nsh"
 XPStyle on
 
