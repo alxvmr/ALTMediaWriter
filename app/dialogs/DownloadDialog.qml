@@ -21,7 +21,7 @@
  */
 
 import QtQuick 2.3
-import QtQuick.Controls 1.2
+import QtQuick.Controls 2.15
 import QtQuick.Controls.Styles 1.2
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.1
@@ -273,8 +273,7 @@ Dialog {
         ScrollView {
             id: contentScrollView
             anchors.fill: parent
-            horizontalScrollBarPolicy: Qt.ScrollBarAlwaysOff
-            flickableItem.flickableDirection: Flickable.VerticalFlick
+            ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
             activeFocusOnTab: false
 
             contentItem: Item {
@@ -289,6 +288,7 @@ Dialog {
                         right: parent.right
                         topMargin: 18
                         leftMargin: 18
+                        rightMargin: 18
                     }
                     ColumnLayout {
                         id: infoColumn
@@ -435,23 +435,21 @@ Dialog {
                                 }
                             }
                         }
-                        AdwaitaComboBox {
+                        ComboBox {
                             id: driveCombo
-                            Layout.preferredWidth: implicitWidth * 2.5
-                            z: pressed ? 1 : 0
+                            Layout.fillWidth: true
                             model: drives
                             textRole: "display"
-                            Binding {
-                                target: drives
-                                property: "selectedIndex"
-                                value: driveCombo.currentIndex
+                            Binding on currentIndex {
+                                when: drives
+                                value: drives.selectedIndex
                             }
                             onActivated: {
                                 if ([Variant.WRITING_FINISHED, Variant.WRITING_FAILED].indexOf(releases.selected.variant.status) >= 0) {
                                     releases.selected.variant.resetStatus()
                                 }
                             }
-                            placeholderText: qsTr("There are no portable drives connected")
+                            displayText: currentIndex === -1 || !currentText ? qsTr("There are no portable drives connected") : currentText
                         }
                     }
 
