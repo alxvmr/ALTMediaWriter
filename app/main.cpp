@@ -71,6 +71,16 @@ int main(int argc, char **argv) {
     }
 #endif
 
+// Use software rendering on Windows because hardware
+// rendering makes fuzzy unreadable fonts on Windows 7. Note
+// that software rendering makes animations stuttery but
+// this downside is not as bad as unreadable fonts.
+#ifndef __linux
+    if (qEnvironmentVariableIsEmpty("QMLSCENE_DEVICE")) {
+        qputenv("QMLSCENE_DEVICE", "softwarecontext");
+    }
+#endif
+
     QApplication::setOrganizationDomain("basealt.ru");
     QApplication::setOrganizationName("BaseALT");
     QApplication::setApplicationName("ALTMediaWriter");
