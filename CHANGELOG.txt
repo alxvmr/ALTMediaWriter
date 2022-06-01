@@ -2,6 +2,16 @@ altmediawriter
 CHANGELOG
 
 -----------------------------------------------------------------------
+ VERSION 1.0.4
+-----------------------------------------------------------------------
+- Download dialog: Fix visual problems where text elements
+  would sometimes overlap each other.
+- Misc: Use software rendering on Windows. Fixes app
+  sometimes failing to launch due to hardware rendering.
+- Misc: Fix non-English languages in Windows installer.
+- Misc: Fix window icon.
+
+-----------------------------------------------------------------------
  VERSION 1.0.3
 -----------------------------------------------------------------------
 - Restore dialog: Fixed untranslated text on first page.
